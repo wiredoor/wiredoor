@@ -42,11 +42,15 @@ COPY --chown=node:node . .
 FROM base AS build
 
 ARG OAUTH2PROXY_VERSION="7.9.0"
+ARG NGINX_EXPORTER_VERSION="1.4.2"
 
 RUN apk add --update curl \
   && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
   && tar -xzf /tmp/oauth2-proxy.tar.gz \
-  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy
+  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy \
+  && curl -sL https://github.com/nginx/nginx-prometheus-exporter/releases/download/v${NGINX_EXPORTER_VERSION}/nginx-prometheus-exporter_${NGINX_EXPORTER_VERSION}_linux_amd64.tar.gz -o /tmp/nginx-prometheus-exporter.tar.gz \
+  && tar -xzf /tmp/nginx-prometheus-exporter.tar.gz \
+  && mv ./nginx-prometheus-exporter /usr/bin/nginx-prometheus-exporter
 
 COPY --chown=node:node package*.json ./
 
