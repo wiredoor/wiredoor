@@ -13,7 +13,9 @@ import { Node } from './node';
 import config from '../../config';
 
 @Entity('http_services')
-@Index('service_port_unique', ['backendPort', 'nodeId'], { unique: true })
+@Index('service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
+  unique: true,
+})
 @Index('domain_path_unique', ['domain', 'pathLocation'], { unique: true })
 export class HttpService {
   @PrimaryGeneratedColumn()
