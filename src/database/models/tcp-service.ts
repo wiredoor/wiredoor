@@ -9,8 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Node } from './node';
 import config from '../../config';
+import { Node } from './node';
+import { getTtlFromExpiresAt } from '../../utils/ttl-utils';
 
 @Entity('tcp_services')
 @Index('unique_port_per_node', ['backendPort', 'nodeId'], { unique: true })
@@ -72,6 +73,9 @@ export class TcpService {
   })
   blockedIps: string[];
 
+  @Column({ type: 'datetime', nullable: true })
+  expiresAt?: Date;
+
   @ManyToOne(() => Node, {
     onDelete: 'CASCADE',
   })
@@ -93,5 +97,9 @@ export class TcpService {
 
   get identifier(): string {
     return `n${this.nodeId}s${this.id}_stream`;
+  }
+
+  get ttl(): string | null {
+    return getTtlFromExpiresAt(this.expiresAt);
   }
 }

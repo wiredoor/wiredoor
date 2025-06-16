@@ -1,7 +1,7 @@
 .env
 /public
 dist
-db.sqlite
+*.sqlite
 # IDE specific files
 .idea/
 .vscode/

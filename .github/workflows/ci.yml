@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - development
+    tags:
+      - "v*.*.*"
   pull_request:
     branches:
       - main
@@ -135,4 +137,8 @@ jobs:
             docker tag $IMAGE:build-${{ github.sha }} $IMAGE:dev-$SHORT_SHA
             docker push $IMAGE:dev
             docker push $IMAGE:dev-$SHORT_SHA
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:$TAG_NAME
+            docker push $IMAGE:$TAG_NAME
           fi

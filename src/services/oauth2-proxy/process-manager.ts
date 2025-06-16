@@ -44,7 +44,7 @@ export class ProcessManager {
     }
 
     const processFile = `[program:oauth2-proxy-d${domain.id}]
-command=sh -c 'source /etc/environment && /usr/bin/oauth2-proxy'
+command=sh -c 'source /etc/environment && /usr/bin/oauth2-proxy --skip-provider-button=true'
 environment=
   OAUTH2_PROXY_HTTP_ADDRESS="127.0.0.1:${domain.oauth2ServicePort}",
   OAUTH2_PROXY_COOKIE_DOMAINS="${domain.domain}",

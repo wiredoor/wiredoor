@@ -10,5 +10,6 @@ export const makeHttpServiceData = (params?: any): HttpServiceType => {
     backendProto: params?.backendProto || 'http',
     backendPort: params?.backendPort || 80,
     allowedIps: params?.allowedIps || [],
+    blockedIps: params?.allowedIps || [],
   };
 };

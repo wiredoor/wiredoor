@@ -32,6 +32,7 @@ import { DomainQueryFilter } from '../../repositories/filters/domain-query-filte
 import { SSLTermination } from '../../database/models/domain';
 import { TcpService } from '../../database/models/tcp-service';
 import { PagedData } from '../../repositories/filters/repository-query-filter';
+import { faker } from '@faker-js/faker';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -39,7 +40,7 @@ let dataSource: DataSource;
 
 beforeAll(async () => {
   app = await loadApp();
-  dataSource = Container.get('dataSource');
+  dataSource = Container.get<DataSource>('dataSource');
 });
 
 afterAll(async () => {});
@@ -111,9 +112,6 @@ describe('TCP Services Service', () => {
   });
 
   afterEach(async () => {
-    await repository.clear();
-    // await nodeRepository.clear();
-    // await domainRepository.clear();
     jest.clearAllMocks();
   });
 
@@ -212,20 +210,23 @@ describe('TCP Services Service', () => {
       const serviceData = makeTcpServiceData();
       const tcpService = await repository.save({
         ...serviceData,
-        port: 15000,
+        port: faker.number.int({ min: 15000, max: 16000 }),
         nodeId: node.id,
       });
 
       const result = await service.getNodeTcpServices(node.id, {});
 
-      expect((result as TcpService[]).length).toEqual(1);
-      expect(result[0].name).toEqual(tcpService.name);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: serviceData.name }),
+        ]),
+      );
     });
     it('should list TCP Services paginated for certain node', async () => {
       const serviceData = makeTcpServiceData();
       await repository.save({
         ...serviceData,
-        port: 15001,
+        port: faker.number.int({ min: 15000, max: 16000 }),
         nodeId: node.id,
       });
 

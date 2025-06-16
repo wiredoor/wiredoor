@@ -12,6 +12,7 @@ import { NginxManager } from './proxy-server/nginx-manager';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
+import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 
 @Service()
 export class TcpServicesService extends BaseServices {
@@ -86,9 +87,15 @@ export class TcpServicesService extends BaseServices {
       params.port = port;
     }
 
+    const expiresAt = calculateExpiresAtFromTTL(params.ttl);
+
     await this.checkNodePort(nodeId, params.backendPort, params.backendHost);
 
-    const { id } = await this.tcpServiceRepository.save({ ...params, nodeId });
+    const { id } = await this.tcpServiceRepository.save({
+      ...params,
+      nodeId,
+      expiresAt,
+    });
 
     const service = await this.getTcpService(id, ['node']);
 
@@ -139,8 +146,13 @@ export class TcpServicesService extends BaseServices {
     return this.updateTcpService(id, { enabled: true });
   }
 
-  enableNodeService(id: number, nodeId: number): Promise<TcpService> {
-    return this.updateNodeTcpService(id, nodeId, { enabled: true });
+  enableNodeService(
+    id: number,
+    nodeId: number,
+    ttl = null,
+  ): Promise<TcpService> {
+    const expiresAt = calculateExpiresAtFromTTL(ttl);
+    return this.updateNodeTcpService(id, nodeId, { enabled: true, expiresAt });
   }
 
   disableService(id: number): Promise<TcpService> {

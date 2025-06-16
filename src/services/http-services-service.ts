@@ -14,6 +14,7 @@ import { DomainsService } from './domains-service';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
+import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 
 @Service()
 export class HttpServicesService extends BaseServices {
@@ -87,7 +88,13 @@ export class HttpServicesService extends BaseServices {
       params.backendProto === 'https',
     );
 
-    const { id } = await this.httpServiceRepository.save({ ...params, nodeId });
+    const expiresAt = calculateExpiresAtFromTTL(params.ttl);
+
+    const { id } = await this.httpServiceRepository.save({
+      ...params,
+      nodeId,
+      expiresAt,
+    });
 
     const httpService = await this.getHttpService(id, ['node']);
 
@@ -164,16 +171,25 @@ export class HttpServicesService extends BaseServices {
     return this.updateHttpService(id, { enabled: true });
   }
 
-  enableNodeService(id: number, nodeId: number): Promise<HttpService> {
-    return this.updateNodeHttpService(id, nodeId, { enabled: true });
+  enableNodeService(
+    id: number,
+    nodeId: number,
+    ttl = null,
+  ): Promise<HttpService> {
+    const expiresAt = calculateExpiresAtFromTTL(ttl);
+
+    return this.updateNodeHttpService(id, nodeId, { enabled: true, expiresAt });
   }
 
   disableService(id: number): Promise<HttpService> {
-    return this.updateHttpService(id, { enabled: false });
+    return this.updateHttpService(id, { enabled: false, expiresAt: null });
   }
 
   disableNodeService(id: number, nodeId: number): Promise<HttpService> {
-    return this.updateNodeHttpService(id, nodeId, { enabled: false });
+    return this.updateNodeHttpService(id, nodeId, {
+      enabled: false,
+      expiresAt: null,
+    });
   }
 
   public async deleteHttpService(id: number): Promise<string> {

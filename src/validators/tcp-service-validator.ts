@@ -2,7 +2,7 @@ import { ObjectSchema } from 'joi';
 import Joi from './joi-validator';
 import config from '../config';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import { validateServiceDomain } from './http-service-validator';
+import { ttlValidator, validateServiceDomain } from './http-service-validator';
 
 export interface TcpServiceType {
   name: string;
@@ -15,6 +15,8 @@ export interface TcpServiceType {
   allowedIps?: string[];
   blockedIps?: string[];
   enabled?: boolean;
+  ttl?: string;
+  expiresAt?: Date;
 }
 
 export interface TcpServiceFilterQueryParams extends FilterQueryDto {
@@ -69,4 +71,5 @@ export const tcpServiceValidator: ObjectSchema<TcpServiceType> = Joi.object({
     .items(Joi.string().ip({ cidr: 'optional' }).optional())
     .allow(null)
     .optional(),
+  ttl: ttlValidator,
 });

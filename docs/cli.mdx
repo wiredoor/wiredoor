@@ -80,6 +80,7 @@ Optional flags:
 - `--path /ui` (default: /)
 - `--proto https` (default: http)
 - `--backendHost` (useful if acting as a gateway)
+- `--ttl` (useful if you want to expose a service temporarily)
 - `--allow` / `--block` for IP access control
 
 ### Wiredoor Expose TCP Service
@@ -119,8 +120,8 @@ Flags:
 Temporarily disable an exposed service by name.
 
 ```bash
-wiredoor disable http my-website
-wiredoor disable tcp db-access
+wiredoor disable http {serviceID}
+wiredoor disable tcp {serviceID}
 ```
 
 - Blocks public access
@@ -131,12 +132,16 @@ wiredoor disable tcp db-access
 Re-enable a previously disabled service.
 
 ```bash
-wiredoor enable http my-website
-wiredoor enable tcp db-access
+wiredoor enable http {serviceID}
+wiredoor enable tcp {serviceID}
+wiredoor enable tcp {serviceID} --ttl 5m
 ```
 
 - Restores service availability
 - Requires existing configuration
+
+Flags:
+- `--ttl` (useful if you want to expose a service temporarily)
 
 ### Wiredoor disconnect
 

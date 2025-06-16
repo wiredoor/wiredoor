@@ -1,6 +1,6 @@
 {
   "cmake.ignoreCMakeListsMissing": true,
-  "jest.jestCommandLine": "npm test --",
+  "jest.jestCommandLine": "npm test -- --runInBand",
   "jest.rootPath": ".",
   "jest.enableCodeLens": true,
   "jest.showInlineError": true,

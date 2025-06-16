@@ -1,1 +1,2 @@
 0 0 * * * /usr/bin/certbot renew --quiet --post-hook "/usr/sbin/nginx -s reload" >> /var/log/cron.log 2>&1
+* * * * * node /app/dist/src/scripts/disable-expired-services.js >> /var/log/supervisor/tasks.log 2>&1

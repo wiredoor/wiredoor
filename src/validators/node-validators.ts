@@ -27,6 +27,11 @@ export const validateSubnet = async (c: string): Promise<string> => {
   return c;
 };
 
+export const gatewayNetworkValidator = Joi.string()
+  .ip({ cidr: 'required' })
+  .external(validateSubnet)
+  .required();
+
 export interface NodeFilterQueryParams extends FilterQueryDto {
   limit?: number;
   page?: number;
@@ -81,10 +86,7 @@ export const createNodeValidator: ObjectSchema<CreateNodeType> = Joi.object({
   isGateway: Joi.boolean().optional(),
   gatewayNetwork: Joi.string().when('isGateway', {
     is: true,
-    then: Joi.string()
-      .ip({ cidr: 'required' })
-      .external(validateSubnet)
-      .required(),
+    then: gatewayNetworkValidator,
     otherwise: Joi.valid(null, '').optional(),
   }),
   // interface: Joi.string().optional(),

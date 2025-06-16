@@ -5,7 +5,7 @@ import config from '../../../config';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeTcpServiceData = (params?: any): TcpServiceType => {
   let min = 15000;
-  let max = 15000;
+  let max = 16000;
 
   if (config.server.port_range) {
     min = +config.server.port_range.split('-')[0];

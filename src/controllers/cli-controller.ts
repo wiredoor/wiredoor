@@ -1,6 +1,7 @@
 import { Inject, Service } from 'typedi';
-import { celebrate, Joi } from 'celebrate';
+import { celebrate } from 'celebrate';
 import {
+  BadRequestError,
   Body,
   CurrentUser,
   Get,
@@ -19,6 +20,7 @@ import {
   httpServiceFilterValidator,
   HttpServiceType,
   httpServiceValidator,
+  ttlValidator,
 } from '../validators/http-service-validator';
 import {
   TcpServiceFilterQueryParams,
@@ -27,12 +29,14 @@ import {
 } from '../validators/tcp-service-validator';
 import { AuthenticatedUser } from '../middlewares/auth-token-handler';
 import BaseController from './base-controller';
-import { NodeInfo, NodeWithToken } from '../database/models/node';
+import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
 import { WGConfigObject } from '../services/wireguard/wireguard-service';
 import { HttpService } from '../database/models/http-service';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { TcpService } from '../database/models/tcp-service';
 import { CliTokenHandler } from '../middlewares/cli-token-handler';
+import Joi from '../validators/joi-validator';
+import { gatewayNetworkValidator } from '../validators/node-validators';
 
 @Service()
 @JsonController('/cli')
@@ -70,6 +74,34 @@ export default class CLiController extends BaseController {
     return this.nodesService.getNodeWGConfig(+cli.nodeId);
   }
 
+  @Patch('/node/gateway')
+  @UseBefore(
+    celebrate({
+      body: Joi.object({
+        gatewayNetwork: gatewayNetworkValidator,
+      }),
+    }),
+  )
+  async updateGatewayNetwork(
+    @CurrentUser({ required: true }) cli: AuthenticatedUser,
+    @Body() params: { gatewayNetwork: string },
+  ): Promise<Node> {
+    const node = await this.nodesService.getNode(+cli.nodeId, [
+      'httpServices',
+      'tcpServices',
+    ]);
+
+    if (node.isGateway) {
+      return this.nodesService.updateNode(+cli.nodeId, {
+        gatewayNetwork: params.gatewayNetwork,
+      });
+    } else {
+      throw new BadRequestError(
+        `This node isn't a gateway. Update node from wiredoor dashboard using administrative account`,
+      );
+    }
+  }
+
   @Get('/services/http')
   @UseBefore(
     celebrate({
@@ -104,13 +136,21 @@ export default class CLiController extends BaseController {
       params: Joi.object({
         id: Joi.number().required(),
       }),
+      body: Joi.object({
+        ttl: ttlValidator,
+      }),
     }),
   )
   async enableHttpService(
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
+    @Body() params: { ttl: string | undefined },
   ): Promise<HttpService> {
-    return this.httpServicesService.enableNodeService(id, cli.nodeId);
+    return this.httpServicesService.enableNodeService(
+      id,
+      cli.nodeId,
+      params.ttl,
+    );
   }
 
   @Get('/services/tcp')
@@ -147,13 +187,21 @@ export default class CLiController extends BaseController {
       params: Joi.object({
         id: Joi.number().required(),
       }),
+      body: Joi.object({
+        ttl: ttlValidator,
+      }),
     }),
   )
   async enableTcpService(
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
+    @Body() params: { ttl: string | undefined },
   ): Promise<TcpService> {
-    return this.tcpServicesService.enableNodeService(id, cli.nodeId);
+    return this.tcpServicesService.enableNodeService(
+      id,
+      cli.nodeId,
+      params.ttl,
+    );
   }
 
   @Post('/expose/http')

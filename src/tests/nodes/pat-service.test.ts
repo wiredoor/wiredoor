@@ -16,7 +16,7 @@ let dataSource: DataSource;
 
 beforeAll(async () => {
   app = await loadApp();
-  dataSource = Container.get('dataSource');
+  dataSource = Container.get<DataSource>('dataSource');
 });
 
 afterAll(async () => {});

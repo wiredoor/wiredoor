@@ -37,11 +37,29 @@ export default ({ app }: { app: express.Application }): void => {
     cors: {
       origin: function (origin, callback) {
         // We can use cors: Disabled by default
-        // eslint-disable-next-line no-constant-condition
-        if (true) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
+        const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(
+          (o) => o.trim().replace(/^https?:\/\//, ''),
+        );
+
+        if (
+          !origin ||
+          !allowedOrigins ||
+          allowedOrigins.length === 0 ||
+          allowedOrigins.includes('*')
+        ) {
+          return callback(null, true);
+        }
+
+        try {
+          const hostname = new URL(origin).hostname;
+
+          if (allowedOrigins.includes(hostname)) {
+            return callback(null, true);
+          } else {
+            return callback(new Error('Not allowed by CORS'));
+          }
+        } catch {
+          callback(new Error('Invalid Origin'));
         }
       },
       credentials: true,

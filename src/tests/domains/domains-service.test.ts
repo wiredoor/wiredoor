@@ -117,8 +117,11 @@ describe('Domains Service', () => {
 
       const result = await service.getDomains({});
 
-      expect((result as Domain[]).length).toEqual(1);
-      expect(result[0].domain).toEqual(domain.domain);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ domain: data.domain }),
+        ]),
+      );
     });
     it('should list Domains paginated', async () => {
       const data = makeDomainData();

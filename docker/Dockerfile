@@ -89,9 +89,12 @@ COPY --from=build /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
 COPY --chown=node:node --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node --from=build /app/dist /app/dist
 COPY --chown=node:node --from=uibuild /app/dist /app/dist/public
+COPY --chown=node:node docker/resources/init.sh /init.sh
+
+RUN chmod +x /init.sh
 
 VOLUME ["/etc/letsencrypt","/data"]
 
-CMD [ "sh", "-c", "env > /etc/environment && exec /usr/bin/supervisord -ns -c /etc/supervisor/supervisord.conf" ]
+CMD [ "/init.sh" ]
 
 # USER node

@@ -35,7 +35,7 @@ export class NodesService {
 
     for (const gw of gateways) {
       if (gw.enabled) {
-        this.configureGateway(gw);
+        await this.configureGateway(gw);
       }
     }
   }

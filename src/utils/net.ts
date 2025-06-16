@@ -64,39 +64,42 @@ export default class Net {
   }
 
   static async nslookup(domain: string, resolver?: string): Promise<string[]> {
-    try {
-      if (resolver) {
-        const nsResolver = new dns.Resolver();
-
-        nsResolver.setServers([resolver]);
-
-        return new Promise((resolve) => {
-          nsResolver.resolve(domain, (err, addresses) => {
-            if (err) {
-              resolve(null);
-            }
-            if (!addresses || !addresses.length) {
-              resolve(null);
-            }
-            resolve(addresses);
-          });
-        });
-      }
-
+    const resolveWith = (
+      res: dns.Resolver | typeof dns,
+    ): Promise<string[] | null> => {
       return new Promise((resolve) => {
-        dns.resolve(domain, (err, addresses) => {
-          if (err) {
-            resolve(null);
-          }
-          if (!addresses || !addresses.length) {
-            resolve(null);
+        res.resolve(domain, (err, addresses) => {
+          if (err || !addresses?.length) {
+            return resolve(null);
           }
           resolve(addresses);
         });
       });
+    };
+
+    const tryResolve = async (): Promise<string[] | null> => {
+      try {
+        if (resolver) {
+          const nsResolver = new dns.Resolver();
+          nsResolver.setServers([resolver]);
+          return await resolveWith(nsResolver);
+        }
+        return await resolveWith(dns);
+      } catch {
+        return null;
+      }
+    };
+
+    const result = await tryResolve();
+    if (result) return result;
+
+    try {
+      await CLI.exec(`ping -c 1 -W 1 ${domain}`);
     } catch {
-      return null;
+      // ignore ping errors
     }
+
+    return tryResolve();
   }
 
   static async checkCNAME(domain: string): Promise<string[]> {

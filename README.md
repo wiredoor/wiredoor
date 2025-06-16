@@ -113,7 +113,7 @@ wiredoor login --url=https://your_deployed_wiredoor_domain_or_ip
 
 This will:
 
-- Promp for admin credentials (email and password)
+- Prompt for admin credentials (email and password)
 - Ask for a name for the node (default: current hostname)
 - Register the node in the server
 - Connect it automatically via WireGuard

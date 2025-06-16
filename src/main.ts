@@ -11,6 +11,11 @@ import { logger } from './providers/logger';
 export async function loadApp(): Promise<express.Application> {
   const app = express();
 
+  app.use((req, res, next) => {
+    res.setHeader('X-Powered-By', 'Wiredoor Server');
+    next();
+  });
+
   await providers(app);
 
   const publicUIPath = path.join(process.cwd(), 'public');

@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Node } from './node';
 import config from '../../config';
+import { getTtlFromExpiresAt } from '../../utils/ttl-utils';
 
 @Entity('http_services')
 @Index('service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
@@ -78,6 +79,9 @@ export class HttpService {
   })
   blockedIps: string[];
 
+  @Column({ type: 'datetime', nullable: true })
+  expiresAt?: Date;
+
   @ManyToOne(() => Node, {
     onDelete: 'CASCADE',
   })
@@ -106,5 +110,9 @@ export class HttpService {
 
   get identifier(): string {
     return `node${this.nodeId}service${this.id}`;
+  }
+
+  get ttl(): string | null {
+    return getTtlFromExpiresAt(this.expiresAt);
   }
 }

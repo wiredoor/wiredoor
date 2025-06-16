@@ -59,13 +59,18 @@ const wiredoorMainPage = 'https://www.wiredoor.net'
             </p>
             <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300 mb-2">
               <li>
-                <a :href="`${wiredoorMainPage}/docs/docker-gateway`" class="text-blue-600 dark:text-blue-400 hover:underline">
+                <a :href="`${wiredoorMainPage}/docs/docker-gateway`" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
                   Docker Gateway
                 </a>
               </li>
               <li>
-                <a :href="`${wiredoorMainPage}/docs/kubernetes-gateway`" class="text-blue-600 dark:text-blue-400 hover:underline">
+                <a :href="`${wiredoorMainPage}/docs/kubernetes-gateway`" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
                   Kubernetes Gateway
+                </a>
+              </li>
+              <li>
+                <a href="https://github.com/wiredoor/home-assistant-wiredoor-addon" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
+                  Home Assistant Add-On
                 </a>
               </li>
             </ul>
@@ -88,7 +93,7 @@ const wiredoorMainPage = 'https://www.wiredoor.net'
 
           <div class="flex justify-center items-center mt-4 space-x-4">
             <a
-              href="https://github.com/sponsors/dmesad"
+              href="https://github.com/sponsors/wiredoor"
               target="_blank"
               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 transition"
             >

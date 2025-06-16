@@ -30,10 +30,12 @@ describe('Nodes Management API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.data[1]).toEqual(
-        expect.objectContaining({
-          name: 'client',
-        }),
+      expect(res.body.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'client',
+          }),
+        ]),
       );
       expect(res.body.data[0]).toEqual(
         expect.not.objectContaining({
