@@ -64,7 +64,7 @@ jobs:
           docker run --rm ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} npm run test
 
   cleanup-dev-image:
-    name: Build Prod Image
+    name: Cleanup dev image
     runs-on: ubuntu-latest
     needs: [test, lint]
 
@@ -81,10 +81,13 @@ jobs:
         run: |
           echo "Looking for package version with tag $TAG..."
 
-          gh api -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions \
-            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id" \
-            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions/{} \
-            || echo "⚠️ No matching version found or failed to delete."
+          IMAGE_ID=$(gh api -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions \
+            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id")
+
+          echo "Image ID: ${IMAGE_ID}"
+
+          gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions/$IMAGE_ID \
+            || echo "No matching version found or failed to delete."
 
   build-prod:
     name: Build Prod Image
