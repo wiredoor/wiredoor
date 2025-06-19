@@ -16,7 +16,7 @@ jobs:
       - name: Install GitHub CLI
         run: |
           sudo apt-get update
-          sudo apt-get install -y gh jq
+          sudo apt-get install -y gh jq ca-certificates
 
       - name: Delete old build-* and dev-* versions
         env:
@@ -28,7 +28,7 @@ jobs:
           echo "Fetching versions..."
           gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
             | jq '.[] | select(.metadata.container.tags[]? | test("^build-|^dev-")) | .id' \
-            | xargs -r -I{} gh api --method DELETE /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
+            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
 
       - name: Delete untagged versions
         env:
@@ -36,8 +36,7 @@ jobs:
         run: |
           PACKAGE_NAME="wiredoor"
           ORG="wiredoor"
-
           echo "Deleting untagged versions..."
           gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
             | jq '.[] | select(.metadata.container.tags | length == 0) | .id' \
-            | xargs -r -I{} gh api --method DELETE /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
+            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
