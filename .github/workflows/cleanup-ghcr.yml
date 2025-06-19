@@ -2,7 +2,7 @@ name: Cleanup GHCR Tagged Images
 
 on:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 4 * * 0'
   workflow_dispatch:
 
 permissions:
@@ -10,25 +10,32 @@ permissions:
   packages: write
 
 jobs:
-  cleanup-dev-build:
+  cleanup:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete old versions (except stable tags)
-        uses: actions/delete-package-versions@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: wiredoor
-          package-name: wiredoor
-          package-type: container
-          ignore-versions: '^latest$|^v\d+\.\d+\.\d+$'
-          min-versions-to-keep: 10
+      - name: Install gh CLI
+        uses: cli/cli-action@v2
 
-      - name: Delete untagged images
-        uses: actions/delete-package-versions@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: wiredoor
-          package-name: wiredoor
-          package-type: container
-          delete-untagged-versions: true
-          min-versions-to-keep: 3
+      - name: Delete old build-* and dev-* versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE_NAME="wiredoor"
+          ORG="wiredoor"
+
+          echo "Fetching versions..."
+          gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
+            | jq '.[] | select(.metadata.container.tags[]? | test("^build-|^dev-")) | .id' \
+            | xargs -r -I{} gh api --method DELETE /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
+
+      - name: Delete untagged versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE_NAME="wiredoor"
+          ORG="wiredoor"
+
+          echo "Deleting untagged versions..."
+          gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
+            | jq '.[] | select(.metadata.container.tags | length == 0) | .id' \
+            | xargs -r -I{} gh api --method DELETE /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
