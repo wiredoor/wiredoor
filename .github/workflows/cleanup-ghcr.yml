@@ -17,6 +17,7 @@ jobs:
         uses: actions/delete-package-versions@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          owner: wiredoor
           package-name: wiredoor
           package-type: container
           ignore-versions: '^latest$|^v\d+\.\d+\.\d+$'
@@ -26,6 +27,7 @@ jobs:
         uses: actions/delete-package-versions@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          owner: wiredoor
           package-name: wiredoor
           package-type: container
           delete-untagged-versions: true
