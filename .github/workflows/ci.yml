@@ -68,6 +68,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, lint]
 
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' || startsWith(github.ref, 'refs/tags/')
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -78,67 +80,61 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build Prod Image
+      - name: Determine tags
+        id: tags
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} -f docker/Dockerfile --target=production .
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "TAGS=latest" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
+            echo "TAGS=dev,dev-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "TAGS=${TAG_NAME}" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Push image
-        run: docker push ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }}
+      - name: Build and Push Image with All Tags
+        run: |
+          IFS=',' read -ra TAGS <<< "${{ steps.tags.outputs.TAGS }}"
+          TAG_ARGS=""
+          for tag in "${TAGS[@]}"; do
+            TAG_ARGS="$TAG_ARGS -t ghcr.io/${{ github.repository_owner }}/wiredoor:$tag"
+          done
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            $TAG_ARGS \
+            -f docker/Dockerfile \
+            --target=production \
+            --push
+            .
 
   scan-image:
     name: Scan Prod Image with Trivy
     runs-on: ubuntu-latest
     needs: build-prod
 
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' || startsWith(github.ref, 'refs/tags/')
+
     steps:
       - name: Log in to GHCR
         run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Determine tag
+        id: tag
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            echo "TAG=latest" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
+            echo "TAG=dev" >> $GITHUB_OUTPUT
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "TAG=${TAG_NAME}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/wiredoor:${{ steps.tag.outputs.TAG }}
           format: table
           exit-code: 0
           ignore-unfixed: true
-
-  publish-image:
-    name: Publish to GHCR
-    runs-on: ubuntu-latest
-    needs: scan-image
-
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development'
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to GHCR
-        run: |
-          echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Tag & Push Image
-        run: |
-          SHORT_SHA=${GITHUB_SHA::7}
-          IMAGE=ghcr.io/${{ github.repository_owner }}/wiredoor
-
-          docker pull $IMAGE:build-${{ github.sha }}
-
-          if [ "${GITHUB_REF##*/}" = "main" ]; then
-            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:latest
-            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:$SHORT_SHA
-            docker push $IMAGE:latest
-            docker push $IMAGE:$SHORT_SHA
-          elif [ "${GITHUB_REF##*/}" = "development" ]; then
-            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:dev
-            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:dev-$SHORT_SHA
-            docker push $IMAGE:dev
-            docker push $IMAGE:dev-$SHORT_SHA
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
-            docker tag $IMAGE:build-${{ github.sha }} $IMAGE:$TAG_NAME
-            docker push $IMAGE:$TAG_NAME
-          fi
