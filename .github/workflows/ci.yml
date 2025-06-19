@@ -109,7 +109,7 @@ jobs:
             --target=production \
             -f docker/Dockerfile \
             $TAG_ARGS \
-            --push
+            --push \
             .
 
   scan-image:
