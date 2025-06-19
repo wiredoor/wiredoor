@@ -13,26 +13,15 @@ jobs:
   cleanup-dev-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete build-* images
+      - name: Delete old versions (except stable tags)
         uses: actions/delete-package-versions@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           package-name: wiredoor
           package-type: container
-          version-pattern: '^build-.*'
-          delete-only-matching-versions: true
-          min-versions-to-keep: 0
+          ignore-versions: '^latest$|^v\d+\.\d+\.\d+$'
+          min-versions-to-keep: 10
 
-      - name: Delete dev-* images
-        uses: actions/delete-package-versions@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          package-name: wiredoor
-          package-type: container
-          version-pattern: '^dev-.*'
-          delete-only-matching-versions: true
-          min-versions-to-keep: 5
-      
       - name: Delete untagged images
         uses: actions/delete-package-versions@v5
         with:
