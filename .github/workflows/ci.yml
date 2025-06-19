@@ -63,6 +63,29 @@ jobs:
         run: |
           docker run --rm ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} npm run test
 
+  cleanup-dev-image:
+    name: Build Prod Image
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh jq ca-certificates
+      - name: Delete build-${{ github.sha }} image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          TAG: build-${{ github.sha }}
+        run: |
+          echo "Looking for package version with tag $TAG..."
+
+          gh api -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions \
+            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id" \
+            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions/{} \
+            || echo "⚠️ No matching version found or failed to delete."
+
   build-prod:
     name: Build Prod Image
     runs-on: ubuntu-latest
