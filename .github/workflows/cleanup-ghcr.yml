@@ -1,0 +1,40 @@
+name: Cleanup GHCR Tagged Images
+
+on:
+  schedule:
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  cleanup-dev-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete `build-*` images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: wiredoor
+          package-type: container
+          version-pattern: '^build-.*'
+          delete-only-matching-versions: true
+          min-versions-to-keep: 0
+
+      - name: Delete `dev-*` images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: wiredoor
+          package-type: container
+          version-pattern: '^dev-.*'
+          delete-only-matching-versions: true
+          min-versions-to-keep: 5
+      
+      - name: Delete untagged images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: wiredoor
+          package-type: container
+          delete-untagged-versions: true
+          min-versions-to-keep: 3
