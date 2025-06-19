@@ -97,14 +97,18 @@ jobs:
         run: |
           IFS=',' read -ra TAGS <<< "${{ steps.tags.outputs.TAGS }}"
           TAG_ARGS=""
+
           for tag in "${TAGS[@]}"; do
             TAG_ARGS="$TAG_ARGS -t ghcr.io/${{ github.repository_owner }}/wiredoor:$tag"
           done
+
+          echo $TAG_ARGS
+
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            $TAG_ARGS \
-            -f docker/Dockerfile \
             --target=production \
+            -f docker/Dockerfile \
+            $TAG_ARGS \
             --push
             .
 
