@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  packages: write
   contents: read
+  packages: write
 
 jobs:
   cleanup-dev-build:
@@ -16,7 +16,7 @@ jobs:
       - name: Delete build-* images
         uses: actions/delete-package-versions@v5
         with:
-          token: ${{ secrets.WIREDOOR_GHCR_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           package-name: wiredoor
           package-type: container
           version-pattern: '^build-.*'
@@ -26,7 +26,7 @@ jobs:
       - name: Delete dev-* images
         uses: actions/delete-package-versions@v5
         with:
-          token: ${{ secrets.WIREDOOR_GHCR_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           package-name: wiredoor
           package-type: container
           version-pattern: '^dev-.*'
@@ -36,7 +36,7 @@ jobs:
       - name: Delete untagged images
         uses: actions/delete-package-versions@v5
         with:
-          token: ${{ secrets.WIREDOOR_GHCR_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           package-name: wiredoor
           package-type: container
           delete-untagged-versions: true
