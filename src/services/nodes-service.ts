@@ -16,7 +16,6 @@ import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { NodeQueryFilter } from '../repositories/filters/node-query-filter';
 import Net from '../utils/net';
 import { PagedData } from '../repositories/filters/repository-query-filter';
-import { boolean } from 'joi';
 
 @Service()
 export class NodesService {

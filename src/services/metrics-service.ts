@@ -68,7 +68,7 @@ export class MetricsService {
       if (node.latestHandshakeTimestamp) {
         this.handshake.set(
           { device, public_key },
-          node.latestHandshakeTimestamp,
+          Math.floor(node.latestHandshakeTimestamp / 1000),
         );
       }
 
