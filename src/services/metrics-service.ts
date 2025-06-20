@@ -14,19 +14,19 @@ export class MetricsService {
   });
 
   private readonly handshake = new client.Gauge({
-    name: 'wireguard_last_handshake_seconds',
+    name: 'wireguard_latest_handshake_seconds',
     help: 'Seconds from the last handshake',
     labelNames: ['device', 'public_key'],
   });
 
   private readonly rx = new client.Gauge({
-    name: 'wireguard_receive_bytes_total',
+    name: 'wireguard_received_bytes_total',
     help: 'Bytes received from the peer',
     labelNames: ['device', 'public_key'],
   });
 
   private readonly tx = new client.Gauge({
-    name: 'wireguard_transmit_bytes_total',
+    name: 'wireguard_sent_bytes_total',
     help: 'Bytes sent to the peer',
     labelNames: ['device', 'public_key'],
   });
