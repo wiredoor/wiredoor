@@ -37,6 +37,7 @@ export interface NodeFilterQueryParams extends FilterQueryDto {
   page?: number;
   orderBy?: string;
   type?: 'nodes' | 'gateways';
+  wgInterface?: string;
 }
 
 export interface NodeFilterStreamParams extends NodeFilterQueryParams {
