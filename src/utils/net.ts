@@ -2,9 +2,11 @@ import { readFile } from 'fs/promises';
 import net from 'net';
 import tls from 'tls';
 import dns from 'dns';
+import https from 'https';
 import CLI from './cli';
 import config from '../config';
 import { Resolver } from 'dns/promises';
+import IP_CIDR from './ip-cidr';
 
 export default class Net {
   static async addRoute(
@@ -126,8 +128,16 @@ export default class Net {
       this.checkCNAME(domain),
     ]);
 
+    const ip = await this.getRealPublicIp();
+    let configuredIp = config.wireguard.host;
+
+    if (!IP_CIDR.isValidIP(configuredIp)) {
+      configuredIp = (await this.nslookup(configuredIp))[0];
+    }
+
     return (
-      (lookup[0] || lookup[1]) && lookup.flat().includes(config.wireguard.host)
+      (lookup[0] || lookup[1]) &&
+      (lookup.flat().includes(ip) || lookup.flat().includes(configuredIp))
     );
   }
 
@@ -213,6 +223,23 @@ export default class Net {
         socket.destroy();
         resolve(false);
       });
+    });
+  }
+
+  static async getRealPublicIp(): Promise<string> {
+    return new Promise((resolve) => {
+      https
+        .get('https://checkip.amazonaws.com', (res) => {
+          if (res.statusCode !== 200) {
+            resolve('');
+            return;
+          }
+
+          let data = '';
+          res.on('data', (chunk) => (data += chunk));
+          res.on('end', () => resolve(data.trim()));
+        })
+        .on('error', () => resolve(''));
     });
   }
 }
