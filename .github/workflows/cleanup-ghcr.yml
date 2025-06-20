@@ -1,0 +1,42 @@
+name: Cleanup GHCR Tagged Images
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gh jq ca-certificates
+
+      - name: Delete old build-* and dev-* versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE_NAME="wiredoor"
+          ORG="wiredoor"
+
+          echo "Fetching versions..."
+          gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
+            | jq '.[] | select(.metadata.container.tags[]? | test("^build-|^dev-")) | .id' \
+            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
+
+      - name: Delete untagged versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PACKAGE_NAME="wiredoor"
+          ORG="wiredoor"
+          echo "Deleting untagged versions..."
+          gh api -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions \
+            | jq '.[] | select(.metadata.container.tags | length == 0) | .id' \
+            | xargs -r -I{} gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$ORG/packages/container/$PACKAGE_NAME/versions/{} || true
