@@ -46,10 +46,16 @@ export class MetricsService {
   }
 
   private async updateWireguardMetrics(): Promise<void> {
+    const wgInterface = 'wg0';
+
     const records: Node[] = (await this.nodesService.getNodes({
-      wgInterface: '',
+      wgInterface: wgInterface,
     })) as unknown as Node[];
-    const nodes: NodeInfo[] = await this.nodesService.getNodesRuntime(records);
+    const nodes: NodeInfo[] = await this.nodesService.getNodesRuntime(
+      records,
+      wgInterface,
+      false,
+    );
 
     for (const node of nodes) {
       const device = node.wgInterface;

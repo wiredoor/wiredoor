@@ -16,6 +16,7 @@ import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { NodeQueryFilter } from '../repositories/filters/node-query-filter';
 import Net from '../utils/net';
 import { PagedData } from '../repositories/filters/repository-query-filter';
+import { boolean } from 'joi';
 
 @Service()
 export class NodesService {
@@ -50,12 +51,16 @@ export class NodesService {
     return this.nodeFilter.apply(filters);
   }
 
-  public async getNodesRuntime(nodes?: Node[]): Promise<NodeInfo[]> {
+  public async getNodesRuntime(
+    nodes?: Node[],
+    wgInterface?: string,
+    checkPing?: boolean,
+  ): Promise<NodeInfo[]> {
     if (!nodes) {
       nodes = await this.getAll();
     }
 
-    return this.wireguardService.getRuntimeInfo(nodes);
+    return this.wireguardService.getRuntimeInfo(nodes, wgInterface, checkPing);
   }
 
   public async createNode(params: CreateNodeType): Promise<Node> {
