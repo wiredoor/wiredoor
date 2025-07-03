@@ -11,6 +11,7 @@ import { NginxServerConf } from './conf/nginx-server-conf';
 import { SSLManager } from './ssl-manager';
 import { DomainRepository } from '../../repositories/domain-repository';
 import ServerUtils from '../../utils/server';
+import Iptables, { Chain, Target } from '../../utils/iptables';
 
 export class NginxManager {
   static async addDomainServer(
@@ -318,25 +319,26 @@ export class NginxManager {
     service: HttpService | TcpService,
   ): Promise<void> {
     try {
-      // const rule = {
-      //   chain: Chain.OUTPUT,
-      //   outInterface: service.node.wgInterface,
-      //   destination: service.node.address,
-      //   protocol: 'tcp',
-      //   dport: `${service.backendPort}`,
-      //   target: Target.REJECT,
-      //   args: {
-      //     '--reject-with': 'tcp-reset',
-      //   },
-      // };
-      // Iptables.addRule(rule);
-      // Iptables.deleteRule(rule);
+      const rule = {
+        chain: Chain.OUTPUT,
+        outInterface: service.node.wgInterface,
+        destination: service.node.address,
+        protocol: 'tcp',
+        dport: `${service.backendPort}`,
+        target: Target.REJECT,
+        args: {
+          '--reject-with': 'tcp-reset',
+        },
+      };
+      Iptables.addRule(rule);
+      Iptables.deleteRule(rule);
+      // Try to close connection using conntrack
       await CLI.exec(
         `conntrack -D -p tcp --dst ${service.node.address} --dport ${service.backendPort}`,
       );
     } catch {
       console.log(
-        'Warning: Unable to reject active connections using conntrack',
+        'Warning: Unable to reject active connections using conntrack and iptables',
       );
       //
     }
