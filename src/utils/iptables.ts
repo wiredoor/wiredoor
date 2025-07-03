@@ -156,7 +156,7 @@ export default class Iptables {
       this.debugMessage(`Rule doesn't exists`);
       return true;
     }
-    const cmd = this.formatRule(IptablesActions.ADD, rule);
+    const cmd = this.formatRule(IptablesActions.DELETE, rule);
 
     try {
       this.execIptablesCmd(cmd);
