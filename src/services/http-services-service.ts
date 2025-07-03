@@ -15,7 +15,6 @@ import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
-import Iptables, { Chain, Target } from '../utils/iptables';
 
 @Service()
 export class HttpServicesService extends BaseServices {
@@ -183,27 +182,10 @@ export class HttpServicesService extends BaseServices {
   }
 
   async disableService(id: number): Promise<HttpService> {
-    const service = await this.updateHttpService(id, {
+    return this.updateHttpService(id, {
       enabled: false,
       expiresAt: null,
     });
-
-    const rule = {
-      chain: Chain.OUTPUT,
-      outInterface: service.node.wgInterface,
-      destination: service.node.address,
-      protocol: 'tcp',
-      dport: `${service.backendPort}`,
-      target: Target.REJECT,
-      args: {
-        '--reject-with': 'tcp-reset',
-      },
-    };
-
-    Iptables.addRule(rule);
-    Iptables.deleteRule(rule);
-
-    return service;
   }
 
   disableNodeService(id: number, nodeId: number): Promise<HttpService> {

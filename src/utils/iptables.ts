@@ -42,9 +42,9 @@ enum IptablesActions {
   REPLACE = '-R', // Replace rule
 }
 
-type TableStrings = keyof typeof Table;
-type ChainStrings = keyof typeof Chain | string;
-type TargetStrigs = keyof typeof Target;
+type TableStrings = Table;
+type ChainStrings = `${Chain}` | string;
+type TargetStrigs = Target;
 
 export interface IptablesRule {
   table?: TableStrings;
