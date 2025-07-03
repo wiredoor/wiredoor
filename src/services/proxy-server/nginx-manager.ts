@@ -162,20 +162,7 @@ export class NginxManager {
   ): Promise<void> {
     await this.removeLocation(service.domain, service.pathLocation);
 
-    const rule = {
-      chain: Chain.OUTPUT,
-      outInterface: service.node.wgInterface,
-      destination: service.node.address,
-      protocol: 'tcp',
-      dport: `${service.backendPort}`,
-      target: Target.REJECT,
-      args: {
-        '--reject-with': 'tcp-reset',
-      },
-    };
-
-    Iptables.addRule(rule);
-    Iptables.deleteRule(rule);
+    this.resetTCPConnections(service);
 
     if (restart) {
       await this.reloadServer();
@@ -277,20 +264,7 @@ export class NginxManager {
       `/etc/nginx/stream.d/${service.identifier}.conf`,
     );
 
-    const rule = {
-      chain: Chain.OUTPUT,
-      outInterface: service.node.wgInterface,
-      destination: service.node.address,
-      protocol: 'tcp',
-      dport: `${service.backendPort}`,
-      target: Target.REJECT,
-      args: {
-        '--reject-with': 'tcp-reset',
-      },
-    };
-
-    Iptables.addRule(rule);
-    Iptables.deleteRule(rule);
+    this.resetTCPConnections(service);
 
     if (restart) {
       await this.reloadServer();
@@ -339,6 +313,23 @@ export class NginxManager {
 
   static async reloadServer(): Promise<void> {
     await CLI.exec(`nginx -s reload`);
+  }
+
+  private static resetTCPConnections(service: HttpService | TcpService): void {
+    const rule = {
+      chain: Chain.OUTPUT,
+      outInterface: service.node.wgInterface,
+      destination: service.node.address,
+      protocol: 'tcp',
+      dport: `${service.backendPort}`,
+      target: Target.REJECT,
+      args: {
+        '--reject-with': 'tcp-reset',
+      },
+    };
+
+    Iptables.addRule(rule);
+    Iptables.deleteRule(rule);
   }
 
   private static async addDefaultMainLocation(
