@@ -42,9 +42,9 @@ enum IptablesActions {
   REPLACE = '-R', // Replace rule
 }
 
-type TableStrings = keyof typeof Table;
-type ChainStrings = keyof typeof Chain | string;
-type TargetStrigs = keyof typeof Target;
+type TableStrings = Table;
+type ChainStrings = `${Chain}` | string;
+type TargetStrigs = Target;
 
 export interface IptablesRule {
   table?: TableStrings;
@@ -72,7 +72,7 @@ export default class Iptables {
     action: IptablesActions,
     rule: IptablesRule,
   ): string {
-    let cmd = `iptables -t ${rule.table ? rule.table : Table.filter} ${rule.chain} ${action}`;
+    let cmd = `iptables -t ${rule.table ? rule.table : Table.filter} ${action} ${rule.chain}`;
     if (rule.protocol) cmd += ` -p ${rule.protocol}`;
     if (rule.source) cmd += ` -s ${rule.source}`;
     if (rule.destination) cmd += ` -d ${rule.destination}`;
@@ -156,7 +156,7 @@ export default class Iptables {
       this.debugMessage(`Rule doesn't exists`);
       return true;
     }
-    const cmd = this.formatRule(IptablesActions.ADD, rule);
+    const cmd = this.formatRule(IptablesActions.DELETE, rule);
 
     try {
       this.execIptablesCmd(cmd);

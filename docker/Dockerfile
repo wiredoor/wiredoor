@@ -8,7 +8,7 @@ ENV TZ=America/New_York
 
 RUN apk add --update \
   dpkg iptables gawk tzdata \
-  wireguard-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot \
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 COPY docker/resources/crontabs /etc/crontabs/
