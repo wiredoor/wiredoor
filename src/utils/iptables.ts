@@ -72,7 +72,7 @@ export default class Iptables {
     action: IptablesActions,
     rule: IptablesRule,
   ): string {
-    let cmd = `iptables -t ${rule.table ? rule.table : Table.filter} ${rule.chain} ${action}`;
+    let cmd = `iptables -t ${rule.table ? rule.table : Table.filter} ${action} ${rule.chain}`;
     if (rule.protocol) cmd += ` -p ${rule.protocol}`;
     if (rule.source) cmd += ` -s ${rule.source}`;
     if (rule.destination) cmd += ` -d ${rule.destination}`;
