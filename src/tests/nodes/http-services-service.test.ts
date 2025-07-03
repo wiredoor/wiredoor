@@ -306,6 +306,9 @@ describe('HTTP Services Service', () => {
 
       expect(mockCLIExec.mock.calls).toEqual([
         [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
+        [
           expect.stringMatching(
             new RegExp(`certbot.*${update.domain?.replace('.', '\\.')}.*`),
           ),
@@ -333,7 +336,12 @@ describe('HTTP Services Service', () => {
         expect.stringContaining('__main.conf'),
       );
 
-      expect(mockCLIExec.mock.calls).toEqual([['nginx -s reload']]);
+      expect(mockCLIExec.mock.calls).toEqual([
+        [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
+        ['nginx -s reload'],
+      ]);
     });
   });
 
@@ -359,6 +367,9 @@ describe('HTTP Services Service', () => {
       );
 
       expect(mockCLIExec.mock.calls).toEqual([
+        [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);

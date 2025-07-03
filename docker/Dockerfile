@@ -8,7 +8,7 @@ ENV TZ=America/New_York
 
 RUN apk add --update \
   dpkg iptables gawk tzdata \
-  wireguard-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot
 
 COPY docker/resources/crontabs /etc/crontabs/
 COPY docker/resources/nginx /etc/nginx/

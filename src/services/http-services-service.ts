@@ -181,8 +181,11 @@ export class HttpServicesService extends BaseServices {
     return this.updateNodeHttpService(id, nodeId, { enabled: true, expiresAt });
   }
 
-  disableService(id: number): Promise<HttpService> {
-    return this.updateHttpService(id, { enabled: false, expiresAt: null });
+  async disableService(id: number): Promise<HttpService> {
+    return this.updateHttpService(id, {
+      enabled: false,
+      expiresAt: null,
+    });
   }
 
   disableNodeService(id: number, nodeId: number): Promise<HttpService> {

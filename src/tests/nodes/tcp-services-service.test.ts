@@ -368,6 +368,9 @@ describe('TCP Services Service', () => {
       );
 
       expect(mockCLIExec.mock.calls).toEqual([
+        [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
@@ -390,7 +393,14 @@ describe('TCP Services Service', () => {
         expect.stringContaining(`/n${node.id}s${created.id}_stream.conf`),
       );
 
-      expect(mockCLIExec).toHaveBeenCalledWith('nginx -s reload');
+      console.log(mockCLIExec.mock.calls);
+
+      expect(mockCLIExec.mock.calls).toEqual([
+        [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
+        ['nginx -s reload'],
+      ]);
     });
   });
 
@@ -416,6 +426,9 @@ describe('TCP Services Service', () => {
       );
 
       expect(mockCLIExec.mock.calls).toEqual([
+        [
+          `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
+        ],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
