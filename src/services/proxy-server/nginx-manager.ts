@@ -316,20 +316,26 @@ export class NginxManager {
   }
 
   private static resetTCPConnections(service: HttpService | TcpService): void {
-    const rule = {
-      chain: Chain.OUTPUT,
-      outInterface: service.node.wgInterface,
-      destination: service.node.address,
-      protocol: 'tcp',
-      dport: `${service.backendPort}`,
-      target: Target.REJECT,
-      args: {
-        '--reject-with': 'tcp-reset',
-      },
-    };
-
-    Iptables.addRule(rule);
-    Iptables.deleteRule(rule);
+    try {
+      const rule = {
+        chain: Chain.OUTPUT,
+        outInterface: service.node.wgInterface,
+        destination: service.node.address,
+        protocol: 'tcp',
+        dport: `${service.backendPort}`,
+        target: Target.REJECT,
+        args: {
+          '--reject-with': 'tcp-reset',
+        },
+      };
+      Iptables.addRule(rule);
+      Iptables.deleteRule(rule);
+    } catch {
+      console.log(
+        'Warning: Unable to reject active connections using iptables',
+      );
+      //
+    }
   }
 
   private static async addDefaultMainLocation(
