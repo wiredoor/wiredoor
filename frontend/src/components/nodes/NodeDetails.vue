@@ -221,7 +221,7 @@ onUnmounted(async () => {
                       <div class="text-left">Client IP</div>
                     </td>
                     <td class="py-2">
-                      <div class="font-medium text-right text-gray-800">
+                      <div class="font-medium text-right text-gray-800 dark:text-gray-400">
                         {{ node.clientIp || '-' }}
                       </div>
                     </td>
@@ -232,7 +232,7 @@ onUnmounted(async () => {
                       <div class="text-left">Latest Handshake</div>
                     </td>
                     <td class="py-2">
-                      <div class="font-medium text-right text-gray-800">
+                      <div class="font-medium text-right text-gray-800 dark:text-gray-400">
                         {{ getLatestHS(node.latestHandshakeTimestamp) }}
                       </div>
                     </td>
@@ -243,7 +243,7 @@ onUnmounted(async () => {
                       <div class="text-left">Transmitted</div>
                     </td>
                     <td class="py-2">
-                      <div class="font-medium text-right text-gray-800">
+                      <div class="font-medium text-right text-gray-800 dark:text-gray-400">
                         {{ getTraffic(node.transferTx) }}
                       </div>
                     </td>
@@ -254,7 +254,7 @@ onUnmounted(async () => {
                       <div class="text-left">Received</div>
                     </td>
                     <td class="py-2">
-                      <div class="font-medium text-right text-gray-800">
+                      <div class="font-medium text-right text-gray-800 dark:text-gray-400">
                         {{ getTraffic(node.transferRx) }}
                       </div>
                     </td>
@@ -264,7 +264,7 @@ onUnmounted(async () => {
                       <div class="text-left">Send all internet traffic through the VPN</div>
                     </td>
                     <td class="py-2">
-                      <div class="font-medium text-right text-gray-800">
+                      <div class="font-medium text-right text-gray-800 dark:text-gray-400">
                         {{ node.allowInternet ? 'Yes' : 'No' }}
                       </div>
                     </td>
