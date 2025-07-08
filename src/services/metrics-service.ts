@@ -2,9 +2,24 @@ import client from 'prom-client';
 import { Inject, Service } from 'typedi';
 import { NodesService } from './nodes-service';
 import { Node, NodeInfo } from '../database/models/node';
+import FileManager from '../utils/file-manager';
+
+const METRICS_STATE_FILE = '/data/metrics.json';
+
+type PeerTransferState = {
+  rxTotal: number;
+  txTotal: number;
+  lastRx: number;
+  lastTx: number;
+};
+
+type MetricsState = {
+  [publicKey: string]: PeerTransferState;
+};
 
 @Service()
 export class MetricsService {
+  private state: MetricsState = {};
   private readonly registry = new client.Registry();
 
   private readonly nodeInfo = new client.Gauge({
@@ -38,6 +53,32 @@ export class MetricsService {
     this.registry.registerMetric(this.rx);
     this.registry.registerMetric(this.tx);
     // client.collectDefaultMetrics({ register: this.registry });
+
+    this.loadStateFromDisk();
+  }
+
+  private loadStateFromDisk(): void {
+    try {
+      if (FileManager.isPath(METRICS_STATE_FILE)) {
+        this.state = JSON.parse(
+          FileManager.readFileSync(METRICS_STATE_FILE, 'utf-8'),
+        );
+      }
+    } catch (err) {
+      console.warn('Error loading metrics state:', err);
+    }
+  }
+
+  private saveStateToDisk(): void {
+    try {
+      FileManager.saveToFile(
+        METRICS_STATE_FILE,
+        JSON.stringify(this.state),
+        'utf-8',
+      );
+    } catch (err) {
+      console.error('Error saving metrics state:', err);
+    }
   }
 
   public async getMetrics(): Promise<string> {
@@ -58,10 +99,36 @@ export class MetricsService {
     );
 
     for (const node of nodes) {
+      const identifier = `node${node.id}`;
       const device = node.wgInterface;
       const public_key = node.name;
       const endpoint = node.clientIp ?? '';
       const allowed_ips = node.address;
+      const currentRx = node.transferRx ?? 0;
+      const currentTx = node.transferTx ?? 0;
+
+      const state = this.state[identifier] ?? {
+        rxTotal: 0,
+        txTotal: 0,
+        lastRx: currentRx,
+        lastTx: currentTx,
+      };
+
+      if (currentRx >= state.lastRx) {
+        state.rxTotal += currentRx - state.lastRx;
+      } else {
+        state.rxTotal += currentRx;
+      }
+
+      if (currentTx >= state.lastTx) {
+        state.txTotal += currentTx - state.lastTx;
+      } else {
+        state.txTotal += currentTx;
+      }
+
+      state.lastRx = currentRx;
+      state.lastTx = currentTx;
+      this.state[identifier] = state;
 
       this.nodeInfo.set({ device, public_key, endpoint, allowed_ips }, 1);
 
@@ -72,13 +139,11 @@ export class MetricsService {
         );
       }
 
-      if (typeof node.transferRx === 'number') {
-        this.rx.set({ device, public_key }, node.transferRx);
-      }
+      this.rx.set({ device, public_key }, state.rxTotal);
 
-      if (typeof node.transferTx === 'number') {
-        this.tx.set({ device, public_key }, node.transferTx);
-      }
+      this.tx.set({ device, public_key }, state.txTotal);
     }
+
+    this.saveStateToDisk();
   }
 }
