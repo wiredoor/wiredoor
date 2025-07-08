@@ -24,7 +24,7 @@ const { isOpen, closeDialog, service } = useServiceInfo()
 
       <div class="flex justify-between items-center mt-5">
         <strong>Backend:</strong>
-        <span class="text-gray-700">{{ (service as HttpService).backendProto || (service as TcpService).proto }}://{{ service.backendHost || 'localhost' }}:{{ service.backendPort }}</span>
+        <span class="text-gray-700 dark:text-gray-500">{{ (service as HttpService).backendProto || (service as TcpService).proto }}://{{ service.backendHost || 'localhost' }}:{{ service.backendPort }}</span>
       </div>
 
       <div v-if="service.allowedIps" class="flex justify-between items-center mt-5">
