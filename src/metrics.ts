@@ -13,7 +13,7 @@ export async function loadApp(): Promise<express.Application> {
 
   app.get('/', (req, res) => {
     res.set('Content-Type', 'text/plain');
-    res.send('WireGuard Metrics Server');
+    res.send('Wiredoor Metrics Server');
   });
 
   app.get('/metrics', async (req, res) => {
