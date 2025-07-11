@@ -18,6 +18,24 @@ This guide outlines how Wiredoor keeps your services secure and what practices y
 - ✅ **TLS/SSL termination** using Let's Encrypt or self-signed certs
 - ✅ **Access restriction** via CIDR/IP filters
 - ✅ **No cloud vendor lock-in** — fully self-hosted and auditable
+- ✅ **Crowdsec Integration** to block malicious IPs
+
+---
+
+## Threat Detection and Firewalling with CrowdSec
+
+Wiredoor supports integration with CrowdSec, a collaborative intrusion prevention system that detects malicious behavior in real time based on log analysis.
+
+When enabled, CrowdSec can:
+
+- Detect abusive IPs by analyzing access logs from Wiredoor’s NGINX gateway
+- Automatically block malicious traffic using the **CrowdSec firewall bouncer** at host level
+- Enrich your security posture with community-sourced threat intelligence
+
+<Callout type="info" emoji="🛡️">
+  For a full setup guide, see: 
+  [How to block malicious IPs in Wiredoor using CrowdSec](https://www.wiredoor.net/guides/how-to-block-malicious-ip-in-wiredoor-using-crowdsec-firewall-bouncer)
+</Callout>
 
 ---
 
@@ -117,5 +135,6 @@ networkPolicy:
 
 ## Summary
 
-Wiredoor gives you full control over service exposure without compromising on security. Combined with best practices and careful node management, 
-it offers a strong, flexible, and private alternative to commercial ingress or tunneling platforms.
+Wiredoor gives you full control over service exposure without compromising on security. 
+Combined with best practices, firewall-level threat detection, and careful node management, it offers a strong, 
+flexible, and private alternative to commercial ingress or tunneling platforms.
