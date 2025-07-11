@@ -173,6 +173,7 @@ class WireguardService {
   async getRuntimeInfo(
     nodes: Node[],
     wgInterface = 'wg0',
+    checkPing: boolean = true,
   ): Promise<NodeInfo[]> {
     try {
       const info = await WGCli.dumpRunTimeInfo(wgInterface);
@@ -183,7 +184,9 @@ class WireguardService {
 
         const nodeInfo = info?.filter((i) => i.publicKey === n.publicKey)[0];
 
-        const status = this.getTunnelStatus(n, nodeInfo);
+        const status = checkPing
+          ? this.getTunnelStatus(n, nodeInfo)
+          : undefined;
 
         return {
           ...nodeProperties,

@@ -50,12 +50,16 @@ export class NodesService {
     return this.nodeFilter.apply(filters);
   }
 
-  public async getNodesRuntime(nodes?: Node[]): Promise<NodeInfo[]> {
+  public async getNodesRuntime(
+    nodes?: Node[],
+    wgInterface?: string,
+    checkPing?: boolean,
+  ): Promise<NodeInfo[]> {
     if (!nodes) {
       nodes = await this.getAll();
     }
 
-    return this.wireguardService.getRuntimeInfo(nodes);
+    return this.wireguardService.getRuntimeInfo(nodes, wgInterface, checkPing);
   }
 
   public async createNode(params: CreateNodeType): Promise<Node> {
