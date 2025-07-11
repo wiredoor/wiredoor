@@ -173,7 +173,6 @@ export default class Iptables {
     try {
       execSync(cmd, { stdio: 'ignore' });
     } catch (e) {
-      console.log('Error calling iptables');
       console.error(e);
       throw e;
     }
