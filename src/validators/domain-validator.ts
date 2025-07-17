@@ -56,7 +56,7 @@ export const domainValidator: ObjectSchema<DomainType> = Joi.object({
       is: true,
       then: Joi.string().domain().required(),
       otherwise: Joi.string()
-        .domain()
+        .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
         .external(nslookupResolvesServerIp)
         .required(),
     }),
