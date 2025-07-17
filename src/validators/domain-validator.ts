@@ -50,16 +50,16 @@ export const domainFilterValidator: ObjectSchema<DomainFilterQueryParams> =
   });
 
 export const domainValidator: ObjectSchema<DomainType> = Joi.object({
-  domain: Joi.string()
-    .domain()
-    .when('skipValidation', {
-      is: true,
-      then: Joi.string().domain().required(),
-      otherwise: Joi.string()
-        .domain()
-        .external(nslookupResolvesServerIp)
-        .required(),
-    }),
+  domain: Joi.string().when('skipValidation', {
+    is: true,
+    then: Joi.string()
+      .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
+      .required(),
+    otherwise: Joi.string()
+      .domain()
+      .external(nslookupResolvesServerIp)
+      .required(),
+  }),
   ssl: Joi.string().when('skipValidation', {
     is: true,
     then: Joi.valid('self-signed').allow(null).optional(),

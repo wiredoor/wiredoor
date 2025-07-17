@@ -2,7 +2,8 @@
   "name": "Wiredoor Dev Container",
   "build": {
     "dockerfile": "../docker/Dockerfile",
-    "target": "dev-container"
+    "target": "dev-container",
+    "context": "../"
   },
   "overrideCommand": false,
   "workspaceFolder": "/app",
