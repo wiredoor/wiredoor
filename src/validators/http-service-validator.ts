@@ -51,14 +51,16 @@ export const httpServiceFilterValidator: ObjectSchema<HttpServiceFilterQueryPara
       .pattern(/,(asc|desc)$/)
       .optional(),
     nodeId: Joi.number().optional(),
-    domain: Joi.string().domain().optional(),
+    domain: Joi.string()
+      .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
+      .optional(),
   });
 
 export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({
   id: Joi.number().optional(),
   name: Joi.string().required(),
   domain: Joi.string()
-    .domain()
+    .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
     .allow(null, '')
     .external(validateServiceDomain)
     .optional(),
