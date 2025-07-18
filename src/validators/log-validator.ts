@@ -11,7 +11,9 @@ export interface LogStreamQueryParams extends LogQueryParams {
 }
 
 export const logParamsValidator = Joi.object({
-  domain: Joi.string().domain().optional(),
+  domain: Joi.string()
+    .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
+    .optional(),
   token: Joi.string().optional(),
   type: Joi.string().allow('tcp', 'http').optional(),
   id: Joi.string().optional(),
