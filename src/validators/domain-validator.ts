@@ -52,7 +52,12 @@ export const domainFilterValidator: ObjectSchema<DomainFilterQueryParams> =
 export const domainValidator: ObjectSchema<DomainType> = Joi.object({
   domain: Joi.string().when('skipValidation', {
     is: true,
-    then: Joi.string().domain().required(),
+    then: Joi.string()
+      .pattern(
+        new RegExp(`^([a-zA-Z0-9-]+\\.)+([a-zA-Z]{2,})$`),
+        'domain structure',
+      )
+      .required(),
     otherwise: Joi.string()
       .domain()
       .external(nslookupResolvesServerIp)

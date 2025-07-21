@@ -16,7 +16,9 @@ export interface Domain extends DomainForm {
 }
 
 export const domainValidator: ObjectSchema<DomainForm> = Joi.object({
-  domain: Joi.string().domain().required(),
+  domain: Joi.string()
+    .pattern(new RegExp(`^([a-zA-Z0-9-]+\\.)+([a-zA-Z]{2,})$`), 'domain structure')
+    .required(),
   ssl: Joi.string().when('validation', {
     is: false,
     then: Joi.valid('self-signed').allow(null).optional(),

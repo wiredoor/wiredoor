@@ -1,4 +1,4 @@
-import { ObjectSchema } from 'joi';
+import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
 import { nslookupResolvesServerIp } from './domain-validator';
@@ -10,6 +10,21 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
 
   if (domain) {
     return c;
+  }
+
+  const { error } = Joi.string().domain().validate(c);
+  if (error) {
+    throw new ValidationError(
+      `invalid domain`,
+      [
+        {
+          path: ['domain'],
+          message: `This field must contain a valid domain name`,
+          type: 'Error',
+        },
+      ],
+      null,
+    );
   }
 
   return nslookupResolvesServerIp(c);
@@ -58,7 +73,6 @@ export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({
   id: Joi.number().optional(),
   name: Joi.string().required(),
   domain: Joi.string()
-    .domain()
     .allow(null, '')
     .external(validateServiceDomain)
     .optional(),
