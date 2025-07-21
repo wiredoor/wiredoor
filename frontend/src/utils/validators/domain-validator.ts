@@ -16,9 +16,7 @@ export interface Domain extends DomainForm {
 }
 
 export const domainValidator: ObjectSchema<DomainForm> = Joi.object({
-  domain: Joi.string()
-    .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
-    .required(),
+  domain: Joi.string().domain().required(),
   ssl: Joi.string().when('validation', {
     is: false,
     then: Joi.valid('self-signed').allow(null).optional(),

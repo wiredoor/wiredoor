@@ -35,16 +35,14 @@ export const tcpServiceFilterValidator: ObjectSchema<TcpServiceFilterQueryParams
       .pattern(/,(asc|desc)$/)
       .optional(),
     nodeId: Joi.number().optional(),
-    domain: Joi.string()
-      .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
-      .optional(),
+    domain: Joi.string().domain().optional(),
   });
 
 export const tcpServiceValidator: ObjectSchema<TcpServiceType> = Joi.object({
   id: Joi.number().optional(),
   name: Joi.string().required(),
   domain: Joi.string()
-    .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
+    .domain()
     .allow(null, '')
     .external(validateServiceDomain)
     .optional(),

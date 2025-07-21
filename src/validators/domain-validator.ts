@@ -52,9 +52,7 @@ export const domainFilterValidator: ObjectSchema<DomainFilterQueryParams> =
 export const domainValidator: ObjectSchema<DomainType> = Joi.object({
   domain: Joi.string().when('skipValidation', {
     is: true,
-    then: Joi.string()
-      .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
-      .required(),
+    then: Joi.string().domain().required(),
     otherwise: Joi.string()
       .domain()
       .external(nslookupResolvesServerIp)
