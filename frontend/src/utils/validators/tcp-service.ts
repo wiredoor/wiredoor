@@ -32,7 +32,7 @@ export interface TcpServiceForm {
 export const tcpServiceValidator: ObjectSchema<TcpServiceForm> = Joi.object({
   name: Joi.string().required(),
   domain: Joi.string()
-    .domain({ tlds: { allow: ['local', 'test', 'lan', 'internal'] } })
+    .domain()
     .allow(null, '')
     .optional(),
   proto: Joi.string().valid('tcp', 'udp').allow(null).optional(),
