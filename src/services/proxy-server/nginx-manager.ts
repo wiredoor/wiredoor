@@ -40,6 +40,7 @@ export class NginxManager {
         .addBlock('proxy_set_header X-Real-IP', '$remote_addr');
 
       const oauth2LocationConf = oauth2conf
+        .clone()
         .addBlock('proxy_set_header X-Auth-Request-Redirect', '$request_uri')
         .addBlock('proxy_set_header Content-Length', '""')
         .addBlock('proxy_pass_request_body', 'off');
@@ -52,6 +53,7 @@ export class NginxManager {
       );
 
       const oauth2CallbackLocation = oauth2conf
+        .clone()
         .addBlock('proxy_pass_request_headers', 'on')
         .addBlock('error_page 403', '= @logout_and_retry');
 
