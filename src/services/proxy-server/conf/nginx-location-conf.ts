@@ -91,4 +91,8 @@ export class NginxLocationConf extends NginxConf {
 
     return nginxConf.getNginxConf();
   }
+
+  public clone(): NginxLocationConf {
+    return new NginxLocationConf(this.config);
+  }
 }
