@@ -53,9 +53,13 @@ export class NginxManager {
         oauth2LocationConf.getConf(),
       );
 
-      const oauth2CallbackLocation = oauth2conf.clone();
+      const oauth2CallbackLocation = new NginxLocationConf();
 
       oauth2CallbackLocation
+        .addBlock('proxy_pass', `http://127.0.0.1:${domain.oauth2ServicePort}`)
+        .addBlock('proxy_set_header Host', '$host')
+        .addBlock('proxy_set_header X-Forwarded-Host', '$host')
+        .addBlock('proxy_set_header X-Real-IP', '$remote_addr')
         .addBlock('proxy_pass_request_headers', 'on')
         .addBlock('error_page 403', '= @logout_and_retry');
 
