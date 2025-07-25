@@ -52,7 +52,7 @@ export class ProcessManager {
         .split('\n')
         .map((line) => line.trim())
         .filter(Boolean)
-        .map((line) => `--skip-auth-route ${line}`)
+        .map((line) => `--skip-auth-route=${line}`)
         .join(' ');
     }
 
