@@ -114,6 +114,7 @@ export class HttpServicesService extends BaseServices {
         domain: params.domain,
         allowedIps: params.allowedIps,
         blockedIps: params.blockedIps,
+        requireAuth: params.requireAuth,
       };
     }
 

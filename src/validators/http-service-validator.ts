@@ -45,6 +45,7 @@ export interface HttpServiceType {
   backendProto?: string;
   allowedIps?: string[];
   blockedIps?: string[];
+  requireAuth?: boolean;
   enabled?: boolean;
   ttl?: string;
   expiresAt?: Date;
