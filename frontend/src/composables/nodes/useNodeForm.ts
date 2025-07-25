@@ -17,7 +17,7 @@ const {
   validate,
 } = useFormModal<NodeForm>(nodeValidator)
 
-export function useNodeForm () {
+export function useNodeForm() {
   const { toast } = useToast()
   const { openNodeInfo } = useNodeInfo()
 
@@ -46,5 +46,15 @@ export function useNodeForm () {
     })
   }
 
-  return { isOpen, formData, options, errors, closeDialog, submitDialog, validateField, validate, openNodeForm }
+  return {
+    isOpen,
+    formData,
+    options,
+    errors,
+    closeDialog,
+    submitDialog,
+    validateField,
+    validate,
+    openNodeForm,
+  }
 }

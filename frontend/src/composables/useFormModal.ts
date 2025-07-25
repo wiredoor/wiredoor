@@ -61,28 +61,37 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
     }
   }
 
-  const validate = (fields?: string) => {
-    const { error } = schema.validate(formData.value, { abortEarly: false })
+  const validate = async (fields?: string): Promise<boolean> => {
+    try {
+      await schema.validateAsync(formData.value, { abortEarly: false })
 
-    if (!fields) {
-      errors.value = {}
-    } else {
-      fields.split(',').forEach((f) => deleteFieldError(f))
-    }
+      if (!fields) {
+        errors.value = {}
+      } else {
+        fields.split(',').forEach((f) => deleteFieldError(f))
+      }
 
-    if (error) {
-      error.details.forEach((detail) => {
-        if (fields) {
-          if (fields.split(',').includes(detail.path[0] as string)) {
-            setFieldError(detail.path[0], detail.message)
+      return true
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      if (!fields) {
+        errors.value = {}
+      } else {
+        fields.split(',').forEach((f) => deleteFieldError(f))
+      }
+
+      if (error.isJoi && error.details) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error.details.forEach((detail: any) => {
+          const field = detail.path[0]
+          if (!fields || fields.split(',').includes(field)) {
+            setFieldError(field, detail.message)
           }
-        } else {
-          setFieldError(detail.path[0], detail.message)
-        }
-      })
-    }
+        })
+      }
 
-    return !error
+      return false
+    }
   }
 
   const closeDialog = (): void => {
@@ -92,7 +101,8 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
   }
 
   const submitDialog = async (): Promise<void> => {
-    if (validate()) {
+    const isValid = await validate()
+    if (isValid) {
       let method: 'post' | 'patch' = 'post'
       let endpoint: string | undefined = options.value?.endpoint
       if (options.value?.id) {
