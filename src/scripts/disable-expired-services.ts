@@ -7,6 +7,7 @@ import { TcpServicesService } from '../services/tcp-services-service';
 import { LessThan } from 'typeorm';
 import { HttpService } from '../database/models/http-service';
 import { TcpService } from '../database/models/tcp-service';
+import { logger } from '../providers/logger';
 
 (async (): Promise<void> => {
   await db();
@@ -51,17 +52,17 @@ async function disableExpiringServices(
     if (service.expiresAt > new Date()) {
       const timeout =
         new Date(service.expiresAt).getTime() - new Date().getTime();
-      console.log(
+      logger.info(
         `Service ${service.name} with ID: ${service.id} will be disabled within ${timeout}ms`,
       );
       setTimeout(async () => {
         try {
           await callback(service.id);
-          console.log(
+          logger.info(
             `Service with expiresAt ${service.expiresAt} ID: ${service.id} disabled at ${new Date()}`,
           );
         } catch (e) {
-          console.error(e);
+          logger.error(e);
         }
       }, timeout);
     } else {

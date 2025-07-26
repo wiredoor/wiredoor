@@ -49,12 +49,6 @@ export class Domain {
   })
   skipValidation: boolean;
 
-  @Column({
-    type: 'text',
-    nullable: true,
-  })
-  skipAuthRoutes: string;
-
   @Exclude()
   @Column({
     nullable: true,

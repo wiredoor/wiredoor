@@ -9,6 +9,7 @@ import { Button } from '../ui/button'
 import { useHttpServiceForm } from '@/composables/services/useHttpServiceForm'
 import { computed } from 'vue'
 import CheckboxField from '../ui/form/CheckboxField.vue'
+import TextareaField from '../ui/form/TextareaField.vue'
 
 const {
   isOpen,
@@ -241,6 +242,28 @@ const authAvailable = computed(() => {
             :message="!authAvailable && formData.domain ? '⚠️ Authentication is not enabled for this domain' : undefined"
             :disabled="!authAvailable"
           />
+        </div>
+        <div v-if="formData.requireAuth">
+          <TextareaField
+            v-model="formData.skipAuthRoutes"
+            field="skipAuthRoutes"
+            label="Paths to bypass authentication (optional)"
+            description="Enter one line per path to bypass authentication."
+            :rows="3"
+            :errors="errors"
+            :spellcheck="false"
+          >
+            <template #tooltip>
+              <div class="text-sm">
+                <p>Enter one line per path to bypass authentication.</p>
+                <p>Use <span class="code-block-inline">^</span> to define a regular expression.</p>
+                <p>Example:</p>
+                <div><span class="code-block-inline">/api/ping</span> → exact path</div>
+                <div><span class="code-block-inline">^/api/ping/.*</span> → regex</div>
+                <div>Avoid special shell characters.</div>
+              </div>
+            </template>
+          </TextareaField>
         </div>
       </div>
     </div>

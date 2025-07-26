@@ -7,7 +7,6 @@ import CheckboxField from '../ui/form/CheckboxField.vue'
 import { useDomainForm } from '@/composables/domains/useDomainForm'
 import FormField from '../ui/form/FormField.vue'
 import { Button } from '../ui/button'
-import TextareaField from '../ui/form/TextareaField.vue'
 
 
 const { isOpen, formData, errors, options, closeDialog, submitDialog, validateField } =
@@ -126,16 +125,6 @@ const sslOptions = [
               >Add Email</Button
             >
           </FormField>
-          <TextareaField
-            v-model="formData.skipAuthRoutes"
-            field="skipAuthRoutes"
-            description="Define one regex path per line (optionally with method) to skip auth. Example: `GET=^/status$`, `!=^/admin`, `^/api/webhooks/.*`"
-            label="Paths to bypass authentication (optional)"
-            :rows="3"
-            :errors="errors"
-            :spellcheck="false"
-          >
-          </TextareaField>
         </div>
       </div>
     </div>

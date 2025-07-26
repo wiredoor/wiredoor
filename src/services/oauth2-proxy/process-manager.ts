@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import config from '../../config';
 import CLI from '../../utils/cli';
 import FileManager from '../../utils/file-manager';
+import { logger } from '../../providers/logger';
 
 const getGeneratedKey = (domain: string): string => {
   const dir = `/data/oauth2`;
@@ -18,7 +19,7 @@ const getGeneratedKey = (domain: string): string => {
     FileManager.saveToFile(filePath, newKey, 'utf-8', 0o600);
     return newKey;
   } catch (error) {
-    console.error('Error loading or generating JWT key:', error);
+    logger.error(error, 'Error loading or generating JWT key:');
     throw error;
   }
 };
@@ -43,21 +44,8 @@ export class ProcessManager {
       );
     }
 
-    console.log(domain);
-
-    let skipAuthRouteFlags = '';
-
-    if (domain.skipAuthRoutes) {
-      skipAuthRouteFlags = domain.skipAuthRoutes
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => `--skip-auth-route=${line}`)
-        .join(' ');
-    }
-
     const processFile = `[program:oauth2-proxy-d${domain.id}]
-command=sh -c 'source /etc/environment && /usr/bin/oauth2-proxy --skip-provider-button=true --cookie-csrf-per-request=true --cookie-samesite=lax ${skipAuthRouteFlags}'
+command=sh -c 'source /etc/environment && /usr/bin/oauth2-proxy --skip-provider-button=true --cookie-csrf-per-request=true --cookie-samesite=lax'
 environment=
   OAUTH2_PROXY_HTTP_ADDRESS="127.0.0.1:${domain.oauth2ServicePort}",
   OAUTH2_PROXY_COOKIE_DOMAINS="${domain.domain}",

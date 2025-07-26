@@ -5,7 +5,6 @@ import {
   Oauth2ProxyConfig,
   SSLTermination,
 } from '../database/models/domain';
-import { NginxManager } from './proxy-server/nginx-manager';
 import { DomainQueryFilter } from '../repositories/filters/domain-query-filter';
 import {
   DomainFilterQueryParams,
@@ -19,13 +18,18 @@ import { ValidationError } from '../utils/errors/validation-error';
 import { ProcessManager } from './oauth2-proxy/process-manager';
 import config from '../config';
 import { HttpServicesService } from './http-services-service';
+import { NginxDomainService } from './proxy-server/nginx-domain-service';
 
 @Service()
 export class DomainsService {
+  private nginxDomainService: NginxDomainService;
+
   constructor(
     @Inject() private readonly domainRepository: DomainRepository,
     @Inject() private readonly domainFilter: DomainQueryFilter,
-  ) {}
+  ) {
+    this.nginxDomainService = new NginxDomainService();
+  }
 
   public async initialize(): Promise<void> {
     const domains = await this.domainRepository.find();
@@ -178,7 +182,7 @@ export class DomainsService {
       await ProcessManager.removeOauthProcess(domain);
     }
 
-    await NginxManager.removeDomainServerConfig(domain);
+    await this.nginxDomainService.remove(domain);
 
     await this.domainRepository.delete(id);
 
@@ -202,7 +206,7 @@ export class DomainsService {
       await ProcessManager.addOauthProcess(domain, restart);
     }
 
-    await NginxManager.addDomainServer(domain, restart);
+    await this.nginxDomainService.create(domain, restart);
   }
 
   private checkAuthConfig(): void {

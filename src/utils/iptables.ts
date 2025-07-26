@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { logger } from '../providers/logger';
 
 export enum Table {
   filter = 'filter',
@@ -103,7 +104,7 @@ export default class Iptables {
       const output = execSync(`iptables -t ${table} -S`).toString();
       return output.trim().split('\n');
     } catch (error) {
-      console.error('Error al listar las reglas:', error);
+      logger.error('Error listing rules:', error);
       return [];
     }
   }
@@ -133,7 +134,7 @@ export default class Iptables {
       this.debugMessage(`Rule added: ${JSON.stringify(rule, null, 2)}`);
       return true;
     } catch (error) {
-      console.error('Error adding rule:', error);
+      logger.error('Error adding rule:', error);
       return false;
     }
   }
@@ -163,7 +164,7 @@ export default class Iptables {
       this.debugMessage(`Rule deleted: ${JSON.stringify(rule, null, 2)}`);
       return true;
     } catch (error) {
-      console.error('Error deleting rule:', error);
+      logger.error('Error deleting rule:', error);
       return false;
     }
   }
@@ -173,7 +174,7 @@ export default class Iptables {
     try {
       execSync(cmd, { stdio: 'ignore' });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       throw e;
     }
   }
@@ -182,7 +183,7 @@ export default class Iptables {
     const debug = true;
 
     if (debug) {
-      console.log(m);
+      logger.debug(m);
     }
   }
 }
