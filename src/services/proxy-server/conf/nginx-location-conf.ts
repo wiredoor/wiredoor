@@ -5,6 +5,12 @@ export class NginxLocationConf extends NginxConf {
     super(config);
   }
 
+  includeCommonProxySettings(): NginxLocationConf {
+    this.addBlock('include', 'partials/proxy.conf');
+
+    return this;
+  }
+
   setAuthRequired(): NginxLocationConf {
     this.addBlock('include', 'partials/require_oauth2.conf');
 
@@ -57,7 +63,6 @@ export class NginxLocationConf extends NginxConf {
 
   setProxyPass(streamOrEndpoint: string): NginxLocationConf {
     this.addBlock('proxy_pass', streamOrEndpoint);
-    this.addBlock('include', 'partials/proxy.conf');
 
     return this;
   }

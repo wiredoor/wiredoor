@@ -7,10 +7,18 @@ import IP_CIDR from '../../utils/ip-cidr';
 import { NginxConf } from './conf/nginx-conf';
 import { logger } from '../../providers/logger';
 
+type LocationType = 'exact' | 'regex';
+
 const isValidLocationSyntax = (route: string): boolean => {
   if (route.startsWith('@')) return false;
-  if (!route.startsWith('/') && !route.startsWith('~')) return false;
+  if (!route.startsWith('/') && !route.startsWith('^')) return false;
   return true;
+};
+
+const parseLocationType = (line: string): LocationType | null => {
+  if (line.startsWith('^')) return 'regex';
+  if (line.startsWith('/')) return 'exact';
+  return null;
 };
 
 export class NginxHttpService extends NginxService {
@@ -79,6 +87,7 @@ export class NginxHttpService extends NginxService {
 
     baseLocation
       .setNetworkAccess(service.allowedIps)
+      .includeCommonProxySettings()
       .setClientMaxBodySize('100m')
       .addBlock(`set $${service.identifier}`, host)
       .setProxyPass(
@@ -100,9 +109,16 @@ export class NginxHttpService extends NginxService {
         .filter((line) => !!line && isValidLocationSyntax(line));
 
       for (const route of lines) {
+        const type = parseLocationType(route);
+        if (!type) continue;
+
         const cleanLocation = baseLocation.clone().removeAuth();
 
-        nginxConf.addLocation(route, cleanLocation);
+        if (type === 'regex') {
+          nginxConf.addLocation(`~ ${route}`, cleanLocation);
+        } else if (type === 'exact') {
+          nginxConf.addLocation(`= ${route}`, cleanLocation);
+        }
       }
     }
 

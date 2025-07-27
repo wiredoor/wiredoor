@@ -38,7 +38,7 @@ const validateBypassPaths = (input: string): string => {
     .map((line) => line.trim())
     .filter(Boolean);
 
-  const forbiddenChars = new RegExp(`["'\`;&<>\\]|[\\x00-\\x1F]`);
+  const forbiddenChars = new RegExp(`["'\`;&<>\\\\]|[\\x00-\\x1F]`);
 
   for (const [i, line] of lines.entries()) {
     const lineNum = i + 1;
@@ -182,7 +182,7 @@ export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({
     .allow(null)
     .optional(),
   requireAuth: Joi.boolean().when('domain', {
-    is: Joi.string().domain(),
+    is: Joi.string(),
     then: Joi.boolean().allow(null).optional(),
     otherwise: Joi.boolean().valid(false).allow(null).optional(),
   }),
