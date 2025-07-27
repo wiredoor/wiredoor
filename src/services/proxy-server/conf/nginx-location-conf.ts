@@ -44,8 +44,8 @@ export class NginxLocationConf extends NginxConf {
         return false;
       if (key.startsWith('auth_request_set')) return false;
       if (
-        key === 'proxy_set_header' &&
-        ['X-User', 'X-Email', 'X-Access-Token'].includes(value.split(' ')[0])
+        key.split(' ')[0] === 'proxy_set_header' &&
+        ['X-User', 'X-Email', 'X-Access-Token'].includes(key.split(' ')[1])
       )
         return false;
       return true;
