@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import path from 'path';
+import http from 'http';
 import express from 'express';
 import providers from './providers';
 import config from './config';
@@ -7,6 +8,8 @@ import FileManager from './utils/file-manager';
 import { startPing, stopPing } from './providers/node-monitor';
 import rateLimit from 'express-rate-limit';
 import { logger } from './providers/logger';
+
+let server: http.Server | null = null;
 
 export async function loadApp(): Promise<express.Application> {
   const app = express();
@@ -48,7 +51,7 @@ export async function loadApp(): Promise<express.Application> {
   });
 
   if (process.env.NODE_ENV !== 'test') {
-    app.listen(config.app.port, () => {
+    server = app.listen(config.app.port, () => {
       logger.info(`${config.app.name} listening on port: ${config.app.port}`);
     });
 
@@ -60,6 +63,14 @@ export async function loadApp(): Promise<express.Application> {
 
 async function shutDownApp(): Promise<void> {
   // await Container.get<DataSource>('dataSource').destroy();
+  if (server) {
+    await new Promise<void>((resolve, reject) => {
+      server!.close((err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
+  }
   stopPing();
 }
 

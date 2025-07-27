@@ -273,7 +273,12 @@ class WireguardService {
 
   private async startWireguard(wgInterface = 'wg0'): Promise<void> {
     try {
-      await WGCli.quickUp(wgInterface);
+      const isLink = await WGCli.isLink(wgInterface);
+      if (isLink) {
+        await WGCli.syncConf(wgInterface);
+      } else {
+        await WGCli.quickUp(wgInterface);
+      }
     } catch (e) {
       logger.error(e);
       throw e;
