@@ -9,15 +9,18 @@ import {
   HttpServiceType,
 } from '../validators/http-service-validator';
 import { HttpServiceQueryFilter } from '../repositories/filters/http-service-query-filter';
-import { NginxManager } from './proxy-server/nginx-manager';
 import { DomainsService } from './domains-service';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
+import { NginxHttpService } from './proxy-server/nginx-http-service';
+import { logger } from '../providers/logger';
 
 @Service()
 export class HttpServicesService extends BaseServices {
+  private nginxHttpService: NginxHttpService;
+
   constructor(
     @Inject() private readonly httpServiceRepository: HttpServiceRepository,
     @Inject() private readonly httpServiceFilter: HttpServiceQueryFilter,
@@ -25,6 +28,7 @@ export class HttpServicesService extends BaseServices {
     @Inject() private readonly domainService: DomainsService,
   ) {
     super(nodeRepository);
+    this.nginxHttpService = new NginxHttpService();
   }
 
   public async initialize(): Promise<void> {
@@ -114,6 +118,7 @@ export class HttpServicesService extends BaseServices {
         domain: params.domain,
         allowedIps: params.allowedIps,
         blockedIps: params.blockedIps,
+        requireAuth: params.requireAuth,
       };
     }
 
@@ -126,7 +131,7 @@ export class HttpServicesService extends BaseServices {
       );
     }
 
-    await NginxManager.removeHttpService(old, false);
+    await this.nginxHttpService.remove(old, false);
 
     await this.httpServiceRepository.save({
       id,
@@ -202,7 +207,7 @@ export class HttpServicesService extends BaseServices {
       throw new BadRequestError(`Wiredoor APP can't be deleted`);
     }
 
-    await NginxManager.removeHttpService(httpService);
+    await this.nginxHttpService.remove(httpService);
 
     await this.httpServiceRepository.delete(id);
 
@@ -242,7 +247,7 @@ export class HttpServicesService extends BaseServices {
       }
       return;
     } catch (e) {
-      console.error(e);
+      logger.warn(e, `Ping to HTTP Service Backend Failed`);
       throw new BadRequestError('Request to backend failed.');
     }
   }
@@ -255,6 +260,6 @@ export class HttpServicesService extends BaseServices {
       await this.domainService.createDomainIfNotExists(httpService.domain);
     }
 
-    await NginxManager.addHttpService(httpService, restart);
+    await this.nginxHttpService.create(httpService, restart);
   }
 }

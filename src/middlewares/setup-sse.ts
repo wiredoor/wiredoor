@@ -1,6 +1,7 @@
 import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { Service } from 'typedi';
 import { NextFunction, Request, Response } from 'express';
+import { logger } from '../providers/logger';
 
 export interface ResponseSSE extends Response {
   sendDataAsStream(data: unknown): void;
@@ -39,7 +40,7 @@ export class SetupSSE implements ExpressMiddlewareInterface {
 
         res.write(payload);
       } catch (e) {
-        console.error('Error sending event stream', e);
+        logger.error('Error sending event stream', e);
       }
     };
 

@@ -9,6 +9,7 @@ import { Button } from '../ui/button'
 import { useHttpServiceForm } from '@/composables/services/useHttpServiceForm'
 import { computed } from 'vue'
 import CheckboxField from '../ui/form/CheckboxField.vue'
+import TextareaField from '../ui/form/TextareaField.vue'
 
 const {
   isOpen,
@@ -23,7 +24,10 @@ const {
 } = useHttpServiceForm()
 
 const authAvailable = computed(() => {
-  if (formData.value.domain && domainOptions.value.filter((d) => d.value === formData.value.domain)[0]?.authentication) {
+  if (
+    formData.value.domain &&
+    domainOptions.value.filter((d) => d.value === formData.value.domain)[0]?.authentication
+  ) {
     return true
   } else {
     return false
@@ -97,7 +101,7 @@ const authAvailable = computed(() => {
             description="Define the public path where the service will be available (e.g., /api). The combination of Public Domain + Public Path must be unique."
             :errors="errors"
             :tabindex="2"
-            :disabled="(node?.isLocal && formData.backendHost === '127.0.0.1')"
+            :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
           />
         </div>
         <div>
@@ -135,7 +139,7 @@ const authAvailable = computed(() => {
                     { label: 'http://', value: 'http' },
                     { label: 'https://', value: 'https' },
                   ]"
-                  :disabled="(node?.isLocal && formData.backendHost === '127.0.0.1')"
+                  :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
                   :tabindex="4"
                 />
               </div>
@@ -144,7 +148,10 @@ const authAvailable = computed(() => {
                   v-model="formData.backendHost"
                   field="backendHost"
                   placeholder="host/ip"
-                  :disabled="!(node?.isGateway || node?.isLocal) || (node?.isLocal && formData.backendHost === '127.0.0.1')"
+                  :disabled="
+                    !(node?.isGateway || node?.isLocal) ||
+                    (node?.isLocal && formData.backendHost === '127.0.0.1')
+                  "
                   :tabindex="5"
                 />
               </div>
@@ -161,7 +168,7 @@ const authAvailable = computed(() => {
             description="Specify the port where the service is running on the specified hostname or node (e.g., 8080)."
             :errors="errors"
             :tabindex="6"
-            :disabled="(node?.isLocal && formData.backendHost === '127.0.0.1')"
+            :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
             required
             @input="(e) => validateField('backendPort')"
           />
@@ -238,9 +245,36 @@ const authAvailable = computed(() => {
             class="mt-2 mb-6"
             label="Require Authentication"
             description="Only authenticated users will be able to access this service. Emails must be configured in the domain settings under `Enable OAuth2 Authentication`."
-            :message="!authAvailable && formData.domain ? '⚠️ Authentication is not enabled for this domain' : undefined"
+            :message="
+              !authAvailable && formData.domain
+                ? '⚠️ Authentication is not enabled for this domain'
+                : undefined
+            "
             :disabled="!authAvailable"
           />
+        </div>
+        <div v-if="formData.requireAuth">
+          <TextareaField
+            v-model="formData.skipAuthRoutes"
+            field="skipAuthRoutes"
+            label="Paths to bypass authentication (optional)"
+            description="Enter one line per path to bypass authentication."
+            :rows="3"
+            :errors="errors"
+            :spellcheck="false"
+            :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
+          >
+            <template #tooltip>
+              <div class="text-sm">
+                <p>Enter one line per path to bypass authentication.</p>
+                <p>Use <span class="code-block-inline">^</span> to define a regular expression.</p>
+                <p>Example:</p>
+                <div><span class="code-block-inline">/api/ping</span> → exact path</div>
+                <div><span class="code-block-inline">^/api/public/.*</span> → regex</div>
+                <div>Avoid special shell characters.</div>
+              </div>
+            </template>
+          </TextareaField>
         </div>
       </div>
     </div>

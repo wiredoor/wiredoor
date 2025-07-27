@@ -4,6 +4,7 @@ import { Domain } from '../database/models/domain';
 import BaseRepository from './base-repository';
 import Net from '../utils/net';
 import { ValidationError } from '../utils/errors/validation-error';
+import { logger } from '../providers/logger';
 
 @Service()
 export class DomainRepository extends BaseRepository<Domain> {
@@ -30,7 +31,7 @@ export class DomainRepository extends BaseRepository<Domain> {
         max,
       );
     } catch (e: any) {
-      console.error(e);
+      logger.error(e);
       throw new ValidationError({
         body: [
           {

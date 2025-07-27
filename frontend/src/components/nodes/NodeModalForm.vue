@@ -6,7 +6,7 @@ import CheckboxField from '@/components/ui/form/CheckboxField.vue'
 import { useNodeForm } from '@/composables/nodes/useNodeForm'
 import NodeInfo from './NodeInfo.vue'
 
-const { isOpen, formData, options, errors, closeDialog, submitDialog, validateField, validate } = useNodeForm()
+const { isOpen, formData, options, errors, closeDialog, submitDialog, validateField } = useNodeForm()
 
 </script>
 <template>
@@ -52,7 +52,7 @@ const { isOpen, formData, options, errors, closeDialog, submitDialog, validateFi
               () => {
                 if (!formData.isGateway) {
                   formData.gatewayNetwork = ''
-                  validate('gatewayNetwork')
+                  validateField('gatewayNetwork')
                 }
               }
             "

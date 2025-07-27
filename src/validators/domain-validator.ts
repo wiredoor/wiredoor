@@ -32,6 +32,7 @@ export interface DomainType {
   validation?: boolean;
   authentication?: boolean;
   allowedEmails?: string[];
+  skipAuthRoutes?: string;
 }
 
 export interface DomainFilterQueryParams extends FilterQueryDto {

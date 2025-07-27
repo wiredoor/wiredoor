@@ -56,6 +56,9 @@ jest.mock('axios', () => {
 const mockSyncConf = jest.fn();
 const mockQuickUp = jest.fn();
 const mockQuickDown = jest.fn();
+const mockIsLink = jest.fn(() => {
+  return false;
+});
 const mockDumpRuntimeInfo = jest.fn();
 const mockPeerRuntimeInfo = jest.fn();
 
@@ -151,6 +154,7 @@ jest.mock('../../utils/wg-cli.ts', () => {
     syncConf: mockSyncConf,
     quickUp: mockQuickUp,
     quickDown: mockQuickDown,
+    isLink: mockIsLink,
     dumpPeerRuntimeInfo: mockPeerRuntimeInfo,
     dumpRunTimeInfo: mockDumpRuntimeInfo,
   };

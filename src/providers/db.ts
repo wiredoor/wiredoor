@@ -4,6 +4,7 @@ import config from '../config';
 import { DataSource } from 'typeorm';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import { SqliteConnectionOptions } from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import { logger } from './logger';
 
 export default async (): Promise<DataSource> => {
   try {
@@ -29,7 +30,7 @@ export default async (): Promise<DataSource> => {
 
     return dataSource;
   } catch (e) {
-    console.error('Unable to load database');
+    logger.error('Unable to load database');
     throw e;
   }
 };

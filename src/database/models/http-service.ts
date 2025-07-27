@@ -68,6 +68,12 @@ export class HttpService {
   requireAuth: boolean;
 
   @Column({
+    type: 'text',
+    nullable: true,
+  })
+  skipAuthRoutes: string;
+
+  @Column({
     type: 'json',
     nullable: true,
   })

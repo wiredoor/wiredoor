@@ -8,14 +8,16 @@ import {
 import { TcpServiceQueryFilter } from '../repositories/filters/tcp-service-query-filter';
 import { NotFoundError } from 'routing-controllers';
 import { DomainsService } from './domains-service';
-import { NginxManager } from './proxy-server/nginx-manager';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
+import { NginxTcpService } from './proxy-server/nginx-tcp-service';
 
 @Service()
 export class TcpServicesService extends BaseServices {
+  private nginxTcpService: NginxTcpService;
+
   constructor(
     @Inject() private readonly tcpServiceRepository: TcpServiceRepository,
     @Inject() private readonly tcpServiceFilter: TcpServiceQueryFilter,
@@ -23,6 +25,7 @@ export class TcpServicesService extends BaseServices {
     @Inject() private readonly domainsService: DomainsService,
   ) {
     super(nodeRepository);
+    this.nginxTcpService = new NginxTcpService();
   }
 
   public async initialize(): Promise<void> {
@@ -118,7 +121,7 @@ export class TcpServicesService extends BaseServices {
       );
     }
 
-    await NginxManager.removeTcpService(old, false);
+    await this.nginxTcpService.remove(old, false);
 
     await this.tcpServiceRepository.save({
       id,
@@ -166,7 +169,7 @@ export class TcpServicesService extends BaseServices {
   public async deleteTcpService(id: number): Promise<string> {
     const service = await this.getTcpService(id, ['node']);
 
-    await NginxManager.removeTcpService(service);
+    await this.nginxTcpService.remove(service);
 
     await this.tcpServiceRepository.delete(id);
 
@@ -181,6 +184,6 @@ export class TcpServicesService extends BaseServices {
       await this.domainsService.createDomainIfNotExists(tcpService.domain);
     }
 
-    await NginxManager.handleTcpService(tcpService, restart);
+    await this.nginxTcpService.create(tcpService, restart);
   }
 }

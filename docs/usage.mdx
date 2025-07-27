@@ -1,11 +1,11 @@
-import { Callout } from 'nextra/components'
+import { Callout } from 'nextra/components';
 
 # Usage
 
 Once Wiredoor Server is installed and running, you can start using the **Web UI** and the **Wiredoor CLI** to:
 
-- Configure domains  
-- Register and manage nodes  
+- Configure domains
+- Register and manage nodes
 - Expose internal services to the internet
 
 This guide walks you through the most common tasks in a logical order.
@@ -32,10 +32,10 @@ Domains define how traffic is routed from the public internet into your internal
 - Use self-signed certificates
 - May trigger browser warnings unless trusted
 
-### Enabling OAuth2 Authentication
+## Enabling OAuth2 Authentication
 
-You can enable authentication per domain directly from the Wiredoor dashboard. This allows you to restrict access to specific services under a 
-domain using external identity providers like Google, GitHub, or any OIDC-compatible service. See the full list of supported providers in the 
+You can enable authentication per domain directly from the Wiredoor dashboard. This allows you to restrict access to specific services under a
+domain using external identity providers like Google, GitHub, or any OIDC-compatible service. See the full list of supported providers in the
 [OAuth2 Proxy documentation](https://oauth2-proxy.github.io/oauth2-proxy/configuration/providers/).
 
 Before enabling OAuth2 in the dashboard, you must define the following environment variables in your `.env` file and restart the Wiredoor server:
@@ -48,7 +48,7 @@ OAUTH2_PROXY_CLIENT_SECRET=your-client-secret
 
 Without these variables, the dashboard will not allow you to enable OAuth2 authentication.
 
-#### How to enable
+### How to enable
 
 1. Navigate to the Domains section in the Wiredoor dashboard.
 2. Select the domain where you want to enable authentication.
@@ -61,6 +61,51 @@ You can protect specific services under this domain by checking **Require Authen
   When configuring your OAuth2 application in the provider’s dashboard, you must register the Redirect URI like `https://<your-domain>/oauth2/callback`
 </Callout>
 
+### Bypass Authentication for Specific Paths
+
+Once OAuth2 is enabled for a domain, **you can optionally skip authentication for specific paths** when exposing HTTP services.
+
+This is useful when:
+
+- You want to expose public routes like `/healthz`, `/api/auth/login`, or `/assets/...`
+- Your API includes endpoints that must be publicly accessible (e.g. for webhooks or clients)
+
+#### How to define bypassed paths
+
+Go to the desired node and edit the service settings. If **Require Authentication** is enabled, 
+you'll be able to fill the **Paths to bypass authentication** field using one path per line. 
+You can use two simple formats:
+
+```text
+/api/healthz         ← matches this exact path
+^/api/(auth|cli)/.*  ← matches using a regular expression
+```
+
+#### Rules
+
+- Each line must start with `/` or `^`
+- Lines starting with `/` match **exact paths only**
+- Lines starting with `^` are treated as regular expressions (same syntax as in NGINX `location ~`)
+
+<Callout type="info" emoji="ℹ️">
+  Under the hood, Wiredoor generates NGINX `location` blocks that skip OAuth2 authentication for these paths.
+</Callout>
+
+#### Examples
+
+```text
+/api/webhook
+/api/healthz
+^/api/(auth|cli)/.*
+```
+
+> These paths will be publicly accessible even if the domain and service require authentication.
+
+#### Default Behavior for the Local Wiredoor_APP
+
+When securing the Wiredoor_APP on the Local Node under a protected domain, 
+Wiredoor will **automatically pre-fill** the `Paths to bypass authentication` field with the paths used by the Wiredoor CLI.
+
 ---
 
 ## Understanding Nodes
@@ -70,11 +115,11 @@ Most nodes establish a connection to the Wiredoor Server over a **WireGuard VPN 
 
 ### Types of Nodes
 
-| Type             | Description |
-|------------------|-------------|
+| Type             | Description                                                                                                                                               |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Local Node**   | Runs on the same server as Wiredoor. It **does not use a WireGuard tunnel** and is used to expose services hosted directly on the Wiredoor server itself. |
-| **Client Node**  | A remote system that connects to Wiredoor using a secure WireGuard tunnel and exposes services from that machine only. |
-| **Gateway Node** | A remote system that acts as a site-to-site VPN, forwarding traffic for an entire subnet or container network. |
+| **Client Node**  | A remote system that connects to Wiredoor using a secure WireGuard tunnel and exposes services from that machine only.                                    |
+| **Gateway Node** | A remote system that acts as a site-to-site VPN, forwarding traffic for an entire subnet or container network.                                            |
 
 ### Local Node
 
@@ -100,10 +145,10 @@ flowchart LR
 
 #### Example Use Cases
 
-| Service | Description |
-|---------|-------------|
-| Wiredoor Dashboard | Assign a domain and SSL to access your admin panel securely |
-| Local Docker Apps | Add containers to wiredoor docker-compose stack and expose those apps through wiredoor |
+| Service            | Description                                                                            |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| Wiredoor Dashboard | Assign a domain and SSL to access your admin panel securely                            |
+| Local Docker Apps  | Add containers to wiredoor docker-compose stack and expose those apps through wiredoor |
 
 <Callout type="warning" emoji="⚠️">
   The Local Node is created automatically and **cannot be deleted or updated**.
@@ -111,7 +156,7 @@ flowchart LR
 
 ### Client Node
 
-A Client Node connects to the Wiredoor Server via a secure WireGuard tunnel and allows services to be exposed from private devices. 
+A Client Node connects to the Wiredoor Server via a secure WireGuard tunnel and allows services to be exposed from private devices.
 These are the default type of nodes created from the Wiredoor dashboard unless explicitly specified as Gateway.
 
 When you create a node in Wiredoor:
@@ -211,7 +256,8 @@ wiredoor http myapp --domain app.your.domain.com --port 3000
 ```
 
 <Callout type="warning" emoji="⚠️">
-  Make sure the domain used (e.g. `app.your.domain.com`) points to your Wiredoor server's public IP.
+  Make sure the domain used (e.g. `app.your.domain.com`) points to your Wiredoor
+  server's public IP.
 </Callout>
 
 Options:
@@ -239,16 +285,18 @@ Wiredoor allows you to monitor real-time access logs for each exposed service or
 
 ### 🔎 From the Web UI
 
-1. Go to the **Domains** or **Nodes** menu, If node select a node to see details and services.
+1. Go to the **Domains** or **Nodes** menu. If you select a node, choose a service to see its details.
 2. Click the more button next to the domain or service you want to inspect and select **Logs Monitor**.
 3. You'll see a live stream of incoming requests, including:
-  - Timestamp
-  - Client IP
-  - Requested path
-  - HTTP method and status code (for HTTP services)
+
+- Timestamp
+- Client IP
+- Requested path
+- HTTP method and status code (for HTTP services)
 
 <Callout type="info" emoji="💡">
-  Logs can be used for debugging, auditing, or simply understanding traffic patterns.
+  Logs can be used for debugging, auditing, or simply understanding traffic
+  patterns.
 </Callout>
 
 ### From the host system (optional)

@@ -1,6 +1,7 @@
 import fs, { Mode } from 'fs';
 import path from 'path';
 import fsPromises from 'fs/promises';
+import { logger } from '../providers/logger';
 
 export default class FileManager {
   static isFile(dir: string, filename: string): boolean {
@@ -37,7 +38,7 @@ export default class FileManager {
 
       return true;
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return false;
     }
   }
@@ -103,10 +104,10 @@ export default class FileManager {
       if (this.isPath(dir)) {
         await fsPromises.rm(dir, { recursive: true, force: true });
       } else {
-        console.error(`Directory ${dir} does not exists`);
+        logger.error(`Directory ${dir} does not exists`);
       }
     } catch (error) {
-      console.error(`Failed to delete directory: ${dir}`);
+      logger.error(`Failed to delete directory: ${dir}`);
       throw error;
     }
   }
@@ -116,10 +117,10 @@ export default class FileManager {
       if (this.isPath(filepath)) {
         await fsPromises.unlink(filepath);
       } else {
-        console.error(`File ${filepath} does not exists`);
+        logger.error(`File ${filepath} does not exists`);
       }
     } catch (error) {
-      console.error(`Failed to delete file: ${filepath}`);
+      logger.error(`Failed to delete file: ${filepath}`);
       throw error;
     }
   }

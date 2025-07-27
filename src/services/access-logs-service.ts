@@ -5,6 +5,7 @@ import { LogQueryParams } from '../validators/log-validator';
 import { HttpServiceRepository } from '../repositories/http-service-repository';
 import { TcpServiceRepository } from '../repositories/tcp-service-repository';
 import { Response } from 'express';
+import { logger } from '../providers/logger';
 
 @Service()
 export class AccessLogsService {
@@ -65,7 +66,7 @@ export class AccessLogsService {
     });
 
     tail.stderr.on('data', (err) => {
-      console.error('Error getting logs:', err.toString());
+      logger.error(err, 'Error getting logs');
       res.write(`event: error\ndata: ${err.toString()}\n\n`);
     });
 

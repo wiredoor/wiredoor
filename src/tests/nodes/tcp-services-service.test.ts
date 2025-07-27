@@ -393,8 +393,6 @@ describe('TCP Services Service', () => {
         expect.stringContaining(`/n${node.id}s${created.id}_stream.conf`),
       );
 
-      console.log(mockCLIExec.mock.calls);
-
       expect(mockCLIExec.mock.calls).toEqual([
         [
           `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,

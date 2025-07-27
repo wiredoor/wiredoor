@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import config from '../../config';
 import CLI from '../../utils/cli';
 import FileManager from '../../utils/file-manager';
+import { logger } from '../../providers/logger';
 
 const getGeneratedKey = (domain: string): string => {
   const dir = `/data/oauth2`;
@@ -18,7 +19,7 @@ const getGeneratedKey = (domain: string): string => {
     FileManager.saveToFile(filePath, newKey, 'utf-8', 0o600);
     return newKey;
   } catch (error) {
-    console.error('Error loading or generating JWT key:', error);
+    logger.error(error, 'Error loading or generating JWT key:');
     throw error;
   }
 };

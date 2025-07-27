@@ -5,6 +5,12 @@ export class NginxLocationConf extends NginxConf {
     super(config);
   }
 
+  includeCommonProxySettings(): NginxLocationConf {
+    this.addBlock('include', 'partials/proxy.conf');
+
+    return this;
+  }
+
   setAuthRequired(): NginxLocationConf {
     this.addBlock('include', 'partials/require_oauth2.conf');
 
@@ -32,6 +38,22 @@ export class NginxLocationConf extends NginxConf {
     return this;
   }
 
+  removeAuth(): this {
+    this.config = this.config.filter(([key, value]) => {
+      if (key === 'include' && value === 'partials/require_oauth2.conf')
+        return false;
+      if (key.startsWith('auth_request_set')) return false;
+      if (
+        key.split(' ')[0] === 'proxy_set_header' &&
+        ['X-User', 'X-Email', 'X-Access-Token'].includes(key.split(' ')[1])
+      )
+        return false;
+      return true;
+    });
+
+    return this;
+  }
+
   setResolver(resolver: string): NginxLocationConf {
     this.addBlock('resolver', `${resolver} valid=30s`);
     this.addBlock('resolver_timeout', '10s');
@@ -41,7 +63,6 @@ export class NginxLocationConf extends NginxConf {
 
   setProxyPass(streamOrEndpoint: string): NginxLocationConf {
     this.addBlock('proxy_pass', streamOrEndpoint);
-    this.addBlock('include', 'partials/proxy.conf');
 
     return this;
   }
@@ -62,17 +83,13 @@ export class NginxLocationConf extends NginxConf {
     allowedIps: string[],
     blockedIps: string[] = [],
   ): NginxLocationConf {
-    if (allowedIps && allowedIps.length) {
-      allowedIps.forEach((ip) => {
-        this.addBlock('allow', ip);
-      });
-      this.addBlock('deny', 'all');
+    if (blockedIps?.length) {
+      blockedIps.forEach((ip) => this.setDeny(ip));
     }
 
-    if (blockedIps && blockedIps.length) {
-      blockedIps.forEach((ip) => {
-        this.addBlock('deny', ip);
-      });
+    if (allowedIps?.length) {
+      allowedIps.forEach((ip) => this.setAllow(ip));
+      this.setDeny('all');
     }
 
     return this;

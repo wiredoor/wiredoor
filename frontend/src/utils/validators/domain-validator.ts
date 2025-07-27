@@ -1,4 +1,4 @@
-import type { ObjectSchema } from 'joi'
+import { type ObjectSchema } from 'joi'
 import Joi from './joi-validator'
 
 export interface DomainForm {
@@ -8,6 +8,7 @@ export interface DomainForm {
   skipValidation?: boolean
   authentication?: boolean
   allowedEmails?: string[]
+  skipAuthRoutes?: string
 }
 
 export interface Domain extends DomainForm {
@@ -17,8 +18,12 @@ export interface Domain extends DomainForm {
 
 export const domainValidator: ObjectSchema<DomainForm> = Joi.object({
   domain: Joi.string()
-    .pattern(new RegExp(`^([a-zA-Z0-9-]+\\.)+([a-zA-Z]{2,})$`), 'domain structure')
-    .required(),
+    .pattern(new RegExp(`^([a-zA-Z0-9-]+\\.)+([a-zA-Z]{2,})$`), 'domain')
+    .required()
+    .messages({
+      'string.pattern.any': 'The domain must be in a valid format',
+      'string.empty': 'The domain field is required',
+    }),
   ssl: Joi.string().when('validation', {
     is: false,
     then: Joi.valid('self-signed').allow(null).optional(),
