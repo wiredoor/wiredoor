@@ -45,6 +45,11 @@ export class Node {
   address: string;
 
   @Column({
+    nullable: true,
+  })
+  gatewayNetwork: string;
+
+  @Column({
     type: 'json',
     nullable: true,
   })
