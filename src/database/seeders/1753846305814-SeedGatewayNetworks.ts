@@ -4,7 +4,7 @@ export class SeedGatewayNetworks1753846305814 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const nodes = await queryRunner.query(`
       SELECT id, "gatewayNetwork"
-      FROM "node"
+      FROM "nodes"
       WHERE "gatewayNetwork" IS NOT NULL
     `);
 
@@ -18,7 +18,7 @@ export class SeedGatewayNetworks1753846305814 implements MigrationInterface {
 
       await queryRunner.query(
         `
-        UPDATE "node"
+        UPDATE "nodes"
         SET "gatewayNetworks" = $1
         WHERE id = $2
         `,
