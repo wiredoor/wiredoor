@@ -24,6 +24,11 @@ export interface NodeWithToken extends NodeInfo {
   token: string;
 }
 
+export interface GatewayNetwork {
+  interface: string;
+  subnet: string;
+}
+
 @Entity('nodes')
 export class Node {
   @PrimaryGeneratedColumn()
@@ -40,9 +45,10 @@ export class Node {
   address: string;
 
   @Column({
+    type: 'json',
     nullable: true,
   })
-  gatewayNetwork: string;
+  gatewayNetworks: GatewayNetwork[];
 
   @Column({
     default: 'wg0',
