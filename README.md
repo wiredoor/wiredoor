@@ -16,6 +16,30 @@
   <a href="https://charts.wiredoor.net">Helm Charts</a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/wiredoor/wiredoor/actions">
+    <img src="https://github.com/wiredoor/wiredoor/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+  </a>
+  <a href="https://github.com/wiredoor/wiredoor/releases">
+    <img src="https://img.shields.io/github/v/release/wiredoor/wiredoor?label=Wiredoor" alt="Wiredoor Release" />
+  </a>
+  <a href="https://github.com/wiredoor/wiredoor-cli/releases">
+    <img src="https://img.shields.io/github/v/release/wiredoor/wiredoor-cli?label=CLI&color=silver" alt="Wiredoor CLI Release" />
+  </a>
+  <a href="https://github.com/wiredoor/wiredoor">
+    <img src="https://img.shields.io/github/license/wiredoor/wiredoor" alt="License" />
+  </a>
+  <a href="https://ghcr.io/wiredoor/wiredoor">
+    <img src="https://img.shields.io/badge/GHCR-wiredoor-blue?logo=github" alt="Wiredoor GHCR" />
+  </a>
+  <a href="https://ghcr.io/wiredoor/wiredoor-cli">
+    <img src="https://img.shields.io/badge/GHCR-gateway-silver?logo=github" alt="Wiredoor Docker Gateway GHCR" />
+  </a>
+  <a href="https://github.com/wiredoor/wiredoor/stargazers">
+    <img src="https://img.shields.io/github/stars/wiredoor/wiredoor?style=social" alt="GitHub Stars" />
+  </a>
+</p>
+
 ---
 
 # What is Wiredoor?
