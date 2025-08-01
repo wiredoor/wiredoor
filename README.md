@@ -35,6 +35,9 @@
   <a href="https://ghcr.io/wiredoor/wiredoor-cli">
     <img src="https://img.shields.io/badge/GHCR-gateway-silver?logo=github" alt="Wiredoor Docker Gateway GHCR" />
   </a>
+  <a href="https://twitter.com/intent/follow?screen_name=wiredoor_net">
+    <img src="https://img.shields.io/twitter/follow/wiredoor_net?style=social&logo=twitter" alt="follow on Twitter">
+  </a>
   <a href="https://github.com/wiredoor/wiredoor/stargazers">
     <img src="https://img.shields.io/github/stars/wiredoor/wiredoor?style=social" alt="GitHub Stars" />
   </a>
