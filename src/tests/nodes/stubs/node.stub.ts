@@ -9,7 +9,7 @@ export const makeNodeData = (params?: any): CreateNodeType => {
     interface: params?.interface || 'wg0',
     allowInternet: params?.allowInternet || false,
     isGateway: params?.isGateway || false,
-    gatewayNetwork: params?.gatewayNetwork || null,
+    gatewayNetworks: params?.gatewayNetworks || null,
     enabled: params?.enabled !== undefined ? params.enabled : true,
   };
 };

@@ -66,6 +66,7 @@ export default {
   },
   jwt: {
     secret: getJWTKey(),
+    algo: process.env.JWT_ALGORITHM || 'HS256',
   },
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,
@@ -74,7 +75,7 @@ export default {
     logs: process.env.SERVER_LOGS_DIR || '/var/log/nginx',
   },
   wireguard: {
-    host: process.env.VPN_HOST || 'localhost',
+    host: process.env.VPN_HOST || '127.0.0.1',
     port: VPN_PORT,
     subnet: subnet,
     preUp: (process.env.WG_PRE_UP_SCRIPT || defaultPreUpScript)

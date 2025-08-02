@@ -45,9 +45,17 @@ export class Node {
   address: string;
 
   @Column({
+    length: 40,
     nullable: true,
   })
-  gatewayNetwork: string;
+  dns: string;
+
+  @Column({
+    type: 'int',
+    unsigned: true,
+    default: 25,
+  })
+  keepalive: number;
 
   @Column({
     type: 'json',
@@ -76,6 +84,11 @@ export class Node {
     default: false,
   })
   allowInternet: boolean;
+
+  @Column({
+    default: false,
+  })
+  advanced: boolean;
 
   @Column('boolean', {
     default: true,

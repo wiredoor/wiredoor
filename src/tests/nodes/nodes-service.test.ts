@@ -10,9 +10,12 @@ import { makeNodeData } from './stubs/node.stub';
 import WireguardService from '../../services/wireguard/wireguard-service';
 import { NodeQueryFilter } from '../../repositories/filters/node-query-filter';
 import {
+  mockDumpRuntimeInfo,
   mockGenPreSharedKey,
   mockGenPrivateKey,
   mockGenPublicKey,
+  mockNetAddRoute,
+  mockPeerRuntimeInfo,
   mockSaveToFile,
   mockSyncConf,
 } from '../.jest/global-mocks';
@@ -29,6 +32,8 @@ import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
 import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { NodeInfo } from '../../database/models/node';
+import { faker } from '@faker-js/faker';
+import config from '../../config';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -113,6 +118,10 @@ describe('Nodes Service', () => {
       const result = await service.getNodes({});
 
       expect((result as NodeInfo[]).length).toBeGreaterThanOrEqual(1);
+
+      const result2 = await service.getAll();
+
+      expect(result2.length).toBeGreaterThanOrEqual(1);
     });
     it('should get nodes paginated', async () => {
       const data = makeNodeData();
@@ -123,6 +132,35 @@ describe('Nodes Service', () => {
 
       expect((result as PagedData<NodeInfo>).data.length).toEqual(1);
       expect((result as PagedData<NodeInfo>).limit).toEqual(1);
+    });
+  });
+
+  describe('Get Node Runtime Info', () => {
+    it('should get runtime info for all nodes', async () => {
+      const data1 = makeNodeData();
+      const data2 = makeNodeData();
+
+      await service.createNode(data1);
+      await service.createNode(data2);
+
+      const result = await service.getNodesRuntime();
+
+      expect(mockDumpRuntimeInfo).toHaveBeenCalledTimes(1);
+
+      expect(result.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should get runtime info for specific nodes', async () => {
+      const data = makeNodeData();
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodesRuntime([created]);
+
+      expect(mockDumpRuntimeInfo).toHaveBeenCalledTimes(1);
+
+      expect(result.length).toEqual(1);
+      expect(result[0].name).toEqual(data.name);
     });
   });
 
@@ -149,6 +187,55 @@ describe('Nodes Service', () => {
       expect(result.name).toEqual(data.name);
       expect(result.id).toBeDefined();
       expect(result.address).toBeDefined();
+
+      const createdNode = await repository.findOneBy({ id: result.id });
+
+      expect(createdNode?.name).toEqual(data.name);
+    });
+    it('should create gateway node and update wireguard config', async () => {
+      const fakerSubnet1 = faker.internet.ipv4() + '/24';
+      const fakerSubnet2 = faker.internet.ipv4() + '/24';
+      const data = makeNodeData({
+        isGateway: true,
+        gatewayNetworks: [
+          { interface: 'eth0', subnet: fakerSubnet1 },
+          { interface: 'eth1', subnet: fakerSubnet2 },
+        ],
+      });
+
+      jest.clearAllMocks();
+
+      const result = await service.createNode(data);
+
+      expect(result.name).toEqual(data.name);
+      expect(result.id).toBeDefined();
+      expect(result.address).toBeDefined();
+
+      expect(mockGenPublicKey).toHaveBeenCalledTimes(1);
+      expect(mockGenPrivateKey).toHaveBeenCalledTimes(1);
+      expect(mockGenPreSharedKey).toHaveBeenCalledTimes(1);
+
+      expect(mockSaveToFile).toHaveBeenCalledWith(
+        `/etc/wireguard/wg0.conf`,
+        expect.stringContaining(
+          `AllowedIPs = ${result.address}/32, ${fakerSubnet1}, ${fakerSubnet2}`,
+        ),
+        'utf-8',
+        0o600,
+      );
+      expect(mockSyncConf).toHaveBeenCalledTimes(1);
+
+      expect(mockNetAddRoute).toHaveBeenCalledTimes(2);
+      expect(mockNetAddRoute).toHaveBeenCalledWith(
+        fakerSubnet1,
+        result.address,
+        result.wgInterface,
+      );
+      expect(mockNetAddRoute).toHaveBeenCalledWith(
+        fakerSubnet2,
+        result.address,
+        data.interface,
+      );
 
       const createdNode = await repository.findOneBy({ id: result.id });
 
@@ -187,6 +274,32 @@ describe('Nodes Service', () => {
   //   });
   // });
 
+  describe('Regenerate Node Keys', () => {
+    it('should regenerate node keys and update wireguard config', async () => {
+      const data = makeNodeData();
+
+      const created = await service.createNode(data);
+
+      jest.clearAllMocks();
+
+      const result = await service.regenerateNodeKeys(created.id);
+
+      expect(mockGenPublicKey).toHaveBeenCalledTimes(1);
+      expect(mockGenPrivateKey).toHaveBeenCalledTimes(1);
+      expect(mockGenPreSharedKey).toHaveBeenCalledTimes(1);
+
+      expect(mockSaveToFile).toHaveBeenCalledWith(
+        `/etc/wireguard/wg0.conf`,
+        expect.stringContaining(result.address),
+        'utf-8',
+        0o600,
+      );
+      expect(mockSyncConf).toHaveBeenCalledTimes(1);
+
+      expect(result.name).toEqual(data.name);
+    });
+  });
+
   describe('Get Node by id', () => {
     it('should get node with given id', async () => {
       const data = makeNodeData();
@@ -196,6 +309,109 @@ describe('Nodes Service', () => {
       const result = await service.getNode(created.id);
 
       expect(result.name).toEqual(data.name);
+    });
+    it('should get node runtime info with given id', async () => {
+      const data = makeNodeData();
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodeRuntime(created);
+
+      expect(mockPeerRuntimeInfo).toHaveBeenCalledTimes(1);
+      expect(mockPeerRuntimeInfo).toHaveBeenCalledWith(
+        created.publicKey,
+        created.wgInterface,
+      );
+
+      expect(result.name).toEqual(data.name);
+      expect(result.address).toEqual(created.address);
+    });
+    it('should throw NotFoundError if node not found', async () => {
+      await expect(service.getNode(9999)).rejects.toThrow(NotFoundError);
+    });
+  });
+
+  describe('Get Node Config', () => {
+    it('should get node config', async () => {
+      const data = makeNodeData();
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodeConfig(created.id);
+
+      expect(result).toContain(`[Interface]`);
+      expect(result).toContain(`Address = ${created.address}/32`);
+    });
+    it('should get gateway node config', async () => {
+      const fakerSubnet1 = faker.internet.ipv4() + '/24';
+      const fakerSubnet2 = faker.internet.ipv4() + '/24';
+      const data = makeNodeData({
+        isGateway: true,
+        gatewayNetworks: [
+          { interface: 'eth0', subnet: fakerSubnet1 },
+          { interface: 'eth1', subnet: fakerSubnet2 },
+        ],
+      });
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodeConfig(created.id);
+
+      expect(result).toContain(`[Interface]`);
+      expect(result).toContain(`Address = ${created.address}/32`);
+      expect(result).toContain(
+        `PostUp = iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+      );
+      expect(result).toContain(
+        `PostDown = iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+      );
+      expect(result).toContain(
+        `PostUp = iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+      );
+      expect(result).toContain(
+        `PostDown = iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+      );
+    });
+  });
+
+  describe('Get Node WG Config', () => {
+    it('should get node config', async () => {
+      const data = makeNodeData();
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodeWGConfig(created.id);
+
+      expect(result).toMatchObject({
+        address: `${created.address}/32`,
+      });
+    });
+    it('should get gateway node config', async () => {
+      const fakerSubnet1 = faker.internet.ipv4() + '/24';
+      const fakerSubnet2 = faker.internet.ipv4() + '/24';
+      const data = makeNodeData({
+        isGateway: true,
+        gatewayNetworks: [
+          { interface: 'eth0', subnet: fakerSubnet1 },
+          { interface: 'eth1', subnet: fakerSubnet2 },
+        ],
+      });
+
+      const created = await service.createNode(data);
+
+      const result = await service.getNodeWGConfig(created.id);
+
+      expect(result).toMatchObject({
+        address: `${created.address}/32`,
+        postUp: [
+          `iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+          `iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+        ],
+        postDown: [
+          `iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+          `iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+        ],
+      });
     });
   });
 

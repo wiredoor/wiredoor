@@ -146,14 +146,16 @@ class WireguardService {
       privateKey: node.privateKey,
       address: `${node.address}/32`,
       postUp: node.isGateway
-        ? [
-            `iptables -t nat -A POSTROUTING -s ${serverConfig.subnet} -o eth0 -j MASQUERADE`,
-          ]
+        ? node.gatewayNetworks.map(
+            (net) =>
+              `iptables -t nat -A POSTROUTING -s ${serverConfig.subnet} -d ${net.subnet} -o ${net.interface} -j MASQUERADE`,
+          )
         : [],
       postDown: node.isGateway
-        ? [
-            `iptables -t nat -D POSTROUTING -s ${serverConfig.subnet} -o eth0 -j MASQUERADE`,
-          ]
+        ? node.gatewayNetworks.map(
+            (net) =>
+              `iptables -t nat -D POSTROUTING -s ${serverConfig.subnet} -d ${net.subnet} -o ${net.interface} -j MASQUERADE`,
+          )
         : [],
       peer: {
         publicKey: serverConfig.publicKey,
@@ -161,7 +163,7 @@ class WireguardService {
         allowedIPs: node.allowInternet
           ? ['0.0.0.0/0', '::/0']
           : serverConfig.subnet,
-        persistentKeepalive: 25,
+        persistentKeepalive: node.keepalive,
         endpoint: {
           url: `${config.wireguard.host}:${serverConfig.port}`,
           host: config.wireguard.host,

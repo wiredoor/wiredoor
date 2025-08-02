@@ -105,7 +105,10 @@ describe('TCP Services Service', () => {
 
     node = await nodesService.createNode(makeNodeData());
     gateway = await nodesService.createNode(
-      makeNodeData({ isGateway: true, gatewayNetwork: '172.8.0.0/24' }),
+      makeNodeData({
+        isGateway: true,
+        gatewayNetworks: [{ interface: 'eth0', subnet: '172.8.0.0/24' }],
+      }),
     );
 
     jest.clearAllMocks();

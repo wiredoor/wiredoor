@@ -92,8 +92,11 @@ export default class CLiController extends BaseController {
     ]);
 
     if (node.isGateway) {
+      const gatewayNetworks = node.gatewayNetworks;
+      gatewayNetworks[0].subnet = params.gatewayNetwork;
+
       return this.nodesService.updateNode(+cli.nodeId, {
-        gatewayNetwork: params.gatewayNetwork,
+        gatewayNetworks,
       });
     } else {
       throw new BadRequestError(

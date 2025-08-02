@@ -1,5 +1,6 @@
 const { faker } = require('@faker-js/faker');
 const jwt = require('jsonwebtoken');
+const { mock } = require('node:test');
 const { default: config } = require('src/config');
 
 const mockLookup = jest.fn((c) => {
@@ -93,10 +94,13 @@ jest.mock('../../utils/cli.ts', () => {
   };
 });
 
+const mockNetAddRoute = jest.fn();
+const mockNetDelRoute = jest.fn();
+
 jest.mock('../../utils/net.ts', () => {
   return {
-    addRoute: jest.fn(),
-    delRoute: jest.fn(),
+    addRoute: mockNetAddRoute,
+    delRoute: mockNetDelRoute,
     isReachable: jest.fn(),
     nslookup: mockNslookup,
     checkCNAME: mockCheckCname,
@@ -105,6 +109,7 @@ jest.mock('../../utils/net.ts', () => {
     getAvailablePort: mockGetAvailablePort,
     getAvailableLocalPort: mockGetAvailablePort,
     checkPort: mockCheckPort,
+    getWireguardIP: jest.fn(() => config.wireguard.host),
   };
 });
 
@@ -176,6 +181,8 @@ module.exports = {
   mockSaveToFile,
   mockGenPrivateKey,
   mockGenPublicKey,
+  mockPeerRuntimeInfo,
+  mockDumpRuntimeInfo,
   mockGenPreSharedKey,
   mockSyncConf,
   mockQuickUp,
@@ -184,6 +191,9 @@ module.exports = {
   mockRemoveDir,
   mockRemoveFile,
   mockNslookup,
+  mockNetAddRoute,
+  mockNetDelRoute,
+  mockIsLink,
   mockCheckCname,
   mockCheckPort,
   mockGetAvailablePort,

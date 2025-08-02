@@ -226,6 +226,20 @@ export default class Net {
     });
   }
 
+  static async getWireguardIP(): Promise<string> {
+    let wireguardIp = config.wireguard.host;
+
+    if (!IP_CIDR.isValidIP(wireguardIp)) {
+      try {
+        wireguardIp = (await Net.nslookup(wireguardIp))[0];
+      } catch {
+        throw new Error(`Unable to resolve Server IP address`);
+      }
+    }
+
+    return wireguardIp;
+  }
+
   static async getRealPublicIp(): Promise<string> {
     return new Promise((resolve) => {
       https

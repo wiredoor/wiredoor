@@ -5,6 +5,7 @@ import { Node } from '../../database/models/node';
 import { makeHttpServiceData } from '../nodes/stubs/http-service.stub';
 import { faker } from '@faker-js/faker';
 import { makeTcpServiceData } from '../nodes/stubs/tcp-service.stub';
+import config from '../../config';
 
 let app;
 let request;
@@ -112,13 +113,15 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(401);
     });
     it('should update gateway network if node is a gateway', async () => {
+      const subnet = faker.internet.ipv4() + '/24';
+
       const nodeRes = await request
         .post('/api/nodes')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'Node',
           isGateway: true,
-          gatewayNetwork: faker.internet.ipv4() + '/24',
+          gatewayNetworks: [{ interface: 'eth0', subnet }],
         });
 
       const gatewayNode = nodeRes.body;
@@ -140,11 +143,11 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual(
         expect.objectContaining({
-          gatewayNetwork: newSubnet,
+          gatewayNetworks: [{ interface: 'eth0', subnet: newSubnet }],
         }),
       );
     });
-    it('should update gateway network if node is a gateway', async () => {
+    it('should reject if node is not a gateway', async () => {
       const nodeRes = await request
         .post('/api/nodes')
         .set('Authorization', `Bearer ${adminToken}`)
