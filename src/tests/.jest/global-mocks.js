@@ -1,6 +1,5 @@
 const { faker } = require('@faker-js/faker');
 const jwt = require('jsonwebtoken');
-const { mock } = require('node:test');
 const { default: config } = require('src/config');
 
 const mockLookup = jest.fn((c) => {
