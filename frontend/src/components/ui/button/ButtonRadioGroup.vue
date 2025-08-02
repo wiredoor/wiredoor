@@ -2,7 +2,7 @@
   <div class="w-full flex flex-wrap -space-x-px">
     <button
       v-for="option in options"
-      :key="option.value"
+      :key="`${option.value}`"
       @click.prevent="model = option.value"
       :class="[
         'btn grow border rounded-none first:rounded-l-lg last:rounded-r-lg',
@@ -17,9 +17,9 @@
 </template>
 
 <script setup lang="ts">
-const model = defineModel<string>()
+const model = defineModel<string | number | boolean>()
 
 const props = defineProps<{
-  options: { label: string; value: string }[]
+  options: { label: string; value: string | number | boolean }[]
 }>()
 </script>

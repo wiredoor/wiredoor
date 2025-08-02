@@ -35,7 +35,7 @@ const props = defineProps<{
           Created automatically to expose internal<br />
           services running on this Wiredoor server.
         </div>
-        <div v-else-if="props.node.isGateway" class="text-sm">
+        <div v-else-if="props.node.isGateway && props.node.gatewayNetworks?.length" class="text-sm">
           This node is a gateway, <br />
           forwarding traffic to:
           <span class="font-bold">
