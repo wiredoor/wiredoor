@@ -106,6 +106,9 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.WIREDOOR_DOCKER_HUB_TOKEN }}" | docker login docker.io -u ${{ secrets.WIREDOOR_DOCKER_HUB_USERNAME }} --password-stdin
+
       - name: Determine tags
         id: tags
         run: |
@@ -126,6 +129,10 @@ jobs:
 
           for tag in "${TAGS[@]}"; do
             TAG_ARGS="$TAG_ARGS -t ghcr.io/${{ github.repository_owner }}/wiredoor:$tag"
+
+            if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == refs/tags/* ]]; then
+              TAG_ARGS="$TAG_ARGS -t wiredoor/wiredoor:$tag"
+            fi
           done
 
           echo $TAG_ARGS
