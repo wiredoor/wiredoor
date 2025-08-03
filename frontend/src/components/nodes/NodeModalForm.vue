@@ -58,7 +58,19 @@ const { isOpen, formData, options, errors, closeDialog, submitDialog, validateFi
             v-model="formData.dns"
             field="dns"
             label="DNS (optional)"
+            placeholder="1.1.1.1"
             description="Specify a DNS server to be used while connected. For example: 1.1.1.1"
+            :errors="errors"
+          />
+
+          <InputField
+            v-if="formData.advanced"
+            v-model="formData.keepalive"
+            field="keepalive"
+            type="number"
+            label="Persistence Keepalive"
+            placeholder="0"
+            description="Interval in seconds to keep the connection alive through NAT. Default value: 25. Use 0 to disable."
             :errors="errors"
           />
 
@@ -147,17 +159,6 @@ const { isOpen, formData, options, errors, closeDialog, submitDialog, validateFi
             "
             >Add Interface</Button
           >
-
-          <InputField
-            v-if="formData.advanced"
-            v-model="formData.keepalive"
-            field="keepalive"
-            type="number"
-            label="Persistence Keepalive"
-            placeholder="25"
-            description="Interval in seconds to keep the connection alive through NAT. Default value: 25. Use 0 to disable."
-            :errors="errors"
-          />
 
           <CheckboxField
             v-model="formData.allowInternet"
