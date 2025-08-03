@@ -58,6 +58,11 @@ export class Node {
   keepalive: number;
 
   @Column({
+    nullable: true,
+  })
+  gatewayNetwork: string;
+
+  @Column({
     type: 'json',
     nullable: true,
   })
