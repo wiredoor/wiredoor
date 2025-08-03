@@ -360,16 +360,16 @@ describe('Nodes Service', () => {
       expect(result).toContain(`[Interface]`);
       expect(result).toContain(`Address = ${created.address}/32`);
       expect(result).toContain(
-        `PostUp = iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+        `PostUp = iptables -A FORWARD -i ${created.wgInterface} -o eth0 -s ${config.wireguard.subnet} -d ${fakerSubnet1} -j ACCEPT; iptables -A FORWARD -i eth0 -o ${created.wgInterface} -s ${config.wireguard.subnet} -d ${fakerSubnet1} -j ACCEPT; iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
       );
       expect(result).toContain(
-        `PostDown = iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
+        `PostDown = iptables -D FORWARD -i ${created.wgInterface} -o eth0 -s ${config.wireguard.subnet} -d ${fakerSubnet1} -j ACCEPT; iptables -D FORWARD -i eth0 -o ${created.wgInterface} -s ${config.wireguard.subnet} -d ${fakerSubnet1} -j ACCEPT; iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet1} -o eth0 -j MASQUERADE`,
       );
       expect(result).toContain(
-        `PostUp = iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+        `PostUp = iptables -A FORWARD -i ${created.wgInterface} -o eth1 -s ${config.wireguard.subnet} -d ${fakerSubnet2} -j ACCEPT; iptables -A FORWARD -i eth1 -o ${created.wgInterface} -s ${config.wireguard.subnet} -d ${fakerSubnet2} -j ACCEPT; iptables -t nat -A POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
       );
       expect(result).toContain(
-        `PostDown = iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
+        `PostDown = iptables -D FORWARD -i ${created.wgInterface} -o eth1 -s ${config.wireguard.subnet} -d ${fakerSubnet2} -j ACCEPT; iptables -D FORWARD -i eth1 -o ${created.wgInterface} -s ${config.wireguard.subnet} -d ${fakerSubnet2} -j ACCEPT; iptables -t nat -D POSTROUTING -s ${config.wireguard.subnet} -d ${fakerSubnet2} -o eth1 -j MASQUERADE`,
       );
     });
   });
