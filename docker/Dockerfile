@@ -6,7 +6,7 @@ ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
 
-RUN apk add --update \
+RUN apk add --no-cache \
   dpkg iptables gawk tzdata \
   wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
@@ -43,8 +43,7 @@ COPY --chown=node:node . .
 
 FROM base AS build
 
-ARG OAUTH2PROXY_VERSION="7.9.0"
-ARG NGINX_EXPORTER_VERSION="1.4.2"
+ARG OAUTH2PROXY_VERSION="7.11.0"
 
 RUN apk add --update curl \
   && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
