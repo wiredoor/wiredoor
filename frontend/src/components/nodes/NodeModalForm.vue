@@ -93,7 +93,7 @@ const { isOpen, formData, options, errors, closeDialog, submitDialog, validateFi
           <FormField
             v-if="formData.isGateway"
             field="gatewayNetworks"
-            :label="formData.advanced ? 'Interface & Subnet' : undefined"
+            label="Interface & Subnet"
             description="slot"
             :required="formData.isGateway"
             :errors="errors"
@@ -115,14 +115,14 @@ const { isOpen, formData, options, errors, closeDialog, submitDialog, validateFi
               >
                 <div class="w-full">
                   <div class="grid grid-cols-10 gap-1">
-                    <div v-if="formData.advanced" class="col-span-2">
+                    <div class="col-span-2">
                       <InputField
                         v-model="gatewayNetwork.interface"
                         field="interface"
                         placeholder="eth0"
                       />
                     </div>
-                    <div :class="formData.advanced ? `col-span-8` : `col-span-10`">
+                    <div class="col-span-8">
                       <InputField
                         v-model="gatewayNetwork.subnet"
                         field="subnet"
