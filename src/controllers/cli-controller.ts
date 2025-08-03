@@ -78,13 +78,14 @@ export default class CLiController extends BaseController {
   @UseBefore(
     celebrate({
       body: Joi.object({
+        gatewayInterface: Joi.string().optional(),
         gatewayNetwork: gatewayNetworkValidator,
       }),
     }),
   )
   async updateGatewayNetwork(
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
-    @Body() params: { gatewayNetwork: string },
+    @Body() params: { gatewayNetwork: string; gatewayInterface?: string },
   ): Promise<Node> {
     const node = await this.nodesService.getNode(+cli.nodeId, [
       'httpServices',
@@ -92,8 +93,12 @@ export default class CLiController extends BaseController {
     ]);
 
     if (node.isGateway) {
+      const gatewayNetworks = node.gatewayNetworks;
+      gatewayNetworks[0].interface = params.gatewayInterface || 'eth0';
+      gatewayNetworks[0].subnet = params.gatewayNetwork;
+
       return this.nodesService.updateNode(+cli.nodeId, {
-        gatewayNetwork: params.gatewayNetwork,
+        gatewayNetworks,
       });
     } else {
       throw new BadRequestError(

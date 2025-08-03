@@ -159,7 +159,7 @@ export const httpServiceFilterValidator: ObjectSchema<HttpServiceFilterQueryPara
       .pattern(/,(asc|desc)$/)
       .optional(),
     nodeId: Joi.number().optional(),
-    domain: Joi.string().domain().optional(),
+    domain: Joi.string().optional(),
   });
 
 export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({

@@ -103,7 +103,7 @@ export class NodesService {
         address: node.address,
         allowInternet: node.allowInternet,
         enabled: node.enabled,
-        gatewayNetwork: node.gatewayNetwork,
+        gatewayNetworks: node.gatewayNetworks,
         isGateway: node.isGateway,
       },
       node.wgInterface,
@@ -256,13 +256,17 @@ export class NodesService {
 
   private async disableGateway(node: Node): Promise<void> {
     if (node.isGateway) {
-      await Net.delRoute(node.gatewayNetwork, node.address);
+      for (const network of node.gatewayNetworks) {
+        await Net.delRoute(network.subnet, node.address);
+      }
     }
   }
 
   private async configureGateway(node: Node): Promise<void> {
     if (node.isGateway) {
-      await Net.addRoute(node.gatewayNetwork, node.address);
+      for (const network of node.gatewayNetworks) {
+        await Net.addRoute(network.subnet, node.address, node.wgInterface);
+      }
     }
   }
 }

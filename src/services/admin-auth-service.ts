@@ -30,6 +30,7 @@ export class AdminAuthService {
       config.jwt.secret,
       {
         expiresIn,
+        algorithm: config.jwt.algo,
       },
     );
 

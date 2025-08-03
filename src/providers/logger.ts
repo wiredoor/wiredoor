@@ -13,8 +13,9 @@ export const logger = pino({
     : {
         target: 'pino-pretty',
         options: {
-          colorize: true,
-          translateTime: 'HH:MM:ss.l',
+          colorize: !isProd,
+          singleLine: true,
+          translateTime: 'yyyy-mm-dd HH:MM:ss.l',
           ignore: 'pid,hostname',
         },
       },
@@ -24,7 +25,7 @@ export const httpLogger = pinoHttp({
   logger: logger,
   genReqId: () => uuidv4(),
   customLogLevel: (res, err) => {
-    if (res.statusCode >= 500 || err) return 'error';
+    if (res.statusCode >= 500 || err instanceof Error) return 'error';
     if (res.statusCode >= 400) return 'warn';
     return 'info';
   },
@@ -47,6 +48,12 @@ export const httpLogger = pinoHttp({
     res(res) {
       return {
         statusCode: res.statusCode,
+      };
+    },
+    err(err) {
+      return {
+        message: err.message,
+        stack: err.stack,
       };
     },
   },

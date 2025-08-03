@@ -4,12 +4,12 @@ import config from '../../config';
 export class CreateLocalNodeSeeder1744594394396 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const [node] = await queryRunner.query(`
-        INSERT INTO nodes (name, address, gatewayNetwork, wgInterface, preSharedKey, publicKey, privateKey, allowInternet, enabled, isGateway, isLocal)
+        INSERT INTO nodes (name, address, gatewayNetworks, wgInterface, preSharedKey, publicKey, privateKey, allowInternet, enabled, isGateway, isLocal)
         VALUES 
         (
           'Wiredoor_Local',
           'localhost',
-          '',
+          NULL,
           '',
           '',
           '',

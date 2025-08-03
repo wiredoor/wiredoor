@@ -27,7 +27,7 @@ PostDown = ${wgInterface.postDown}
 [Peer]
 PublicKey = ${client.publicKey}
 PresharedKey = ${client.preSharedKey}
-AllowedIPs = ${client.address}/32${client.isGateway ? `, ${client.gatewayNetwork}` : ''}
+AllowedIPs = ${client.address}/32${client.isGateway ? `, ${client.gatewayNetworks.map((net) => net.subnet).join(', ')}` : ''}
 `;
     return this;
   }

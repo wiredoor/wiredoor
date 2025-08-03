@@ -24,6 +24,11 @@ export interface NodeWithToken extends NodeInfo {
   token: string;
 }
 
+export interface GatewayNetwork {
+  interface: string;
+  subnet: string;
+}
+
 @Entity('nodes')
 export class Node {
   @PrimaryGeneratedColumn()
@@ -40,9 +45,28 @@ export class Node {
   address: string;
 
   @Column({
+    length: 40,
+    nullable: true,
+  })
+  dns: string;
+
+  @Column({
+    type: 'int',
+    unsigned: true,
+    default: 25,
+  })
+  keepalive: number;
+
+  @Column({
     nullable: true,
   })
   gatewayNetwork: string;
+
+  @Column({
+    type: 'json',
+    nullable: true,
+  })
+  gatewayNetworks: GatewayNetwork[];
 
   @Column({
     default: 'wg0',
@@ -65,6 +89,11 @@ export class Node {
     default: false,
   })
   allowInternet: boolean;
+
+  @Column({
+    default: false,
+  })
+  advanced: boolean;
 
   @Column('boolean', {
     default: true,

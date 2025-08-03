@@ -76,7 +76,9 @@ onUnmounted(async () => {
 </script>
 <template>
   <div v-if="node && !loading">
-    <BreadCrumb :items="[{ label: 'Client / Nodes', to: { name: 'nodes' } }, { label: node.name }]" />
+    <BreadCrumb
+      :items="[{ label: 'Client / Nodes', to: { name: 'nodes' } }, { label: node.name }]"
+    />
 
     <div class="grid grid-cols-12 gap-4">
       <div
@@ -103,9 +105,11 @@ onUnmounted(async () => {
                       <span class="font-semibold">IP:</span>
                       {{ node.address }}
                     </div>
-                    <div v-if="node.isGateway" class="text-sm text-gray-500 dark:text-gray-400">
+                    <div v-if="node.isGateway && node.gatewayNetworks?.length" class="text-sm text-gray-500 dark:text-gray-400">
                       <span class="font-semibold">Subnet:</span>
-                      {{ node.gatewayNetwork }}
+                      {{
+                        node.gatewayNetworks.map((net) => `${net.interface}: ${net.subnet}`).join(', ')
+                      }}
                     </div>
                   </div>
                 </div>

@@ -21,13 +21,15 @@ export const getDataFromToken = async (token: string): Promise<any> => {
   let data = undefined;
 
   try {
-    const jwtDef = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const jwtDef = btoa(JSON.stringify({ alg: config.jwt.algo, typ: 'JWT' }));
 
     if (!token.startsWith(jwtDef)) {
       token = `${jwtDef}.${token}`;
     }
 
-    data = jwt.verify(token, config.jwt.secret);
+    data = jwt.verify(token, config.jwt.secret, {
+      algorithm: config.jwt.algo,
+    });
 
     return data;
   } catch {
