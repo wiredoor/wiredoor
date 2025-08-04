@@ -11,7 +11,7 @@ interface Toast {
 
 const toasts = ref<Toast[]>([])
 
-const toast = (message: string, type: ToastType = 'info', duration = 3000) => {
+const toast = (message: string, type: ToastType = 'info', duration = 6000) => {
   const id = Date.now()
   toasts.value.push({ id, message, type, duration })
 

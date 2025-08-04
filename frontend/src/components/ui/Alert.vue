@@ -74,7 +74,7 @@ const props = defineProps({
             d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm1 12H7V7h2v5zM8 6c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"
           />
         </svg>
-        <div>
+        <div class="max-w-md text-gray-800 dark:text-gray-200">
           {{ props.message }}
         </div>
       </div>
