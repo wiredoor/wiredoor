@@ -255,7 +255,7 @@ export class NodesService {
   }
 
   private async disableGateway(node: Node): Promise<void> {
-    if (node.isGateway) {
+    if (node.isGateway && node.gatewayNetworks?.length) {
       for (const network of node.gatewayNetworks) {
         await Net.delRoute(network.subnet, node.address);
       }
