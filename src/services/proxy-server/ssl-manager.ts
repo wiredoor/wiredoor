@@ -46,31 +46,6 @@ export class SSLManager {
     }
   }
 
-  static async generateDefaultCerts(): Promise<void> {
-    if (
-      FileManager.mkdirSync(`/data/ssl`) &&
-      FileManager.mkdirSync(selfSignedCertificatePath)
-    ) {
-      const defaultKey = `/data/ssl/privkey.key`;
-      const defaultCert = `/data/ssl/cert.crt`;
-      if (!FileManager.isPath(defaultCert) && !FileManager.isPath(defaultKey)) {
-        await CLI.exec(`openssl genpkey -algorithm RSA -out ${defaultKey}`);
-        await CLI.exec(
-          `openssl req -new -key ${defaultKey} -out /data/ssl/default.csr -config ${opensslConf}`,
-        );
-        await CLI.exec(
-          `openssl x509 -req -days 3650 -in /data/ssl/default.csr -signkey ${defaultKey} -out ${defaultCert}`,
-        );
-      }
-      await CLI.exec(
-        `ln -sfn ${defaultKey} ${selfSignedCertificatePath}/privkey.key`,
-      );
-      await CLI.exec(
-        `ln -sfn ${defaultCert} ${selfSignedCertificatePath}/cert.crt`,
-      );
-    }
-  }
-
   static async getCertbotCertificates(domain: string): Promise<SSLCerts> {
     const certPath = `/etc/letsencrypt/live/${domain}`;
 
