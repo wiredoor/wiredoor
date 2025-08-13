@@ -131,6 +131,6 @@ export const httpServiceValidator: ObjectSchema<HttpServiceForm> = Joi.object({
   }),
   skipAuthRoutes: Joi.string().when('requireAuth', {
     is: true,
-    then: Joi.string().external(validateNginxBypassPaths).optional(),
+    then: Joi.string().external(validateNginxBypassPaths).allow('', null).optional(),
   }),
 }).or('domain', 'pathLocation')

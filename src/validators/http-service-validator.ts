@@ -188,7 +188,7 @@ export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({
   }),
   skipAuthRoutes: Joi.string().when('requireAuth', {
     is: true,
-    then: Joi.string().external(validateBypassPaths).optional(),
+    then: Joi.string().external(validateBypassPaths).allow('', null).optional(),
   }),
   ttl: ttlValidator,
 }).or('domain', 'pathLocation');
