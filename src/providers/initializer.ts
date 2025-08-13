@@ -13,7 +13,7 @@ export default async (): Promise<void> => {
   try {
     await Container.get(WireguardService).initialize();
   } catch (e) {
-    logger.warn(`Unable to initialize VPN server`, e);
+    logger.warn(e, `Unable to initialize VPN server`);
   }
 
   try {
