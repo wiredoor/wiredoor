@@ -2,6 +2,7 @@
 set -e
 
 mkdir -p /data/ssl
+mkdir -p /etc/nginx/ssl
 
 openssl genpkey -algorithm RSA -out /data/ssl/privkey.key
 openssl req -new -key /data/ssl/privkey.key -out /data/ssl/default.csr -config /etc/openssl/openssl.cnf
