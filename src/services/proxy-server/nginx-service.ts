@@ -107,7 +107,7 @@ export abstract class NginxService {
         `conntrack -D -p tcp --dst ${service.node.address} --dport ${service.backendPort}`,
       );
     } catch (err) {
-      logger.warn(`Unable to reset TCP connection:`, err);
+      logger.warn(err, `Unable to reset TCP connection:`);
     }
   }
 }

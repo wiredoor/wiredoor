@@ -40,7 +40,7 @@ export class SetupSSE implements ExpressMiddlewareInterface {
 
         res.write(payload);
       } catch (e) {
-        logger.error('Error sending event stream', e);
+        logger.error(e, 'Error sending event stream');
       }
     };
 

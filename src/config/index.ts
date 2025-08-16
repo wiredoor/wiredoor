@@ -42,7 +42,7 @@ function getJWTKey(): string {
     fs.writeFileSync(filePath, newKey, { mode: 0o600 });
     return newKey;
   } catch (error) {
-    logger.error('Error loading or generating JWT key:', error);
+    logger.error({ err: error }, 'Error loading or generating JWT key:');
     throw error;
   }
 }

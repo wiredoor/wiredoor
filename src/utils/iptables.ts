@@ -104,7 +104,7 @@ export default class Iptables {
       const output = execSync(`iptables -t ${table} -S`).toString();
       return output.trim().split('\n');
     } catch (error) {
-      logger.error('Error listing rules:', error);
+      logger.error(error, 'Error listing rules:');
       return [];
     }
   }
@@ -134,7 +134,7 @@ export default class Iptables {
       this.debugMessage(`Rule added: ${JSON.stringify(rule, null, 2)}`);
       return true;
     } catch (error) {
-      logger.error('Error adding rule:', error);
+      logger.error(error, 'Error adding rule:');
       return false;
     }
   }
@@ -164,7 +164,7 @@ export default class Iptables {
       this.debugMessage(`Rule deleted: ${JSON.stringify(rule, null, 2)}`);
       return true;
     } catch (error) {
-      logger.error('Error deleting rule:', error);
+      logger.error(error, 'Error deleting rule:');
       return false;
     }
   }

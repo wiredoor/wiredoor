@@ -140,6 +140,8 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --target=production \
+            --provenance=mode=max \
+            --sbom=true \
             -f docker/Dockerfile \
             $TAG_ARGS \
             --push \
