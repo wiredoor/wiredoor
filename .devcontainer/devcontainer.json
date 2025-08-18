@@ -28,7 +28,7 @@
   "mounts": [
     "source=wiredoor-vol,target=/app,type=volume"
   ],
-  "postCreateCommand": "rsync -a --delete --exclude '**/node_modules' /workspaces/wiredoor/ /app/",
+  "postCreateCommand": "rsync -a --delete --exclude '.git' --exclude '**/node_modules' /workspaces/wiredoor/ /app/",
   "remoteUser": "root",
   "capAdd": [ "NET_ADMIN" ]
 }
