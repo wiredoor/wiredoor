@@ -120,11 +120,11 @@ jobs:
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "TAGS=latest" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
-            echo "TAGS=dev,dev-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
             echo "TAGS=${TAG_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "TAGS=dev,dev-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           fi
 
       - name: Build and Push Image with All Tags
