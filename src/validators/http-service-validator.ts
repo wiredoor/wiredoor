@@ -186,7 +186,7 @@ export const httpServiceValidator: ObjectSchema<HttpServiceType> = Joi.object({
     then: Joi.boolean().allow(null).optional(),
     otherwise: Joi.boolean().valid(false).allow(null).optional(),
   }),
-  skipAuthRoutes: Joi.string().when('requireAuth', {
+  skipAuthRoutes: Joi.when('requireAuth', {
     is: true,
     then: Joi.string().external(validateBypassPaths).allow('', null).optional(),
   }),
