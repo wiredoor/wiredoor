@@ -11,6 +11,11 @@ on:
     branches:
       - main
       - development
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git Branch, Tag or SHA"
+        required: false
 
 permissions:
   contents: read
