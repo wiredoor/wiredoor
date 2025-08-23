@@ -25,22 +25,33 @@ iptables -D FORWARD -i wg0 -j ACCEPT;
 iptables -D FORWARD -o wg0 -j ACCEPT;
 `;
 
-function getJWTKey(): string {
-  if (process.env.PRIVATE_KEY) {
-    return process.env.PRIVATE_KEY;
-  }
-  const filePath: string = '/data/.key';
+const ACCESS_TOKEN_KEY_ENV = 'PRIVATE_KEY';
+const REFRESH_TOKEN_KEY_ENV = 'REFRESH_PRIVATE_KEY';
+const ENCRYPTION_KEY_ENV = 'ENCRYPTION_KEY';
+
+function getKey(
+  name: string,
+  file: string,
+  length = 64,
+  base64 = true,
+): string {
+  const envValue = process.env[name];
+  if (envValue) return envValue.trim();
+
   try {
-    if (fs.existsSync(filePath)) {
-      return fs.readFileSync(filePath, 'utf-8').trim();
+    if (fs.existsSync(file)) {
+      return fs.readFileSync(file, 'utf-8').trim();
     }
-    const newKey = randomBytes(64).toString('base64');
+    const rawKey = randomBytes(length);
+    const secret = base64 ? rawKey.toString('base64') : rawKey.toString('hex');
 
-    const dir = path.dirname(filePath);
+    const dir = path.dirname(file);
     fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(file, secret, { mode: 0o600 });
 
-    fs.writeFileSync(filePath, newKey, { mode: 0o600 });
-    return newKey;
+    logger.info(`Secret ${name} was generated and stored at ${file}`);
+
+    return secret;
   } catch (error) {
     logger.error({ err: error }, 'Error loading or generating JWT key:');
     throw error;
@@ -65,8 +76,12 @@ export default {
     database: process.env.DB_DATABASE || '/data/db.sqlite',
   },
   jwt: {
-    secret: getJWTKey(),
+    secret: getKey(ACCESS_TOKEN_KEY_ENV, '/data/.key'),
+    refreshSecret: getKey(REFRESH_TOKEN_KEY_ENV, '/data/.refresh.key'),
     algo: process.env.JWT_ALGORITHM || 'HS256',
+  },
+  encryption: {
+    secret: getKey(ENCRYPTION_KEY_ENV, '/data/.enc.key'),
   },
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,

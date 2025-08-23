@@ -4,6 +4,38 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 
+export type Session = {
+  user: {
+    id: string;
+    username: string;
+    email?: string;
+    roles: string[];
+  };
+  accessToken?: string;
+};
+
+export interface AuthenticationProvider {
+  getSession(req: any): Promise<Session | null>;
+}
+
+export interface AuthenticatedUser {
+  iss?: string;
+  aud?: string;
+  sub: string;
+  preferred_username: string;
+  email: string;
+  email_verified?: boolean;
+  realm_access?: {
+    roles: string[];
+  };
+  resource_access?: {
+    [client: string]: {
+      roles: string[];
+    };
+  };
+  source?: string;
+}
+
 export interface JWTResponse {
   token: string;
   expiresIn: string;
