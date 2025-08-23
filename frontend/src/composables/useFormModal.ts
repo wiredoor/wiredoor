@@ -103,7 +103,6 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
 
   const submitDialog = async (): Promise<void> => {
     const isValid = await validate()
-    console.log(isValid)
     if (isValid) {
       let method: 'post' | 'patch' = 'post'
       let endpoint: string | undefined = options.value?.endpoint
@@ -130,6 +129,8 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
           }
         }
       }
+    } else {
+      console.log('Validation failed')
     }
   }
 
