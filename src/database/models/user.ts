@@ -4,12 +4,10 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  JoinTable,
-  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Role } from './role';
+import { USER_ROLES } from '../../utils/constants';
 
 @Entity('users')
 export class User {
@@ -51,19 +49,18 @@ export class User {
   })
   totpSecret: string;
 
+  @Column({
+    type: 'enum',
+    enum: USER_ROLES,
+    default: 'viewer',
+  })
+  role: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ManyToMany(() => Role, (r) => r.users, { cascade: false })
-  @JoinTable({
-    name: 'user_roles',
-    joinColumn: { name: 'userId', referencedColumnName: 'id' },
-    inverseJoinColumn: { name: 'roleId', referencedColumnName: 'id' },
-  })
-  roles: Role[];
 
   @Expose()
   get fullName(): string {

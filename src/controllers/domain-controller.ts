@@ -1,6 +1,7 @@
 import { Inject, Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import {
+  Authorized,
   Body,
   Delete,
   Get,
@@ -22,6 +23,7 @@ import {
 import { Domain } from '../database/models/domain';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { AdminTokenHandler } from '../middlewares/admin-token-handler';
+import { ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER } from '../utils/constants';
 
 @Service()
 @JsonController('/domains')
@@ -32,6 +34,7 @@ export default class DomainController extends BaseController {
   }
 
   @Get('/')
+  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       query: domainFilterValidator,
@@ -44,6 +47,7 @@ export default class DomainController extends BaseController {
   }
 
   @Post('/')
+  @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       body: domainValidator,
@@ -54,6 +58,7 @@ export default class DomainController extends BaseController {
   }
 
   @Get('/:id')
+  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -64,6 +69,7 @@ export default class DomainController extends BaseController {
   }
 
   @Patch('/:id')
+  @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -75,6 +81,7 @@ export default class DomainController extends BaseController {
   }
 
   @Delete('/:id')
+  @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),

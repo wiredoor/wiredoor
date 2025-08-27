@@ -64,13 +64,27 @@ export default ({ app }: { app: express.Application }): void => {
       },
       credentials: true,
     },
-    // authorizationChecker: async (action: Action) => {
-    //   if (action.request.user) {
-    //     return true;
-    //   }
+    authorizationChecker: async (action: Action, roles: string[]) => {
+      if (action.request.user && !roles) {
+        return true;
+      }
 
-    //   return false;
-    // },
+      let hasRoles = false;
+
+      roles.forEach((r) => {
+        if (
+          action.request.user?.roles &&
+          action.request.user.roles.includes(r) &&
+          !hasRoles
+        ) {
+          hasRoles = true;
+        }
+      });
+
+      return hasRoles;
+
+      return false;
+    },
     currentUserChecker: (action: Action) => {
       return action.request.user;
     },
