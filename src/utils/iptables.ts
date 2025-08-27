@@ -27,7 +27,7 @@ export enum Target {
   SNAT = 'SNAT',
 }
 
-enum IptablesActions {
+export enum IptablesActions {
   ADD = '-A', // Add (Append) Rule
   INSERT = '-I', // Insert Rule
   DELETE = '-D', // Delete Rule
