@@ -3,6 +3,7 @@ import net from 'net';
 import tls from 'tls';
 import dns from 'dns';
 import https from 'https';
+import dgram from 'dgram';
 import CLI from './cli';
 import config from '../config';
 import { Resolver } from 'dns/promises';
@@ -222,6 +223,51 @@ export default class Net {
       socket.on('error', () => {
         socket.destroy();
         resolve(false);
+      });
+    });
+  }
+
+  static async checkUdpPort(
+    host: string,
+    port: number,
+    resolver?: string,
+    timeout = 3000,
+  ): Promise<boolean> {
+    if (resolver) {
+      const dnsResolver = new Resolver();
+      dnsResolver.setServers([resolver]);
+      const [resolved] = await dnsResolver.resolve4(host);
+      host = resolved;
+    }
+
+    return new Promise((resolve) => {
+      const socket = dgram.createSocket('udp4');
+
+      const message = Buffer.from('ping');
+
+      const timer = setTimeout(() => {
+        socket.close();
+        resolve(false);
+      }, timeout);
+
+      socket.on('message', () => {
+        clearTimeout(timer);
+        socket.close();
+        resolve(true);
+      });
+
+      socket.on('error', () => {
+        clearTimeout(timer);
+        socket.close();
+        resolve(false);
+      });
+
+      socket.send(message, port, host, (err) => {
+        if (err) {
+          clearTimeout(timer);
+          socket.close();
+          resolve(false);
+        }
       });
     });
   }

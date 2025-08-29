@@ -14,6 +14,7 @@ export class BaseServices {
     port: number,
     host?: string,
     ssl?: boolean,
+    protocol: 'tcp' | 'udp' = 'tcp',
   ): Promise<void> {
     const node = await this.nodeRepo.findOne({
       where: { id: nodeId },
@@ -28,7 +29,13 @@ export class BaseServices {
     const resolver =
       node.isGateway && host && !IP_CIDR.isValidIP(host) ? node.address : null;
 
-    const portAvailable = await Net.checkPort(server, port, resolver, ssl);
+    let portAvailable = false;
+
+    if (protocol === 'tcp') {
+      portAvailable = await Net.checkPort(server, port, resolver, ssl);
+    } else if (protocol === 'udp') {
+      portAvailable = await Net.checkUdpPort(server, port, resolver);
+    }
 
     if (!portAvailable) {
       throw new ValidationError({
