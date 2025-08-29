@@ -14,7 +14,6 @@ import { Node } from '../../database/models/node';
 import { makeTcpServiceData } from './stubs/tcp-service.stub';
 import {
   mockCheckPort,
-  mockCheckUdpPort,
   mockCLIExec,
   mockIsPath,
   mockNslookup,
@@ -254,9 +253,7 @@ describe('TCP Services Service', () => {
 
       const result = await service.createTcpService(node.id, serviceData);
 
-      if (serviceData.proto === 'udp') {
-        expect(mockCheckUdpPort).toHaveBeenCalled();
-      } else {
+      if (serviceData.proto === 'tcp') {
         expect(mockCheckPort).toHaveBeenCalled();
       }
 
@@ -314,9 +311,7 @@ describe('TCP Services Service', () => {
 
       const result = await service.createTcpService(node.id, serviceData);
 
-      if (serviceData.proto === 'udp') {
-        expect(mockCheckUdpPort).toHaveBeenCalled();
-      } else {
+      if (serviceData.proto === 'tcp') {
         expect(mockCheckPort).toHaveBeenCalled();
       }
 

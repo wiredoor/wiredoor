@@ -92,13 +92,9 @@ export class TcpServicesService extends BaseServices {
 
     const expiresAt = calculateExpiresAtFromTTL(params.ttl);
 
-    await this.checkNodePort(
-      nodeId,
-      params.backendPort,
-      params.backendHost,
-      false,
-      params.proto as 'tcp' | 'udp',
-    );
+    if (params.proto === 'tcp') {
+      await this.checkNodePort(nodeId, params.backendPort, params.backendHost);
+    }
 
     const { id } = await this.tcpServiceRepository.save({
       ...params,
@@ -119,13 +115,11 @@ export class TcpServicesService extends BaseServices {
   ): Promise<TcpService> {
     const old = await this.getTcpService(id, ['node']);
 
-    if (params.backendPort && params.backendHost) {
+    if (params.backendPort && params.backendHost && params.proto === 'tcp') {
       await this.checkNodePort(
         old.nodeId,
         params.backendPort,
         params.backendHost,
-        false,
-        params.proto as 'tcp' | 'udp',
       );
     }
 

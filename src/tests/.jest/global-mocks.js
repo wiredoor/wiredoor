@@ -77,9 +77,6 @@ const mockCheckCname = jest.fn(() => {
 const mockCheckPort = jest.fn(() => {
   return true;
 });
-const mockCheckUdpPort = jest.fn(() => {
-  return true;
-});
 const mockGetAvailablePort = jest.fn((arr, min, max) => {
   let port = faker.number.int({ min, max });
 
@@ -111,7 +108,6 @@ jest.mock('../../utils/net.ts', () => {
     getAvailablePort: mockGetAvailablePort,
     getAvailableLocalPort: mockGetAvailablePort,
     checkPort: mockCheckPort,
-    checkUdpPort: mockCheckUdpPort,
     getWireguardIP: jest.fn(() => config.wireguard.host),
   };
 });
@@ -199,7 +195,6 @@ module.exports = {
   mockIsLink,
   mockCheckCname,
   mockCheckPort,
-  mockCheckUdpPort,
   mockGetAvailablePort,
   mockAuthenticatedToken,
 };
