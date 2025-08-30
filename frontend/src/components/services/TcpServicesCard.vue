@@ -214,7 +214,7 @@ const editService = (service: TcpService) => {
                     :href="`/nodes/${row.id}/disable`"
                     @click.prevent="
                       () => {
-                        disableService(row.nodeId as number, 'tcp', row.id, () => { table.removeItem(row.id, { ...row, enabled: false }) })
+                        disableService(row.nodeId as number, 'tcp', row.id, () => { table.updateItem(row.id, { ...row, enabled: false }) })
                         close()
                       }
                     "
@@ -251,7 +251,7 @@ const editService = (service: TcpService) => {
                     :href="`/services/${row.id}/delete`"
                     @click.prevent="
                       () => {
-                        deleteService(row.nodeId as number, 'tcp', row.id, () => { table.deleteItem(row.id) })
+                        deleteService(row.nodeId as number, 'tcp', row.id, () => { table.removeItem(row.id) })
                         close()
                       }
                     "
