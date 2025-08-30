@@ -31,8 +31,7 @@ COPY --from=python-base /install/supervisorctl /usr/bin/supervisorctl
 COPY --from=python-base /opt/certbot /opt/certbot
 
 RUN apk add --no-cache \
-  iptables gawk tzdata \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl \
+  tzdata iptables wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3 \
