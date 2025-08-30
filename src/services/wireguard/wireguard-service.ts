@@ -112,6 +112,10 @@ class WireguardService {
 
     const config = this.getServerConfig(serverConfig, clients);
 
+    logger.info(
+      `Saving Wireguard config to /etc/wireguard/${wgInterface}.conf`,
+    );
+
     await FileManager.saveToFile(
       `/etc/wireguard/${wgInterface}.conf`,
       config,
