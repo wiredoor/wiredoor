@@ -1,3 +1,14 @@
+FROM python:3.12-alpine AS python-base
+
+RUN apk add --no-cache py3-pip build-base
+
+RUN pip install --upgrade pip setuptools wheel \
+  && pip install --no-cache-dir supervisor \
+  && mkdir -p /install/site-packages \
+  && cp -r /usr/local/lib/python3.12/site-packages/supervisor /install/site-packages/ \
+  && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/ \
+  && cp -r /usr/local/bin/supervisord /usr/local/bin/supervisorctl /install/
+
 FROM node:22-alpine AS base
 
 WORKDIR /app
@@ -8,8 +19,14 @@ ENV TZ=America/New_York
 
 RUN apk add --no-cache \
   dpkg iptables gawk tzdata \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot \
-  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl certbot \
+  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3
+
+COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
+COPY --from=python-base /install/supervisord /usr/bin/supervisord
+COPY --from=python-base /install/supervisorctl /usr/bin/supervisorctl
 
 COPY docker/resources/crontabs /etc/crontabs/
 COPY docker/resources/nginx /etc/nginx/
