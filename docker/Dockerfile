@@ -1,9 +1,16 @@
 FROM python:3.12-alpine AS python-base
 
-RUN apk add --no-cache py3-pip build-base
+ARG OAUTH2PROXY_VERSION="7.12.0"
 
-RUN pip install --upgrade pip setuptools wheel \
+RUN apk add --no-cache py3-pip build-base curl \
+  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
+  && tar -xzf /tmp/oauth2-proxy.tar.gz \
+  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy \
+  && pip install --upgrade pip setuptools wheel \
   && pip install --no-cache-dir supervisor \
+  && python3 -m venv /opt/certbot/ \
+  && /opt/certbot/bin/pip install --upgrade pip \
+  && /opt/certbot/bin/pip install certbot \
   && mkdir -p /install/site-packages \
   && cp -r /usr/local/lib/python3.12/site-packages/supervisor /install/site-packages/ \
   && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/ \
@@ -17,16 +24,19 @@ ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
 
-RUN apk add --no-cache \
-  dpkg iptables gawk tzdata \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl certbot \
-  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3
-
 COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
 COPY --from=python-base /install/supervisord /usr/bin/supervisord
 COPY --from=python-base /install/supervisorctl /usr/bin/supervisorctl
+
+COPY --from=python-base /opt/certbot /opt/certbot
+
+RUN apk add --no-cache \
+  iptables gawk tzdata \
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl \
+  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3 \
+  && ln -s /opt/certbot/bin/certbot /usr/bin/certbot
 
 COPY docker/resources/crontabs /etc/crontabs/
 COPY docker/resources/nginx /etc/nginx/
@@ -59,13 +69,6 @@ RUN npm i
 COPY --chown=node:node . .
 
 FROM base AS build
-
-ARG OAUTH2PROXY_VERSION="7.12.0"
-
-RUN apk add --update curl \
-  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
-  && tar -xzf /tmp/oauth2-proxy.tar.gz \
-  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy
 
 COPY --chown=node:node package*.json ./
 
@@ -101,7 +104,7 @@ LABEL org.opencontainers.image.licenses=MIT \
       org.opencontainers.image.title=wiredoor \
       org.opencontainers.image.version=${VERSION}
 
-COPY --from=build /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
+COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
 COPY --chown=node:node --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node --from=build /app/dist /app/dist
 COPY --chown=node:node --from=uibuild /app/dist /app/dist/public
