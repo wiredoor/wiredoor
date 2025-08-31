@@ -13,8 +13,7 @@ RUN apk add --no-cache py3-pip build-base curl \
   && /opt/certbot/bin/pip install certbot \
   && mkdir -p /install/site-packages \
   && cp -r /usr/local/lib/python3.12/site-packages/supervisor /install/site-packages/ \
-  && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/ \
-  && cp -r /usr/local/bin/supervisord /usr/local/bin/supervisorctl /install/
+  && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/
 
 FROM node:22-alpine AS base
 
@@ -25,8 +24,7 @@ ARG VERSION=1.0.0
 ENV TZ=America/New_York
 
 COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
-COPY --from=python-base /install/supervisord /usr/bin/supervisord
-COPY --from=python-base /install/supervisorctl /usr/bin/supervisorctl
+COPY --from=python-base /usr/local/bin/supervisord /usr/local/bin/supervisorctl /usr/bin/
 
 COPY --from=python-base /opt/certbot /opt/certbot
 
