@@ -8,7 +8,7 @@ ENV TZ=America/New_York
 
 RUN apk add --no-cache \
   dpkg iptables gawk tzdata \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot libcap \
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot libcap sudo \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 COPY docker/resources/crontabs /etc/crontabs/
@@ -16,22 +16,29 @@ COPY --chown=node:node docker/resources/nginx /etc/nginx/
 COPY docker/resources/openssl /etc/openssl/
 COPY docker/resources/supervisor /etc/supervisor/
 COPY docker/resources/fluent-bit /etc/fluent-bit/
+COPY docker/resources/sudoers.d /etc/sudoers.d/
 
 RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && chown -R node:node /var/run/supervisor /var/log/supervisor \
-  && mkdir -p /var/run/nginx /var/log/nginx /etc/nginx/{ssl,stream.d} /var/www/letsencrypt \
-  && chown -R node:node /var/run/nginx /var/log/nginx /etc/nginx/{ssl,stream.d} /var/www/letsencrypt \
-  && mkdir -P /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
+  && rm -f /etc/supervisord.conf \
+  && ln -s /etc/supervisor/supervisord.conf /etc/supervisord.conf \
+  && mkdir -p /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt \
+  && chown -R node:node /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt \
+  && rm -f /etc/nginx/conf.d/stream.conf \
+  && mkdir -p /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
   && chown -R node:node /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
   && mkdir -p /data \
   && chown -R node:node /data \
+  && mkdir -p /etc/wireguard \
+  && chown -R node:node /etc/wireguard \
+  && touch /etc/environment \
+  && chown node:node /etc/environment \
   && touch /var/log/supervisor/app.stdout.log \
   && ln -sf /dev/stdout /var/log/supervisor/app.stdout.log \
   && touch /var/log/supervisor/app.stderr.log \
   && ln -sf /dev/stderr /var/log/supervisor/app.stderr.log
 
-RUN setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx \
-  && setcap 'cap_net_admin,cap_net_raw+ep' /usr/bin/tcpdump /sbin/ip /usr/bin/wg /usr/sbin/iptables
+RUN setcap cap_net_bind_service=+ep /usr/sbin/nginx
 
 FROM base AS dev-container
 
