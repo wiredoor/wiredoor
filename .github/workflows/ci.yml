@@ -168,11 +168,11 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "TAG=latest" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF}" == "refs/heads/development" ]]; then
-            echo "TAG=dev" >> $GITHUB_OUTPUT
           elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
             echo "TAG=${TAG_NAME}" >> $GITHUB_OUTPUT
+          else
+            echo "TAG=dev-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           fi
 
       - name: Install Trivy
