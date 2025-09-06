@@ -252,6 +252,12 @@ class WireguardService {
       pingStatus.reachable
     ) {
       status = 'online';
+    } else if (
+      pingStatus &&
+      pingStatus.lastPingTs === null &&
+      Date.now() / 1000 - runtimeInfo.latestHandshake < 120
+    ) {
+      status = 'online';
     }
 
     return {
