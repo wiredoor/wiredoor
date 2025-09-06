@@ -45,7 +45,7 @@ RUN setcap cap_net_bind_service=+ep /usr/sbin/nginx
 
 FROM base AS dev-container
 
-RUN apk add --update git rsync nano curl bash sqlite \
+RUN apk add --update git rsync nano curl bash sqlite supervisor certbot \
   && rm -f /etc/supervisor/conf.d/app.conf
 
 CMD [ "bash", "-c", "/usr/bin/supervisord -ns -c /etc/supervisor/supervisord.conf" ]
