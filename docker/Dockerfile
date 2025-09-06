@@ -5,6 +5,7 @@ WORKDIR /app
 ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
+ENV PYTHONWARNINGS="ignore:::pkg_resources"
 
 RUN apk add --no-cache \
   iptables tzdata supercronic \
