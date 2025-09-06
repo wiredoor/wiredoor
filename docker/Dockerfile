@@ -39,9 +39,8 @@ RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && touch /var/log/supervisor/app.stdout.log \
   && ln -sf /dev/stdout /var/log/supervisor/app.stdout.log \
   && touch /var/log/supervisor/app.stderr.log \
-  && ln -sf /dev/stderr /var/log/supervisor/app.stderr.log
-
-RUN setcap cap_net_bind_service=+ep /usr/sbin/nginx
+  && ln -sf /dev/stderr /var/log/supervisor/app.stderr.log \
+  && setcap cap_net_bind_service=+ep /usr/sbin/nginx
 
 FROM base AS dev-container
 
