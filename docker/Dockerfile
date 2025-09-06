@@ -7,7 +7,7 @@ ARG VERSION=1.0.0
 ENV TZ=America/New_York
 
 RUN apk add --no-cache \
-  dpkg iptables gawk tzdata \
+  iptables tzdata supercronic \
   wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream supervisor openssl certbot libcap sudo \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
