@@ -55,6 +55,14 @@ export class NginxServerConf extends NginxConf {
     return this;
   }
 
+  setDefaultPages(): NginxServerConf {
+    this.addBlock('# Default pages', '');
+    this.addBlock('root', '/etc/nginx/default_pages/');
+    this.addBlock('index', 'index.html');
+
+    return this;
+  }
+
   setStreamSSLCertificate(sslPair: SSLCerts): NginxServerConf {
     this.setSSLCertificate(sslPair);
     this.addBlock('include', 'partials/stream_ssl.conf');

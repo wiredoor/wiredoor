@@ -1,3 +1,62 @@
+FROM node:22-alpine AS base
+
+WORKDIR /app
+
+ARG VERSION=1.0.0
+
+ENV TZ=America/New_York
+ENV PYTHONWARNINGS="ignore:::pkg_resources"
+
+RUN apk add --no-cache \
+  iptables tzdata supercronic \
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl libcap sudo \
+  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
+  && ln -s /usr/bin/python3.12 /usr/local/bin/python3
+
+COPY docker/resources/crontabs /etc/crontabs/
+COPY --chown=node:node docker/resources/nginx /etc/nginx/
+COPY docker/resources/openssl /etc/openssl/
+COPY docker/resources/supervisor /etc/supervisor/
+COPY docker/resources/fluent-bit /etc/fluent-bit/
+COPY docker/resources/sudoers.d /etc/sudoers.d/
+
+RUN mkdir -p /var/run/supervisor /var/log/supervisor \
+  && chown -R node:node /var/run/supervisor /var/log/supervisor \
+  && rm -f /etc/supervisord.conf \
+  && ln -s /etc/supervisor/supervisord.conf /etc/supervisord.conf \
+  && mkdir -p /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt \
+  && chown -R node:node /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt \
+  && rm -f /etc/nginx/conf.d/stream.conf \
+  && mkdir -p /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
+  && chown -R node:node /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
+  && mkdir -p /data \
+  && chown -R node:node /data \
+  && mkdir -p /etc/wireguard \
+  && chown -R node:node /etc/wireguard \
+  && touch /etc/environment \
+  && chown node:node /etc/environment \
+  && touch /var/log/supervisor/app.stdout.log \
+  && ln -sf /dev/stdout /var/log/supervisor/app.stdout.log \
+  && touch /var/log/supervisor/app.stderr.log \
+  && ln -sf /dev/stderr /var/log/supervisor/app.stderr.log \
+  && setcap cap_net_bind_service=+ep /usr/sbin/nginx
+
+FROM base AS dev-container
+
+RUN apk add --update git rsync nano curl bash sqlite supervisor certbot \
+  && rm -f /etc/supervisor/conf.d/app.conf
+
+CMD [ "bash", "-c", "/usr/bin/supervisord -ns -c /etc/supervisor/supervisord.conf" ]
+
+FROM base AS development
+
+COPY --chown=node:node package*.json .
+
+RUN npm i
+
+COPY --chown=node:node . .
+
 FROM python:3.12-alpine AS python-base
 
 ARG OAUTH2PROXY_VERSION="7.12.0"
@@ -14,56 +73,6 @@ RUN apk add --no-cache py3-pip build-base curl \
   && mkdir -p /install/site-packages \
   && cp -r /usr/local/lib/python3.12/site-packages/supervisor /install/site-packages/ \
   && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/
-
-FROM node:22-alpine AS base
-
-WORKDIR /app
-
-ARG VERSION=1.0.0
-
-ENV TZ=America/New_York
-
-COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
-COPY --from=python-base /usr/local/bin/supervisord /usr/local/bin/supervisorctl /usr/bin/
-
-COPY --from=python-base /opt/certbot /opt/certbot
-
-RUN apk add --no-cache \
-  gawk tzdata iptables wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl \
-  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3 \
-  && ln -s /opt/certbot/bin/certbot /usr/bin/certbot
-
-COPY docker/resources/crontabs /etc/crontabs/
-COPY docker/resources/nginx /etc/nginx/
-COPY docker/resources/openssl /etc/openssl/
-COPY docker/resources/supervisor /etc/supervisor/
-COPY docker/resources/fluent-bit /etc/fluent-bit/
-
-RUN mkdir -p /var/log/supervisor \
-  && mkdir -p /var/www/letsencrypt \
-  && mkdir -p /data \
-  && rm -f /etc/nginx/conf.d/stream.conf \
-  && touch /var/log/supervisor/app.stdout.log \
-  && ln -sf /dev/stdout /var/log/supervisor/app.stdout.log \
-  && touch /var/log/supervisor/app.stderr.log \
-  && ln -sf /dev/stderr /var/log/supervisor/app.stderr.log
-
-FROM base AS dev-container
-
-RUN apk add --update git rsync nano curl bash sqlite \
-  && rm -f /etc/supervisor/conf.d/app.conf
-
-CMD [ "bash", "-c", "/usr/bin/supervisord -ns -c /etc/supervisor/supervisord.conf" ]
-
-FROM base AS development
-
-COPY --chown=node:node package*.json .
-
-RUN npm i
-
-COPY --chown=node:node . .
 
 FROM base AS build
 
@@ -102,15 +111,19 @@ LABEL org.opencontainers.image.licenses=MIT \
       org.opencontainers.image.version=${VERSION}
 
 COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
+COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
+COPY --from=python-base /usr/local/bin/supervisord /usr/local/bin/supervisorctl /usr/bin/
+COPY --from=python-base /opt/certbot /opt/certbot
 COPY --chown=node:node --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node --from=build /app/dist /app/dist
 COPY --chown=node:node --from=uibuild /app/dist /app/dist/public
 COPY --chown=node:node docker/resources/init.sh /init.sh
 
-RUN chmod +x /init.sh
+RUN chmod +x /init.sh \
+  && ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+
+USER node
 
 VOLUME ["/etc/letsencrypt","/data"]
 
 CMD [ "/init.sh" ]
-
-# USER node

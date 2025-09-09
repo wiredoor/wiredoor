@@ -4,6 +4,7 @@ import { NodeRepository } from '../repositories/node-repository';
 import { logger } from './logger';
 
 interface PingResult {
+  lastPingTs: number;
   reachable: boolean;
   latency: number;
 }
@@ -26,9 +27,11 @@ export function startPing(): void {
       });
       await Promise.all(
         nodes.map(async (node) => {
+          const prevPing = cache.get(node.address);
           const start = Date.now();
           const reachable = await Net.isReachable(node.address);
           cache.set(node.address, {
+            lastPingTs: reachable ? Date.now() : prevPing?.lastPingTs || null,
             reachable,
             latency: Date.now() - start,
           });
