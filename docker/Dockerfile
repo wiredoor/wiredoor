@@ -32,6 +32,8 @@ RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && chown -R node:node /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
   && mkdir -p /data \
   && chown -R node:node /data \
+  && mkdir -p /opt/oauth2-proxy \
+  && chown -R node:node /opt/oauth2-proxy \
   && mkdir -p /etc/wireguard \
   && chown -R node:node /etc/wireguard \
   && touch /etc/environment \
