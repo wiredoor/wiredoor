@@ -22,7 +22,7 @@ COPY docker/resources/fluent-bit /etc/fluent-bit/
 COPY docker/resources/sudoers.d /etc/sudoers.d/
 
 RUN mkdir -p /var/run/supervisor /var/log/supervisor \
-  && chown -R node:node /var/run/supervisor /var/log/supervisor \
+  && chown -R node:node /var/run/supervisor /var/log/supervisor /etc/supervisor/conf.d \
   && rm -f /etc/supervisord.conf \
   && ln -s /etc/supervisor/supervisord.conf /etc/supervisord.conf \
   && mkdir -p /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt \
