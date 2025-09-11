@@ -9,7 +9,7 @@ for dir in /data /var/log/nginx /etc/letsencrypt; do
     owner="$(stat -c '%u:%g' "$dir" 2>/dev/null || echo '?')"
     if [ "$owner" != "1000:1000" ]; then
       if [ "$FAIL" = "0" ]; then
-        echo "-----------------------------------------------------------"
+        echo "------------------------------------------------------------------------------"
         echo "[WARN] Some directories are not owned by UID:GID 1000:1000"
         echo "[WARN] Wiredoor v1.5.0 runs as non-root (1000:1000)."
         echo "[WARN] Please run the following commands before upgrading:"
@@ -26,8 +26,9 @@ if [ "$FAIL" = "1" ]; then
   echo "       docker compose pull wiredoor"
   echo "       docker compose up -d --force-recreate wiredoor"
   echo
-  echo "[ERROR] Permission preflight failed. Visit https://github.com/wiredoor/wiredoor/releases/tag/v1.5.0 for more info."
-  echo "-----------------------------------------------------------"
+  echo "[ERROR] Permission preflight failed."
+  echo "Visit https://github.com/wiredoor/wiredoor/releases/tag/v1.5.0 for more info."
+  echo "------------------------------------------------------------------------------"
   exit 1
 fi
 
