@@ -15,7 +15,7 @@ for dir in /data /var/log/nginx /etc/letsencrypt; do
         echo "[WARN] Please run the following commands before upgrading:"
         echo
       fi
-      echo "  docker compose exec -u root wiredoor chown -R 1000:1000 $dir"
+      echo "  docker compose run --rm -u root wiredoor chown -R 1000:1000 $dir"
       FAIL=1
     fi
   fi
@@ -26,7 +26,7 @@ if [ "$FAIL" = "1" ]; then
   echo "       docker compose pull wiredoor"
   echo "       docker compose up -d --force-recreate wiredoor"
   echo
-  echo "[ERROR] Permission preflight failed."
+  echo "[ERROR] Permission preflight failed. Visit https://github.com/wiredoor/wiredoor/releases/tag/v1.5.0 for more info."
   echo "-----------------------------------------------------------"
   exit 1
 fi
