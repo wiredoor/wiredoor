@@ -1,6 +1,20 @@
 #!/bin/bash
 set -e
 
+# --- Permission preflight for upgrades to v1.5.0 ---
+for dir in /data /var/log/nginx /etc/letsencrypt; do
+  if [ -e "$dir" ]; then
+    owner="$(stat -c '%u:%g' "$dir" 2>/dev/null || echo '?')"
+    if [ "$owner" = "0:0" ]; then
+      echo "[WARN] Detected $dir owned by root (0:0)."
+      echo "[WARN] Wiredoor v1.5.0 runs as non-root (1000:1000)."
+      echo "[WARN] Please run the following command before upgrading:"
+      echo "       docker compose exec -u root wiredoor chown -R 1000:1000 $dir"
+      echo
+    fi
+  fi
+done
+
 mkdir -p /data/ssl
 
 openssl genpkey -algorithm RSA -out /data/ssl/privkey.key >> /dev/null 2>&1
