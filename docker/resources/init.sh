@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+FAIL=0
+
 # --- Permission preflight for upgrades to v1.5.0 ---
 for dir in /data /var/log/nginx /etc/letsencrypt; do
   if [ -e "$dir" ]; then
@@ -11,9 +13,15 @@ for dir in /data /var/log/nginx /etc/letsencrypt; do
       echo "[WARN] Please run the following command before upgrading:"
       echo "       docker compose exec -u root wiredoor chown -R 1000:1000 $dir"
       echo
+      FAIL=1
     fi
   fi
 done
+
+if [ "$FAIL" = "1" ]; then
+  echo "[ERROR] Permission preflight failed."
+  exit 1
+fi
 
 mkdir -p /data/ssl
 
