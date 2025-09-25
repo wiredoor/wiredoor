@@ -7,6 +7,7 @@ import CLI from './cli';
 import config from '../config';
 import { Resolver } from 'dns/promises';
 import IP_CIDR from './ip-cidr';
+import { logger } from '../providers/logger';
 
 export default class Net {
   static async addRoute(
@@ -182,6 +183,9 @@ export default class Net {
       const dnsResolver = new Resolver();
       dnsResolver.setServers([resolver]);
       const [resolved] = await dnsResolver.resolve4(host);
+      logger.debug(
+        `NET: Resolved hostname ${host} to ${resolved} using ${resolver}`,
+      );
       host = resolved;
     }
 
@@ -193,10 +197,11 @@ export default class Net {
           {
             host,
             port,
-            rejectUnauthorized: true,
+            rejectUnauthorized: false,
           },
           () => {
             socket.end();
+            logger.debug(`NET: SSL connection established to ${host}:${port}`);
             resolve(true);
           },
         );
@@ -211,16 +216,19 @@ export default class Net {
 
       socket.on('connect', () => {
         socket.destroy();
+        logger.debug(`NET: Connection established to ${host}:${port}`);
         resolve(true);
       });
 
       socket.on('timeout', () => {
         socket.destroy();
+        logger.debug(`NET: Connection timeout to ${host}:${port}`);
         resolve(false);
       });
 
       socket.on('error', () => {
         socket.destroy();
+        logger.debug(`NET: Connection error to ${host}:${port}`);
         resolve(false);
       });
     });

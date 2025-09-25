@@ -35,7 +35,7 @@ export class BaseServices {
         body: [
           {
             field: 'backendPort',
-            message: `Unable to reach out port ${port} in ${server}`,
+            message: `Unable to connect to port ${port} in ${server}`,
           },
         ],
       });
