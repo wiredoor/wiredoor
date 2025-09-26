@@ -206,7 +206,7 @@ export default class Net {
           {
             host,
             port,
-            rejectUnauthorized: false,
+            rejectUnauthorized: true,
           },
           () => {
             socket.end();
