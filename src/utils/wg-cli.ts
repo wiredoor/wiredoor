@@ -78,7 +78,7 @@ export default class WGCli {
 
   static async isLink(cfg = 'wg0'): Promise<boolean> {
     try {
-      await CLI.exec(`ip link show ${cfg}`);
+      await CLI.exec(`sudo ip link show ${cfg}`);
       return true;
     } catch {
       return false;

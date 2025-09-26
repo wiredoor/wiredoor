@@ -17,12 +17,13 @@ export default class Net {
   ): Promise<boolean> {
     logger.debug(`NET: Adding route ${subnet} via ${via} dev ${i}`);
     try {
-      await CLI.exec(`ip route add ${subnet} via ${via} dev ${i}`);
+      await CLI.exec(`sudo ip route add ${subnet} via ${via} dev ${i}`);
 
       logger.debug(`NET: Route added successfully`);
       return true;
-    } catch {
-      logger.debug(`NET: Failed to add route`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      logger.debug(e, `NET: Failed to add route`);
       return false;
     }
   }
@@ -31,7 +32,7 @@ export default class Net {
   static async delRoute(subnet: string, via?: string): Promise<boolean> {
     logger.debug(`NET: Deleting route ${subnet}`);
     try {
-      await CLI.exec(`ip route del ${subnet}`);
+      await CLI.exec(`sudo ip route del ${subnet}`);
 
       logger.debug(`NET: Route deleted successfully`);
 
@@ -55,14 +56,11 @@ export default class Net {
             '1 packets transmitted, 1 packets received, 0% packet loss',
           ) !== -1
         ) {
-          logger.debug(`NET: IP ${ip} is reachable`);
           resolve(true);
         } else {
-          logger.debug(`NET: IP ${ip} is not reachable`);
           resolve(false);
         }
       } catch {
-        logger.debug(`NET: Unable to reach IP ${ip}`);
         resolve(false);
       }
     });
