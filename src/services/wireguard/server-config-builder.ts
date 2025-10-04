@@ -1,5 +1,6 @@
 import { WgInterface } from '../../database/models/wg-interface';
 import { Node } from '../../database/models/node';
+import config from '../../config';
 
 export default class ServerConfigBuilder {
   private config: string;
@@ -14,6 +15,7 @@ export default class ServerConfigBuilder {
 PrivateKey = ${wgInterface.privateKey}
 Address = ${wgInterface.address}
 ListenPort = ${wgInterface.port}
+${config.wireguard.mtu ? `MTU = ${config.wireguard.mtu}` : ''}
 PreUp = ${wgInterface.preUp}
 PostUp = ${wgInterface.postUp}
 PreDown = ${wgInterface.preDown}

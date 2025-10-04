@@ -78,6 +78,7 @@ export default {
     host: process.env.VPN_HOST || '127.0.0.1',
     port: VPN_PORT,
     subnet: subnet,
+    mtu: parseInt(process.env.VPN_DEFAULT_MTU || '') || undefined,
     preUp: (process.env.WG_PRE_UP_SCRIPT || defaultPreUpScript)
       .split('\n')
       .join(' '),

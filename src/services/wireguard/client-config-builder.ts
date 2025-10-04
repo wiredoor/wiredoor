@@ -13,6 +13,7 @@ export default class ClientConfigBuilder {
     this.config = `[Interface]
 PrivateKey = ${node.privateKey}
 Address = ${node.address}/32
+${config.wireguard.mtu ? `MTU = ${config.wireguard.mtu}` : ''}
 ${node.dns ? `DNS = ${node.dns}\n` : ''}
 ${
   node.isGateway
