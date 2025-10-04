@@ -84,6 +84,7 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error.details.forEach((detail: any) => {
           const field = detail.path[0]
+          console.error(`Validation error on field ${field}`, detail.message)
           if (!fields || fields.split(',').includes(field)) {
             setFieldError(field, detail.message)
           }
@@ -128,6 +129,8 @@ export function useFormModal<T>(schema: Joi.ObjectSchema<T>, initialForm: T = {}
           }
         }
       }
+    } else {
+      console.log('Validation failed')
     }
   }
 

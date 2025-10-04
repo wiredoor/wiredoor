@@ -18,7 +18,7 @@
     "@tailwindcss/vite": "^4.0.11",
     "@vueuse/core": "^12.8.2",
     "aos": "^3.0.0-beta.6",
-    "axios": "^1.8.1",
+    "axios": ">=1.12.0",
     "date-fns": "^4.1.0",
     "flatpickr": "^4.6.13",
     "joi": "^17.13.3",
@@ -44,7 +44,7 @@
     "npm-run-all2": "^7.0.2",
     "prettier": "^3.5.1",
     "typescript": "~5.7.3",
-    "vite": ">=6.2.6",
+    "vite": ">=6.3.6",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vue-tsc": "^2.2.2"
   }

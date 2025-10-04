@@ -112,6 +112,10 @@ class WireguardService {
 
     const config = this.getServerConfig(serverConfig, clients);
 
+    logger.info(
+      `Saving Wireguard config to /etc/wireguard/${wgInterface}.conf`,
+    );
+
     await FileManager.saveToFile(
       `/etc/wireguard/${wgInterface}.conf`,
       config,
@@ -246,6 +250,12 @@ class WireguardService {
     if (
       Date.now() / 1000 - runtimeInfo.latestHandshake < 180 &&
       pingStatus.reachable
+    ) {
+      status = 'online';
+    } else if (
+      pingStatus &&
+      pingStatus.lastPingTs === null &&
+      Date.now() / 1000 - runtimeInfo.latestHandshake < 120
     ) {
       status = 'online';
     }

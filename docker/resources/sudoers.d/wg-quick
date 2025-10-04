@@ -1,0 +1,1 @@
+node ALL=(root) NOPASSWD: /usr/bin/wg-quick, /usr/bin/wg, /sbin/ip, /usr/sbin/iptables, /usr/sbin/ip6tables, /usr/sbin/xtables-nft-multi

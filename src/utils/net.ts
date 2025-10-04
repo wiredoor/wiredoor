@@ -7,6 +7,7 @@ import CLI from './cli';
 import config from '../config';
 import { Resolver } from 'dns/promises';
 import IP_CIDR from './ip-cidr';
+import { logger } from '../providers/logger';
 
 export default class Net {
   static async addRoute(
@@ -14,22 +15,31 @@ export default class Net {
     via: string,
     i = 'wg0',
   ): Promise<boolean> {
+    logger.debug(`NET: Adding route ${subnet} via ${via} dev ${i}`);
     try {
-      await CLI.exec(`ip route add ${subnet} via ${via} dev ${i}`);
+      await CLI.exec(`sudo ip route add ${subnet} via ${via} dev ${i}`);
 
+      logger.debug(`NET: Route added successfully`);
       return true;
-    } catch {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      logger.debug(e, `NET: Failed to add route`);
       return false;
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static async delRoute(subnet: string, via?: string): Promise<boolean> {
+    logger.debug(`NET: Deleting route ${subnet}`);
     try {
-      await CLI.exec(`ip route del ${subnet}`);
+      await CLI.exec(`sudo ip route del ${subnet}`);
+
+      logger.debug(`NET: Route deleted successfully`);
 
       return true;
     } catch {
+      logger.debug(`NET: Failed to delete route`);
+
       return false;
     }
   }
@@ -182,6 +192,9 @@ export default class Net {
       const dnsResolver = new Resolver();
       dnsResolver.setServers([resolver]);
       const [resolved] = await dnsResolver.resolve4(host);
+      logger.debug(
+        `NET: Resolved hostname ${host} to ${resolved} using ${resolver}`,
+      );
       host = resolved;
     }
 
@@ -197,6 +210,7 @@ export default class Net {
           },
           () => {
             socket.end();
+            logger.debug(`NET: SSL connection established to ${host}:${port}`);
             resolve(true);
           },
         );
@@ -211,16 +225,19 @@ export default class Net {
 
       socket.on('connect', () => {
         socket.destroy();
+        logger.debug(`NET: Connection established to ${host}:${port}`);
         resolve(true);
       });
 
       socket.on('timeout', () => {
         socket.destroy();
+        logger.debug(`NET: Connection timeout to ${host}:${port}`);
         resolve(false);
       });
 
       socket.on('error', () => {
         socket.destroy();
+        logger.debug(`NET: Connection error to ${host}:${port}`);
         resolve(false);
       });
     });

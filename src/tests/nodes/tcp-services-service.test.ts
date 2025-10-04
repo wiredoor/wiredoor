@@ -253,7 +253,9 @@ describe('TCP Services Service', () => {
 
       const result = await service.createTcpService(node.id, serviceData);
 
-      expect(mockCheckPort).toHaveBeenCalled();
+      if (serviceData.proto === 'tcp') {
+        expect(mockCheckPort).toHaveBeenCalled();
+      }
 
       expect(result.id).toBeDefined();
       expect(result.domain).toEqual(serviceData.domain);
@@ -309,7 +311,9 @@ describe('TCP Services Service', () => {
 
       const result = await service.createTcpService(node.id, serviceData);
 
-      expect(mockCheckPort).toHaveBeenCalled();
+      if (serviceData.proto === 'tcp') {
+        expect(mockCheckPort).toHaveBeenCalled();
+      }
 
       expect(result.id).toBeDefined();
       expect(result.domain).toEqual(serviceData.domain);

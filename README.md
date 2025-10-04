@@ -180,3 +180,14 @@ wiredoor http myapp --domain app.your.domain.com --port 3000
 ### 🛠️ Coming soon
 
 More documentation, production setup examples, and deployment tools are on the way!
+
+## License
+
+As of version 1.5.1, Wiredoor is licensed under the Apache License, Version 2.0 (Apache-2.0).
+
+This change was made to align with the CNCF ecosystem and encourage broader adoption by the cloud-native community.
+
+- Versions prior to 1.5.1 remain licensed under the MIT License.
+- From 1.5.1 onward, all contributions and distributions must comply with Apache-2.0.
+
+See the [LICENSE](./LICENSE) file for details.

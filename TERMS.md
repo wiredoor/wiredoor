@@ -2,7 +2,7 @@
 
 **Last updated:** [March 26, 2025]
 
-Wiredoor is a free and open-source software project that allows users to securely expose services from private networks using a reverse VPN connection powered by WireGuard. The project is maintained by INFLADOOR LLC and distributed under the MIT License.
+Wiredoor is a free and open-source software project that allows users to securely expose services from private networks using a reverse VPN connection powered by WireGuard. The project is maintained by INFLADOOR LLC and distributed under the Apache-2.0 License.
 
 By using or deploying Wiredoor, you agree to the following terms:
 
@@ -53,7 +53,7 @@ Wiredoor is a self-hosted tool. You are responsible for:
 
 ## 5. Contributions & License
 
-Wiredoor is released under the MIT License. Contributions are welcome under the same license. By submitting code, you agree to license it under MIT and affirm you have the right to do so.
+Wiredoor is released under the Apache-2.0 License. Contributions are welcome under the same license. By submitting code, you agree to license it under Apache-2.0 and affirm you have the right to do so.
 
 ---
 

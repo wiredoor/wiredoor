@@ -7,17 +7,18 @@ import { SSLManager } from './ssl-manager';
 
 export class NginxDomainService extends NginxService {
   async create(domain: Domain, restart = true): Promise<boolean> {
-    const domianName = domain.domain;
+    const domainName = domain.domain;
 
     const serverConf = new NginxServerConf();
 
     serverConf
       .setListen('443 ssl')
       .setListen('[::]:443 ssl')
-      .setServerName(domianName)
-      .setAccessLog(ServerUtils.getLogFilePath(domianName, 'access.log'))
-      .setErrorLog(ServerUtils.getLogFilePath(domianName, 'error.log'))
-      .setHttpSSLCertificates(domain.sslPair);
+      .setServerName(domainName)
+      .setAccessLog(ServerUtils.getLogFilePath(domainName, 'access.log'))
+      .setErrorLog(ServerUtils.getLogFilePath(domainName, 'error.log'))
+      .setHttpSSLCertificates(domain.sslPair)
+      .setDefaultPages();
 
     if (domain.oauth2ServicePort) {
       const oauth2conf: NginxLocationConf = new NginxLocationConf();
@@ -67,12 +68,12 @@ export class NginxDomainService extends NginxService {
       );
     }
 
-    serverConf.includeLocations(`${domianName}/*.conf`);
+    serverConf.includeLocations(`${domainName}/*.conf`);
 
-    const confFile = `/etc/nginx/conf.d/${domianName}.conf`;
+    const confFile = `/etc/nginx/conf.d/${domainName}.conf`;
     await this.saveFile(confFile, serverConf.getNginxConf());
 
-    await this.addDefaultMainLocation(domianName);
+    await this.addDefaultMainLocation(domainName);
 
     return this.checkAndReload(confFile, restart);
   }

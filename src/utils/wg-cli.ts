@@ -55,12 +55,14 @@ export default class WGCli {
    * @param {string} cfg - Config name
    */
   static async syncConf(cfg = 'wg0'): Promise<void> {
-    await CLI.exec(`wg syncconf ${cfg} <(wg-quick strip ${cfg})`);
+    await CLI.exec(
+      `sudo wg-quick strip ${cfg} | sudo wg syncconf ${cfg} /dev/stdin`,
+    );
   }
 
   static async quickUp(cfg = 'wg0'): Promise<void> {
     try {
-      await CLI.exec(`wg-quick up ${cfg}`);
+      await CLI.exec(`sudo wg-quick up ${cfg}`);
     } catch (e) {
       throw e;
     }
@@ -68,7 +70,7 @@ export default class WGCli {
 
   static async quickDown(cfg = 'wg0'): Promise<void> {
     try {
-      await CLI.exec(`wg-quick down ${cfg}`);
+      await CLI.exec(`sudo wg-quick down ${cfg}`);
     } catch {
       // fail to down interface
     }
@@ -76,7 +78,7 @@ export default class WGCli {
 
   static async isLink(cfg = 'wg0'): Promise<boolean> {
     try {
-      await CLI.exec(`ip link show ${cfg}`);
+      await CLI.exec(`sudo ip link show ${cfg}`);
       return true;
     } catch {
       return false;
@@ -88,7 +90,9 @@ export default class WGCli {
     cfg = 'wg0',
   ): Promise<RuntimeInfo | null> {
     try {
-      const { stdout } = await CLI.exec(`wg show ${cfg} dump | grep ${peer}`);
+      const { stdout } = await CLI.exec(
+        `sudo wg show ${cfg} dump | grep ${peer}`,
+      );
 
       if (!stdout) {
         return null;
@@ -104,7 +108,7 @@ export default class WGCli {
 
   static async dumpRunTimeInfo(cfg = 'wg0'): Promise<RuntimeInfo[]> {
     try {
-      const { stdout } = await CLI.exec(`wg show ${cfg} dump`);
+      const { stdout } = await CLI.exec(`sudo wg show ${cfg} dump`);
 
       if (!stdout) {
         return [];
