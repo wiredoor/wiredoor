@@ -14,7 +14,9 @@ import { Node } from './node';
 import { getTtlFromExpiresAt } from '../../utils/ttl-utils';
 
 @Entity('tcp_services')
-@Index('unique_port_per_node', ['backendPort', 'nodeId'], { unique: true })
+@Index('service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
+  unique: true,
+})
 export class TcpService {
   @PrimaryGeneratedColumn()
   id: number;
