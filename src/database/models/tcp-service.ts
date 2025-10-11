@@ -14,7 +14,7 @@ import { Node } from './node';
 import { getTtlFromExpiresAt } from '../../utils/ttl-utils';
 
 @Entity('tcp_services')
-@Index('service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
+@Index('tcp_service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
   unique: true,
 })
 export class TcpService {
