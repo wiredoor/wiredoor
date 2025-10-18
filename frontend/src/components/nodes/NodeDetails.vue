@@ -53,6 +53,7 @@ const dataMonitor = () => {
 
 const updateNode = (form: Partial<Node>, id?: number) => {
   node.value = { ...node.value, id, ...form } as Node
+  dataMonitor()
 }
 
 onMounted(async () => {
