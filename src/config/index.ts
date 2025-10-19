@@ -81,7 +81,7 @@ export default {
     algo: process.env.JWT_ALGORITHM || 'HS256',
   },
   encryption: {
-    secret: getKey(ENCRYPTION_KEY_ENV, '/data/.enc.key'),
+    secret: getKey(ENCRYPTION_KEY_ENV, '/data/.enc.key', 32),
   },
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,

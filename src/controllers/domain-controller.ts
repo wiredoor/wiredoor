@@ -34,7 +34,7 @@ export default class DomainController extends BaseController {
   }
 
   @Get('/')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       query: domainFilterValidator,
@@ -47,7 +47,7 @@ export default class DomainController extends BaseController {
   }
 
   @Post('/')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       body: domainValidator,
@@ -58,7 +58,7 @@ export default class DomainController extends BaseController {
   }
 
   @Get('/:id')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -69,7 +69,7 @@ export default class DomainController extends BaseController {
   }
 
   @Patch('/:id')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -81,7 +81,7 @@ export default class DomainController extends BaseController {
   }
 
   @Delete('/:id')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),

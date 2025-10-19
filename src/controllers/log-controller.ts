@@ -29,7 +29,7 @@ export default class LogController extends BaseController {
   }
 
   @Get('/stream')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: logParamsValidator,

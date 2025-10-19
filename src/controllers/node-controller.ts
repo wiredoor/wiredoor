@@ -2,7 +2,7 @@ import { Inject, Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import { Request, Response } from 'express';
 import {
-  Authorized,
+  // Authorized,
   Body,
   Delete,
   Get,
@@ -39,7 +39,7 @@ import {
   PersonalAccessTokenWithToken,
 } from '../database/models/personal-access-token';
 import { AdminTokenHandler } from '../middlewares/admin-token-handler';
-import { ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER } from '../utils/constants';
+// import { ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER } from '../utils/constants';
 
 @Service()
 @JsonController('/nodes')
@@ -53,7 +53,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       query: nodeFilterValidator,
@@ -75,7 +75,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/stream')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(SetupSSE)
   async getNodesAsStream(
     @QueryParams() filters: NodeFilterStreamParams,
@@ -114,7 +114,7 @@ export default class NodeController extends BaseController {
   }
 
   @Post('/')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       body: createNodeValidator,
@@ -125,7 +125,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/:id')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -136,7 +136,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/:id/config')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -147,7 +147,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/:id/download')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -161,7 +161,7 @@ export default class NodeController extends BaseController {
   }
 
   @Patch('/:id')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -173,7 +173,7 @@ export default class NodeController extends BaseController {
   }
 
   @Patch('/:id/disable')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -184,7 +184,7 @@ export default class NodeController extends BaseController {
   }
 
   @Patch('/:id/enable')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -195,7 +195,7 @@ export default class NodeController extends BaseController {
   }
 
   @Delete('/:id')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -206,7 +206,7 @@ export default class NodeController extends BaseController {
   }
 
   @Get('/:id/pats')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -223,7 +223,7 @@ export default class NodeController extends BaseController {
   }
 
   @Post('/:id/pats')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
@@ -240,7 +240,7 @@ export default class NodeController extends BaseController {
   }
 
   @Delete('/:id/pats/:patId')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -257,7 +257,7 @@ export default class NodeController extends BaseController {
   }
 
   @Patch('/:id/pats/:patId/revoke')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({

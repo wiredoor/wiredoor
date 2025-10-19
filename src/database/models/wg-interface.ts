@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
+import { decrypt, encrypt } from '../../utils/cypher';
 
 @Entity('wg_interfaces')
 export class WgInterface {
@@ -39,6 +40,12 @@ export class WgInterface {
   publicKey: string;
 
   @Exclude()
-  @Column()
+  @Column({
+    type: 'text',
+    transformer: {
+      to: (value: string) => encrypt(value),
+      from: (value: string) => (value ? decrypt(value) : null),
+    },
+  })
   privateKey: string;
 }

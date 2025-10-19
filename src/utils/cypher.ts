@@ -8,7 +8,7 @@ export function encrypt(secret: string): string {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(
     algorithm,
-    Buffer.from(config.encryption.secret),
+    Buffer.from(config.encryption.secret, 'base64'),
     iv,
   );
 
@@ -25,7 +25,7 @@ export function decrypt(payload: string): string {
   const tag = Buffer.from(tagB64, 'base64');
   const decipher = crypto.createDecipheriv(
     algorithm,
-    Buffer.from(config.encryption.secret),
+    Buffer.from(config.encryption.secret, 'base64'),
     iv,
   );
   decipher.setAuthTag(tag);

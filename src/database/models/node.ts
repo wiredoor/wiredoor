@@ -10,6 +10,7 @@ import {
 import { HttpService } from './http-service';
 import { PersonalAccessToken } from './personal-access-token';
 import { TcpService } from './tcp-service';
+import { decrypt, encrypt } from '../../utils/cypher';
 
 export interface NodeInfo
   extends Omit<Node, 'publicKey' | 'privateKey' | 'preSharedKey'> {
@@ -82,7 +83,13 @@ export class Node {
   publicKey: string;
 
   @Exclude()
-  @Column()
+  @Column({
+    type: 'text',
+    transformer: {
+      to: (value: string) => encrypt(value),
+      from: (value: string) => (value ? decrypt(value) : null),
+    },
+  })
   privateKey: string;
 
   @Column({

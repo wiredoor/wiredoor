@@ -47,7 +47,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/http')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       query: httpServiceFilterValidator,
@@ -60,7 +60,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/:nodeId/http')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ nodeId: Joi.string().required() }),
@@ -75,7 +75,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Post('/:nodeId/http')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ nodeId: Joi.string().required() }),
@@ -90,7 +90,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/:nodeId/http/:serviceId')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   async getService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
@@ -99,7 +99,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/http/:serviceId')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -118,7 +118,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/http/:serviceId/enable')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -135,7 +135,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/http/:serviceId/disable')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -152,7 +152,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Delete('/:nodeId/http/:serviceId')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   async deleteNodeService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
@@ -161,7 +161,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/:nodeId/http/:serviceId/ping')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
   async pingHttpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
@@ -171,7 +171,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/tcp')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       query: tcpServiceFilterValidator,
@@ -184,7 +184,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/:nodeId/tcp')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ nodeId: Joi.string().required() }),
@@ -199,7 +199,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Post('/:nodeId/tcp')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ nodeId: Joi.string().required() }),
@@ -214,7 +214,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Get('/:nodeId/tcp/:serviceId')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   async getTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
@@ -223,7 +223,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/tcp/:serviceId')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -242,7 +242,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/tcp/:serviceId/enable')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -259,7 +259,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Patch('/:nodeId/tcp/:serviceId/disable')
-  @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
+  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR])
   @UseBefore(
     celebrate({
       params: Joi.object({
@@ -276,7 +276,7 @@ export default class NodeServiceController extends BaseController {
   }
 
   @Delete('/:nodeId/tcp/:serviceId')
-  @Authorized([ROLE_ADMIN])
+  // @Authorized([ROLE_ADMIN])
   async deleteNodeTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
