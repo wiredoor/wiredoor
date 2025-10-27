@@ -6,6 +6,7 @@ import { DomainRepository } from '../../repositories/domain-repository';
 import IP_CIDR from '../../utils/ip-cidr';
 import { NginxConf } from './conf/nginx-conf';
 import { logger } from '../../providers/logger';
+import config from '../../config';
 
 type LocationType = 'exact' | 'regex';
 
@@ -88,7 +89,7 @@ export class NginxHttpService extends NginxService {
     baseLocation
       .setNetworkAccess(service.allowedIps)
       .includeCommonProxySettings()
-      .setClientMaxBodySize('100m')
+      .setClientMaxBodySize(config.nginx.bodySize)
       .addBlock(`set $${service.identifier}`, host)
       .setProxyPass(
         `${service.backendProto}://$${service.identifier}:${service.backendPort}`,
