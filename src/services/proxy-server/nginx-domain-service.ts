@@ -1,3 +1,4 @@
+import config from '../../config';
 import { Domain, SSLTermination } from '../../database/models/domain';
 import ServerUtils from '../../utils/server';
 import { NginxLocationConf } from './conf/nginx-location-conf';
@@ -19,6 +20,10 @@ export class NginxDomainService extends NginxService {
       .setErrorLog(ServerUtils.getLogFilePath(domainName, 'error.log'))
       .setHttpSSLCertificates(domain.sslPair)
       .setDefaultPages();
+
+    if (config.nginx.bodySize) {
+      serverConf.setClientMaxBodySize(config.nginx.bodySize);
+    }
 
     if (domain.oauth2ServicePort) {
       const oauth2conf: NginxLocationConf = new NginxLocationConf();

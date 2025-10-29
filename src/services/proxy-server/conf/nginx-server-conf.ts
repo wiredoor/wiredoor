@@ -32,6 +32,12 @@ export class NginxServerConf extends NginxConf {
     return this;
   }
 
+  setClientMaxBodySize(size: string): NginxServerConf {
+    this.addBlock('client_max_body_size', size);
+
+    return this;
+  }
+
   setErrorLog(errorLogFile: string): NginxServerConf {
     this.addBlock('error_log', `${errorLogFile}`);
 
