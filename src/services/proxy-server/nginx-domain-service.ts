@@ -13,8 +13,11 @@ export class NginxDomainService extends NginxService {
     const serverConf = new NginxServerConf();
 
     serverConf
+      .setHttp2()
       .setListen('443 ssl')
       .setListen('[::]:443 ssl')
+      .setListen('443 quic reuseport')
+      .setListen('[::]:443 quic reuseport')
       .setServerName(domainName)
       .setAccessLog(ServerUtils.getLogFilePath(domainName, 'access.log'))
       .setErrorLog(ServerUtils.getLogFilePath(domainName, 'error.log'))

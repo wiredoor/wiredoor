@@ -6,6 +6,12 @@ export class NginxServerConf extends NginxConf {
     super(config);
   }
 
+  setHttp2(): NginxServerConf {
+    this.addBlock('http2', `on`);
+
+    return this;
+  }
+
   setListen(port: number | string): NginxServerConf {
     this.addBlock('listen', `${port}`);
 
