@@ -18,7 +18,7 @@ export class NginxDomainService extends NginxService {
       serverConf
         .setListen('443 quic reuseport')
         .setListen('[::]:443 quic reuseport')
-        .addBlock('add_header Alt-Svc', 'h3=":443"; ma=86400 always');
+        .addBlock('add_header Alt-Svc', '\'h3=":443"; ma=86400\' always');
     }
 
     serverConf
