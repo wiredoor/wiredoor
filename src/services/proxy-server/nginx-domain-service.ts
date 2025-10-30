@@ -15,8 +15,6 @@ export class NginxDomainService extends NginxService {
     serverConf
       .setListen('443 ssl')
       .setListen('[::]:443 ssl')
-      .setListen('443 quic reuseport')
-      .setListen('[::]:443 quic reuseport')
       .setServerName(domainName)
       .setAccessLog(ServerUtils.getLogFilePath(domainName, 'access.log'))
       .setErrorLog(ServerUtils.getLogFilePath(domainName, 'error.log'))
