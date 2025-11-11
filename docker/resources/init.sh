@@ -32,7 +32,13 @@ if [ "$FAIL" = "1" ]; then
   exit 1
 fi
 
-mkdir -p /data/ssl
+mkdir -p /data/ssl /data/quic
+
+if [ ! -f /data/quic/quic_host.key ]; then
+  openssl rand -out /data/quic/quic_host.key 32
+fi
+
+chmod 600 /data/quic/quic_host.key
 
 openssl genpkey -algorithm RSA -out /data/ssl/privkey.key >> /dev/null 2>&1
 openssl req -new -key /data/ssl/privkey.key -out /data/ssl/default.csr -config /etc/openssl/openssl.cnf >> /dev/null 2>&1

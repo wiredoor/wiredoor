@@ -74,6 +74,7 @@ export default {
   nginx: {
     bodySize: process.env.NGINX_CLIENT_MAX_BODY_SIZE || '100m',
     logs: process.env.SERVER_LOGS_DIR || '/var/log/nginx',
+    http3domain: process.env.NGINX_HTTP3_DOMAIN || '',
   },
   wireguard: {
     host: process.env.VPN_HOST || '127.0.0.1',
