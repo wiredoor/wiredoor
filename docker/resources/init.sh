@@ -34,9 +34,7 @@ fi
 
 mkdir -p /data/ssl /data/quic
 
-if [ "$QUIC_HOST_KEY" ]; then
-  echo "$QUIC_HOST_KEY" > /data/quic/quic_host.key
-elif [ ! -f /data/quic/quic_host.key ]; then
+if [ ! -f /data/quic/quic_host.key ]; then
   openssl rand -out /data/quic/quic_host.key 32
 fi
 
