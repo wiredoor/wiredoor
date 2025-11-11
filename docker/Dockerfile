@@ -61,7 +61,7 @@ COPY --chown=node:node . .
 
 FROM python:3.12-alpine AS python-base
 
-ARG OAUTH2PROXY_VERSION="7.12.0"
+ARG OAUTH2PROXY_VERSION="7.13.0"
 
 RUN apk add --no-cache py3-pip build-base curl \
   && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
