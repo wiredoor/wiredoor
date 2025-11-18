@@ -23,6 +23,21 @@ export class BaseServices {
       throw new NotFoundError('Node not found!');
     }
 
+    if (
+      node.isLocal &&
+      ['127.0.0.1', 'localhost'].includes(host) &&
+      +port !== 3000
+    ) {
+      throw new ValidationError({
+        body: [
+          {
+            field: 'backendHost',
+            message: `Cannot use localhost as backendHost for local node.`,
+          },
+        ],
+      });
+    }
+
     const server =
       (node.isGateway || node.isLocal) && host ? host : node.address;
     const resolver =
