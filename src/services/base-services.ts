@@ -4,6 +4,7 @@ import { NotFoundError } from 'routing-controllers';
 import IP_CIDR from '../utils/ip-cidr';
 import Net from '../utils/net';
 import { ValidationError } from '../utils/errors/validation-error';
+import config from '../config';
 
 @Service()
 export class BaseServices {
@@ -26,7 +27,7 @@ export class BaseServices {
     if (
       node.isLocal &&
       ['127.0.0.1', 'localhost'].includes(host) &&
-      +port !== 3000
+      +port !== +config.app.port
     ) {
       throw new ValidationError({
         body: [
