@@ -1,4 +1,7 @@
 import path from 'path';
+import axios from 'axios';
+import { randomBytes } from 'crypto';
+import { setTimeout as delay } from 'timers/promises';
 import config from '../config';
 import FileManager from './file-manager';
 
@@ -14,5 +17,40 @@ export default class ServerUtils {
     FileManager.mkdirSync(dir);
 
     return path.join(dir, logFile);
+  }
+
+  static async verifyDomainHttp01(domain: string): Promise<boolean> {
+    const token = randomBytes(16).toString('hex');
+    const tokenPath = path.join('/var/www/wiredoor-verify', token);
+
+    try {
+      await FileManager.saveToFile(tokenPath, token, 'utf-8', 0o644);
+
+      await delay(150);
+
+      const { data } = await axios.get(
+        `http://${domain}/.well-known/wiredoor-verify/${encodeURIComponent(token)}`,
+        {
+          timeout: 3000,
+          responseType: 'text',
+          headers: {
+            'User-Agent': 'wiredoor-http01/1.0',
+          },
+          validateStatus: (s) => s >= 200 && s < 300,
+        },
+      );
+
+      if (!data) {
+        return false;
+      }
+
+      const text = data.trim();
+
+      return text === token;
+    } catch {
+      return false;
+    } finally {
+      await FileManager.removeFile(tokenPath);
+    }
   }
 }
