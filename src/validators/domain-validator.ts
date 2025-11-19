@@ -1,25 +1,30 @@
 import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
-import config from '../config';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import Net from '../utils/net';
+// import Net from '../utils/net';
+import ServerUtils from '../utils/server';
 
 export const nslookupResolvesServerIp = async (c: string): Promise<string> => {
   if (c) {
-    const lookup = await Net.lookupIncludesThisServer(c);
+    // const lookup = await Net.lookupIncludesThisServer(c);
+    const lookup = false;
 
     if (!lookup) {
-      throw new ValidationError(
-        `nslookup failed`,
-        [
-          {
-            path: ['domain'],
-            message: `nslookup doesn't resolves your server IP: ${config.wireguard.host}`,
-            type: 'Error',
-          },
-        ],
-        null,
-      );
+      const http01Verification = await ServerUtils.verifyDomainHttp01(c);
+
+      if (!http01Verification) {
+        throw new ValidationError(
+          `nslookup failed`,
+          [
+            {
+              path: ['domain'],
+              message: `Domain verification failed. The domain does not point to Wiredoor host.`,
+              type: 'Error',
+            },
+          ],
+          null,
+        );
+      }
     }
   }
 
