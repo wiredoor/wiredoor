@@ -88,7 +88,6 @@ export class NginxHttpService extends NginxService {
     baseLocation
       .setNetworkAccess(service.allowedIps)
       .includeCommonProxySettings()
-      .setClientMaxBodySize('100m')
       .addBlock(`set $${service.identifier}`, host)
       .setProxyPass(
         `${service.backendProto}://$${service.identifier}:${service.backendPort}`,

@@ -1,3 +1,4 @@
+import config from '../../config';
 import { Domain, SSLTermination } from '../../database/models/domain';
 import ServerUtils from '../../utils/server';
 import { NginxLocationConf } from './conf/nginx-location-conf';
@@ -11,14 +12,25 @@ export class NginxDomainService extends NginxService {
 
     const serverConf = new NginxServerConf();
 
+    serverConf.setListen('443 ssl').setListen('[::]:443 ssl');
+
+    if (config.nginx.http3domain && domainName === config.nginx.http3domain) {
+      serverConf
+        .setListen('443 quic reuseport')
+        .setListen('[::]:443 quic reuseport')
+        .addBlock('add_header Alt-Svc', '\'h3=":443"; ma=86400\' always');
+    }
+
     serverConf
-      .setListen('443 ssl')
-      .setListen('[::]:443 ssl')
       .setServerName(domainName)
       .setAccessLog(ServerUtils.getLogFilePath(domainName, 'access.log'))
       .setErrorLog(ServerUtils.getLogFilePath(domainName, 'error.log'))
       .setHttpSSLCertificates(domain.sslPair)
       .setDefaultPages();
+
+    if (config.nginx.bodySize) {
+      serverConf.setClientMaxBodySize(config.nginx.bodySize);
+    }
 
     if (domain.oauth2ServicePort) {
       const oauth2conf: NginxLocationConf = new NginxLocationConf();
