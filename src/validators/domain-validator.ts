@@ -4,26 +4,36 @@ import { FilterQueryDto } from '../repositories/filters/repository-query-filter'
 import Net from '../utils/net';
 import ServerUtils from '../utils/server';
 
+export const pointToThisServer = async (domain: string): Promise<boolean> => {
+  const lookup = await Net.lookupIncludesThisServer(domain);
+
+  if (!lookup) {
+    const http01Verification = await ServerUtils.verifyDomainHttp01(domain);
+
+    if (!http01Verification) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const nslookupResolvesServerIp = async (c: string): Promise<string> => {
   if (c) {
-    const lookup = await Net.lookupIncludesThisServer(c);
+    const resolveThisServer = await pointToThisServer(c);
 
-    if (!lookup) {
-      const http01Verification = await ServerUtils.verifyDomainHttp01(c);
-
-      if (!http01Verification) {
-        throw new ValidationError(
-          `nslookup failed`,
-          [
-            {
-              path: ['domain'],
-              message: `Domain verification failed. The domain does not point to Wiredoor host.`,
-              type: 'Error',
-            },
-          ],
-          null,
-        );
-      }
+    if (!resolveThisServer) {
+      throw new ValidationError(
+        `nslookup failed`,
+        [
+          {
+            path: ['domain'],
+            message: `Domain verification failed. The domain does not point to Wiredoor host.`,
+            type: 'Error',
+          },
+        ],
+        null,
+      );
     }
   }
 

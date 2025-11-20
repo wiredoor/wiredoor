@@ -9,6 +9,7 @@ import { DomainQueryFilter } from '../repositories/filters/domain-query-filter';
 import {
   DomainFilterQueryParams,
   DomainType,
+  pointToThisServer,
 } from '../validators/domain-validator';
 import { SSLManager } from './proxy-server/ssl-manager';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
@@ -90,12 +91,12 @@ export class DomainsService {
       return instance;
     }
 
-    const pointTothisServer = await Net.lookupIncludesThisServer(domain);
+    const resolveThisServer = await pointToThisServer(domain);
 
     return this.createDomain(
       {
         domain,
-        ssl: pointTothisServer
+        ssl: resolveThisServer
           ? SSLTermination.Certbot
           : SSLTermination.SelfSigned,
       },
