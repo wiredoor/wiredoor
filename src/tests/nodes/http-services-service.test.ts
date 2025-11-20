@@ -30,6 +30,7 @@ import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
 import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { HttpService } from '../../database/models/http-service';
+import ServerUtils from '../../utils/server';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -204,6 +205,7 @@ describe('HTTP Services Service', () => {
           return false;
         }),
       );
+      jest.spyOn(ServerUtils, 'verifyDomainHttp01').mockResolvedValue(false);
 
       const result = await service.createHttpService(node.id, serviceData);
 

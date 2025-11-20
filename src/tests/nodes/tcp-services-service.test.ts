@@ -33,6 +33,8 @@ import { SSLTermination } from '../../database/models/domain';
 import { TcpService } from '../../database/models/tcp-service';
 import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { faker } from '@faker-js/faker';
+import { Server } from 'http';
+import ServerUtils from '../../utils/server';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -248,6 +250,7 @@ describe('TCP Services Service', () => {
           return false;
         }),
       );
+      jest.spyOn(ServerUtils, 'verifyDomainHttp01').mockResolvedValue(false);
 
       await domainService.createDomainIfNotExists(serviceData.domain as string);
 
