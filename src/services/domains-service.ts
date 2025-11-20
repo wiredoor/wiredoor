@@ -13,7 +13,6 @@ import {
 } from '../validators/domain-validator';
 import { SSLManager } from './proxy-server/ssl-manager';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
-import Net from '../utils/net';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { ValidationError } from '../utils/errors/validation-error';
 import { ProcessManager } from './oauth2-proxy/process-manager';
