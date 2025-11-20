@@ -24,7 +24,11 @@ export default class ServerUtils {
     const wellKnownPath = '.well-known/wiredoor-verify';
 
     const token = randomBytes(16).toString('hex');
-    const tokenPath = path.join(webroot, wellKnownPath, token);
+    const challengePath = path.join(webroot, wellKnownPath);
+
+    FileManager.mkdirSync(challengePath);
+
+    const tokenPath = path.join(challengePath, token);
 
     try {
       await FileManager.saveToFile(tokenPath, token, 'utf-8', 0o644);
