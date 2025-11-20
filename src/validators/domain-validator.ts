@@ -1,13 +1,12 @@
 import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-// import Net from '../utils/net';
+import Net from '../utils/net';
 import ServerUtils from '../utils/server';
 
 export const nslookupResolvesServerIp = async (c: string): Promise<string> => {
   if (c) {
-    // const lookup = await Net.lookupIncludesThisServer(c);
-    const lookup = false;
+    const lookup = await Net.lookupIncludesThisServer(c);
 
     if (!lookup) {
       const http01Verification = await ServerUtils.verifyDomainHttp01(c);

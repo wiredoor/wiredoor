@@ -40,9 +40,6 @@ export default class ServerUtils {
         {
           timeout: 3000,
           responseType: 'text',
-          headers: {
-            'User-Agent': 'wiredoor-http01/1.0',
-          },
           validateStatus: (s) => s >= 200 && s < 300,
         },
       );
