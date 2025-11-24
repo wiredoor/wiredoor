@@ -87,10 +87,10 @@ export default {
     postUp: (process.env.WG_POST_UP_SCRIPT || defaultPostUpScript)
       .split('\n')
       .join(' '),
-    preDown: (process.env.WG_PRE_UP_SCRIPT || defaultPreDownScript)
+    preDown: (process.env.WG_PRE_DOWN_SCRIPT || defaultPreDownScript)
       .split('\n')
       .join(' '),
-    postDown: (process.env.WG_POST_UP_SCRIPT || defaultPostDownScript)
+    postDown: (process.env.WG_POST_DOWN_SCRIPT || defaultPostDownScript)
       .split('\n')
       .join(' '),
   },
