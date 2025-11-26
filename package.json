@@ -8,9 +8,9 @@
     "dev": "nodemon",
     "lint": "eslint src/**/*.ts",
     "migration:create": "typeorm migration:create ",
-    "migration:generate": "typeorm migration:generate ./src/database/migrations -d ./src/providers/db.ts",
-    "migration:run": "typeorm migration:run -d ./src/providers/db.ts",
-    "migration:revert": "typeorm migration:revert -- -d ./src/providers/db.ts",
+    "migration:generate": "typeorm migration:generate ./src/database/migrations -d ./src/database/datasource.ts",
+    "migration:run": "typeorm migration:run -d ./src/database/datasource.ts",
+    "migration:revert": "typeorm migration:revert -- -d ./src/database/datasource.ts",
     "test": "jest --runInBand --detectOpenHandles",
     "typeorm": "dotenv -e .env -- typeorm-ts-node-commonjs"
   },
