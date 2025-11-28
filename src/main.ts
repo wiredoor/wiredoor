@@ -75,22 +75,19 @@ async function bootstrap(): Promise<void> {
 
   startPing();
 
-  process.on('SIGINT', shutDownApp);
-  process.on('SIGTERM', shutDownApp);
+  process.on('SIGINT', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
+
+  process.on('SIGTERM', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
 
   process.on('uncaughtException', (err) => {
     logger.error({ err }, 'UncaughtException');
-    void shutDownApp();
+    shutDownApp().finally(() => process.exit(1));
   });
 }
-
-process.on('SIGINT', shutDownApp);
-process.on('SIGTERM', shutDownApp);
-
-process.on('uncaughtException', (err) => {
-  logger.error({ err }, 'UncaughtException');
-  shutDownApp();
-});
 
 if (process.env.NODE_ENV !== 'test') {
   bootstrap().catch((err) => {
