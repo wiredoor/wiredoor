@@ -6,7 +6,7 @@ import dataSource from '../database/datasource';
 
 export default async (): Promise<DataSource> => {
   try {
-    if (!dataSource.isInitialized) {
+    if (!dataSource || !dataSource.isInitialized) {
       await dataSource.initialize();
       await dataSource.runMigrations();
     }
