@@ -50,14 +50,6 @@ export async function loadApp(): Promise<express.Application> {
     return res.sendFile(path.join(publicUIPath, 'index.html'));
   });
 
-  if (process.env.NODE_ENV !== 'test') {
-    server = app.listen(config.app.port, () => {
-      logger.info(`${config.app.name} listening on port: ${config.app.port}`);
-    });
-
-    startPing();
-  }
-
   return app;
 }
 
@@ -74,12 +66,32 @@ async function shutDownApp(): Promise<void> {
   stopPing();
 }
 
-process.on('SIGINT', shutDownApp);
-process.on('SIGTERM', shutDownApp);
+async function bootstrap(): Promise<void> {
+  const app = await loadApp();
 
-process.on('uncaughtException', (err) => {
-  logger.error({ err }, 'UncaughtException');
-  shutDownApp();
-});
+  server = app.listen(config.app.port, () => {
+    logger.info(`${config.app.name} listening on port: ${config.app.port}`);
+  });
 
-loadApp();
+  startPing();
+
+  process.on('SIGINT', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
+
+  process.on('SIGTERM', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
+
+  process.on('uncaughtException', (err) => {
+    logger.error({ err }, 'UncaughtException');
+    shutDownApp().finally(() => process.exit(1));
+  });
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  bootstrap().catch((err) => {
+    logger.error({ err }, 'Failed to bootstrap application');
+    process.exit(1);
+  });
+}
