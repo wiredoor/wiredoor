@@ -3,7 +3,7 @@ import path from 'path';
 import { randomBytes } from 'crypto';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 dotenv.config();
 
@@ -41,8 +41,8 @@ function getJWTKey(): string {
 
     fs.writeFileSync(filePath, newKey, { mode: 0o600 });
     return newKey;
-  } catch (error) {
-    logger.error({ err: error }, 'Error loading or generating JWT key:');
+  } catch (error: Error | any) {
+    Logger.error('Error loading or generating JWT key:', error);
     throw error;
   }
 }

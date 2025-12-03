@@ -7,7 +7,7 @@ import { NginxServerConf } from './conf/nginx-server-conf';
 import ServerUtils from '../../utils/server';
 import { DomainRepository } from '../../repositories/domain-repository';
 import { SSLManager } from './ssl-manager';
-import { logger } from '../../providers/logger';
+import { Logger } from '../../logger';
 
 export class NginxTcpService extends NginxService {
   async create(service: TcpService, restart = true): Promise<boolean> {
@@ -91,7 +91,7 @@ export class NginxTcpService extends NginxService {
 
     await this.saveFile(confFile, streamConf.getNginxConf());
 
-    logger.info(
+    Logger.info(
       `Saved TCP stream config for ${service.publicAccess} to ${confFile}`,
     );
 
@@ -103,7 +103,7 @@ export class NginxTcpService extends NginxService {
 
     await this.removeFile(confFile);
 
-    logger.info(
+    Logger.info(
       `Removed TCP stream config ${confFile} for ${service.publicAccess}`,
     );
 

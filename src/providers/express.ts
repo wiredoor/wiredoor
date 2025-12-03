@@ -1,5 +1,5 @@
 import express from 'express';
-import bodyParser from 'body-parser';
+// import bodyParser from 'body-parser';
 import compression from 'compression';
 import { Container } from 'typedi';
 import { Action, useContainer, useExpressServer } from 'routing-controllers';
@@ -11,14 +11,19 @@ import DomainController from '../controllers/domain-controller';
 import ConfigController from '../controllers/config-controller';
 import LogController from '../controllers/log-controller';
 import { errorHandlerMiddleware } from '../middlewares/error-handler-middleware';
-import { httpLogger } from './logger';
+import { createExpressLogger } from '../logger/express-logger';
 
 export default ({ app }: { app: express.Application }): void => {
-  app.use(compression());
-  app.use(bodyParser.json({ limit: '1mb' }));
-  app.use(bodyParser.urlencoded({ extended: true, limit: '100kb' }));
+  const { middleware, errorMiddleware } = createExpressLogger({
+    serviceName: 'wiredoor-http',
+    errorHandler: errorHandlerMiddleware,
+  });
 
-  app.use(httpLogger);
+  app.use(middleware);
+  app.use(compression());
+
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   // Express Routing Controllers
   useContainer(Container);
@@ -76,5 +81,5 @@ export default ({ app }: { app: express.Application }): void => {
     },
   });
 
-  app.use(errorHandlerMiddleware);
+  app.use(errorMiddleware);
 };

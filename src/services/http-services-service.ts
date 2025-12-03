@@ -15,7 +15,7 @@ import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 import { NginxHttpService } from './proxy-server/nginx-http-service';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 @Service()
 export class HttpServicesService extends BaseServices {
@@ -246,8 +246,8 @@ export class HttpServicesService extends BaseServices {
         };
       }
       return;
-    } catch (e) {
-      logger.warn(e, `Ping to HTTP Service Backend Failed`);
+    } catch (e: Error | any) {
+      Logger.warn('Ping to HTTP Service Backend Failed', e);
       throw new BadRequestError('Request to backend failed.');
     }
   }

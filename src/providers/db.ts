@@ -1,6 +1,6 @@
 import Container from 'typedi';
 import { DataSource } from 'typeorm';
-import { logger } from './logger';
+import { Logger } from '../logger';
 
 import dataSource from '../database/datasource';
 
@@ -14,8 +14,8 @@ export default async (): Promise<DataSource> => {
     Container.set('dataSource', dataSource);
 
     return dataSource;
-  } catch (e) {
-    logger.error('Unable to load database');
+  } catch (e: Error | any) {
+    Logger.error('Unable to load database:', e);
     throw e;
   }
 };
