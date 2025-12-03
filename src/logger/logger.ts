@@ -2,7 +2,7 @@ import pino from 'pino';
 import { randomBytes } from 'crypto';
 import { Sanitizer } from './sanitizer';
 import PinoPretty from 'pino-pretty';
-import { default as envConfig} from '../config';
+import { default as envConfig } from '../config';
 
 export enum LogLevel {
   FATAL = 'fatal',
@@ -107,7 +107,8 @@ export class CoreLogger implements ILogger {
       try {
         const prettyStream = PinoPretty({
           colorize: true,
-          translateTime: 'yyyy-mm-dd HH:MM:ss.l',
+          // translateTime: 'yyyy-mm-dd HH:MM:ss.l',
+          translateTime: 'SYS:standard',
           ignore: 'pid,hostname',
           singleLine: true,
           hideObject: true,
