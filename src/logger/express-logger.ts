@@ -101,7 +101,6 @@ export class ExpressLogger extends CoreLogger {
         event: 'error',
         error_type: err.name,
         error_code: err.code || err.statusCode,
-        error_stack: err.stack,
       });
 
       if (this.errorHandler) {

@@ -25,9 +25,63 @@ export class Sanitizer {
   sanitize<T>(data: T): T {
     if (!data || typeof data !== 'object') return data;
 
+    if (!this.hasSensitiveData(data)) {
+      return data;
+    }
+
     const visited = new WeakSet<object>();
-    const sanitized = Array.isArray(data) ? [...data] : { ...data };
+    const sanitized = this.deepClone(data);
     return this.sanitizeRecursive(sanitized, visited, 0) as T;
+  }
+
+  private hasSensitiveData(obj: any, depth: number = 0): boolean {
+    if (depth > this.maxDepth) return false;
+
+    if (!obj || typeof obj !== 'object') return false;
+
+    if (Array.isArray(obj)) {
+      return obj.some((item) => this.hasSensitiveData(item, depth + 1));
+    }
+
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+
+      const lowerKey = key.toLowerCase();
+
+      if (this.isSensitiveField(lowerKey)) {
+        return true;
+      }
+
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        if (this.hasSensitiveData(obj[key], depth + 1)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private deepClone<T>(obj: T): T {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+
+    if (obj instanceof Date) {
+      return new Date(obj.getTime()) as any;
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.deepClone(item)) as any;
+    }
+
+    const cloned: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        cloned[key] = this.deepClone(obj[key]);
+      }
+    }
+    return cloned;
   }
 
   private sanitizeRecursive(
@@ -70,7 +124,7 @@ export class Sanitizer {
     if (!value) return '[REDACTED]';
     const str = String(value);
     if (str.length <= 4) return '***';
-    return `${str.substring(0, 2)}${'*'.repeat(str.length - 4)}${str.substring(str.length - 2)}`;
+    return `${str.substring(0, 2)}${`******`}${str.substring(str.length - 2)}`;
   }
 
   sanitizeHeaders(headers: Record<string, any>): Record<string, any> {

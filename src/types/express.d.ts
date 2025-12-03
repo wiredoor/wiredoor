@@ -5,6 +5,8 @@ declare global {
     interface Request {
       id?: string;
       logger?: ILogger;
+    }
+    interface Response {
       sendDataAsStream?: (data: unknown) => void;
     }
   }
