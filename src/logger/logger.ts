@@ -2,6 +2,7 @@ import pino from 'pino';
 import { randomBytes } from 'crypto';
 import { Sanitizer } from './sanitizer';
 import PinoPretty from 'pino-pretty';
+import { default as envConfig} from '../config';
 
 export enum LogLevel {
   FATAL = 'fatal',
@@ -65,17 +66,21 @@ export class CoreLogger implements ILogger {
   protected logger: pino.Logger;
   // protected transports: LogTransport[];
 
-  constructor(config: BaseLoggerConfig = {}) {
+  constructor(baseConfig: BaseLoggerConfig = {}) {
     this.config = {
-      serviceName: config.serviceName || 'app',
+      serviceName: baseConfig.serviceName || 'app',
       environment:
-        config.environment || process.env.NODE_ENV || Environment.PRODUCTION,
-      logLevel: config.logLevel || ('info' as any),
+        baseConfig.environment ||
+        process.env.NODE_ENV ||
+        Environment.PRODUCTION,
+      logLevel: baseConfig.logLevel || envConfig.log.level || ('info' as any),
       prettyPrint:
-        config.prettyPrint ?? process.env.NODE_ENV === Environment.DEVELOPMENT,
-      sensitiveFields: config.sensitiveFields || [],
-      enableAudit: config.enableAudit !== false,
-      customFields: config.customFields || {},
+        baseConfig.prettyPrint ??
+        (envConfig.log.format === 'console' ||
+          process.env.NODE_ENV === Environment.DEVELOPMENT),
+      sensitiveFields: baseConfig.sensitiveFields || [],
+      enableAudit: baseConfig.enableAudit !== false,
+      customFields: baseConfig.customFields || {},
       // transports: config.transports || [],
     };
 
