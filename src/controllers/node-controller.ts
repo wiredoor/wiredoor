@@ -3,6 +3,7 @@ import { celebrate, Joi } from 'celebrate';
 import { Request, Response } from 'express';
 import {
   Body,
+  CurrentUser,
   Delete,
   Get,
   JsonController,
@@ -37,7 +38,10 @@ import {
   PersonalAccessToken,
   PersonalAccessTokenWithToken,
 } from '../database/models/personal-access-token';
-import { AdminTokenHandler } from '../middlewares/admin-token-handler';
+import {
+  AdminTokenHandler,
+  AuthenticatedUser,
+} from '../middlewares/admin-token-handler';
 
 @Service()
 @JsonController('/nodes')
@@ -115,8 +119,19 @@ export default class NodeController extends BaseController {
       body: createNodeValidator,
     }),
   )
-  async createNode(@Body() params: CreateNodeType): Promise<NodeWithToken> {
-    return this.nodesService.createNodeWithPAT(params);
+  async createNode(
+    @Body() params: CreateNodeType,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<NodeWithToken> {
+    const node = await this.nodesService.createNodeWithPAT(params);
+    req.logger.audit(`New node ${params.name} created`, {
+      nodeId: node.id,
+      nodeName: params.name,
+      isGateway: params.isGateway,
+      user: user.name,
+    });
+    return node;
   }
 
   @Get('/:id')
@@ -135,7 +150,15 @@ export default class NodeController extends BaseController {
       params: Joi.object({ id: Joi.string().required() }),
     }),
   )
-  async getNodeClientConfig(@Param('id') id: string): Promise<string> {
+  async getNodeClientConfig(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<string> {
+    req.logger.audit(`Getting client config for node with id ${id}`, {
+      nodeId: id,
+      user: user.name,
+    });
     return this.nodesService.getNodeConfig(+id);
   }
 
@@ -147,8 +170,14 @@ export default class NodeController extends BaseController {
   )
   async downloadNodeClientConfig(
     @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Res() res: Response,
   ): Promise<Response> {
+    req.logger.audit(`Downloading client config for node with id ${id}`, {
+      nodeId: id,
+      user: user.name,
+    });
     return this.nodesService.downloadNodeConfig(+id, res);
   }
 
@@ -169,8 +198,20 @@ export default class NodeController extends BaseController {
       params: Joi.object({ id: Joi.string().required() }),
     }),
   )
-  async disableNode(@Param('id') id: string): Promise<Node> {
-    return this.nodesService.disableNode(+id);
+  async disableNode(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<Node> {
+    const node = await this.nodesService.disableNode(+id);
+
+    req.logger.audit(`Node ${node.name} disabled`, {
+      nodeId: id,
+      nodeName: node.name,
+      user: user.name,
+    });
+
+    return node;
   }
 
   @Patch('/:id/enable')
@@ -179,8 +220,20 @@ export default class NodeController extends BaseController {
       params: Joi.object({ id: Joi.string().required() }),
     }),
   )
-  async enableNode(@Param('id') id: string): Promise<Node> {
-    return this.nodesService.enableNode(+id);
+  async enableNode(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<Node> {
+    const node = await this.nodesService.enableNode(+id);
+
+    req.logger.audit(`Node ${node.name} enabled`, {
+      nodeId: id,
+      nodeName: node.name,
+      user: user.name,
+    });
+
+    return node;
   }
 
   @Delete('/:id')
@@ -189,7 +242,15 @@ export default class NodeController extends BaseController {
       params: Joi.object({ id: Joi.string().required() }),
     }),
   )
-  async deleteNode(@Param('id') id: string): Promise<string> {
+  async deleteNode(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<string> {
+    req.logger.audit(`Deleting node with id ${id}`, {
+      nodeId: id,
+      user: user.name,
+    });
     return this.nodesService.deleteNode(+id);
   }
 
@@ -218,11 +279,23 @@ export default class NodeController extends BaseController {
   )
   async createTokenForNode(
     @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Body() params: CreatePATType,
   ): Promise<PersonalAccessTokenWithToken> {
     // ensure that node exists
     const node = await this.nodesService.getNode(+id);
-    return this.patService.createNodePAT(node.id, params);
+
+    const pat = await this.patService.createNodePAT(node.id, params);
+
+    req.logger.audit(`Created PAT ${pat.name} for node ${node.name}`, {
+      nodeId: id,
+      nodeName: node.name,
+      user: user.name,
+      patId: pat.id,
+    });
+
+    return pat;
   }
 
   @Delete('/:id/pats/:patId')
@@ -236,8 +309,15 @@ export default class NodeController extends BaseController {
   )
   async deletePat(
     @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Param('patId') patId: string,
   ): Promise<string> {
+    req.logger.audit(`Deleting PAT with id ${patId} for node with id ${id}`, {
+      nodeId: id,
+      patId: patId,
+      user: user.name,
+    });
     return this.patService.deletePat(+patId);
   }
 
@@ -252,8 +332,16 @@ export default class NodeController extends BaseController {
   )
   async revokePat(
     @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Param('patId') patId: string,
   ): Promise<PersonalAccessToken> {
-    return this.patService.revokeToken(+patId);
+    const pat = await this.patService.revokeToken(+patId);
+    req.logger.audit(`Revoking PAT ${pat.name} for node with id ${id}`, {
+      nodeId: id,
+      patId: patId,
+      user: user.name,
+    });
+    return pat;
   }
 }

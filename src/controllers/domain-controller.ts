@@ -2,6 +2,7 @@ import { Inject, Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import {
   Body,
+  CurrentUser,
   Delete,
   Get,
   JsonController,
@@ -9,8 +10,10 @@ import {
   Patch,
   Post,
   QueryParams,
+  Req,
   UseBefore,
 } from 'routing-controllers';
+import { Request } from 'express';
 import BaseController from './base-controller';
 import { DomainsService } from '../services/domains-service';
 import {
@@ -21,7 +24,10 @@ import {
 } from '../validators/domain-validator';
 import { Domain } from '../database/models/domain';
 import { PagedData } from '../repositories/filters/repository-query-filter';
-import { AdminTokenHandler } from '../middlewares/admin-token-handler';
+import {
+  AdminTokenHandler,
+  AuthenticatedUser,
+} from '../middlewares/admin-token-handler';
 
 @Service()
 @JsonController('/domains')
@@ -49,7 +55,15 @@ export default class DomainController extends BaseController {
       body: domainValidator,
     }),
   )
-  async createDomain(@Body() params: DomainType): Promise<Domain> {
+  async createDomain(
+    @Req() req: Request,
+    @Body() params: DomainType,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<Domain> {
+    req.logger.audit(`Creating new domain ${params.domain}`, {
+      domainName: params.domain,
+      user: user.name,
+    });
     return this.domainsService.createDomain(params);
   }
 
@@ -70,7 +84,16 @@ export default class DomainController extends BaseController {
       body: domainValidator,
     }),
   )
-  async updateDomain(@Param('id') id: string, @Body() params): Promise<Domain> {
+  async updateDomain(
+    @Param('id') id: string,
+    @Body() params,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<Domain> {
+    req.logger.audit(`Updating domain ${params.domain}`, {
+      domainName: params.domain,
+      user: user.name,
+    });
     return this.domainsService.updateDomain(+id, params);
   }
 
@@ -80,7 +103,15 @@ export default class DomainController extends BaseController {
       params: Joi.object({ id: Joi.string().required() }),
     }),
   )
-  async deleteDomain(@Param('id') id: string): Promise<string> {
+  async deleteDomain(
+    @Param('id') id: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<string> {
+    req.logger.audit(`Deleting domain with id ${id}`, {
+      domainId: id,
+      user: user.name,
+    });
     return this.domainsService.deleteDomain(+id);
   }
 }

@@ -241,13 +241,19 @@ export class HttpServicesService extends BaseServices {
       const response = await axios.get(backendUrl.href, options);
 
       if (response.status >= 200 && response.status < 400) {
+        Logger.info('Ping to HTTP Backend Service Succeeded', {
+          nodeName: httpService.node.name,
+          serviceName: httpService.name,
+          url: backendUrl.href,
+          status: response.status,
+        });
         return {
           status: response.status,
         };
       }
       return;
     } catch (e: Error | any) {
-      Logger.warn('Ping to HTTP Service Backend Failed', e);
+      Logger.warn('Ping to HTTP Backend Service Failed', e);
       throw new BadRequestError('Request to backend failed.');
     }
   }
