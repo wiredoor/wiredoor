@@ -2,6 +2,7 @@ FROM node:22-alpine AS base
 
 WORKDIR /app
 
+ARG TARGETARCH
 ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
@@ -64,9 +65,9 @@ FROM python:3.12-alpine AS python-base
 ARG OAUTH2PROXY_VERSION="7.13.0"
 
 RUN apk add --no-cache py3-pip build-base curl \
-  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
+  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
   && tar -xzf /tmp/oauth2-proxy.tar.gz \
-  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy \
+  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}/oauth2-proxy /usr/bin/oauth2-proxy \
   && pip install --upgrade pip setuptools wheel \
   && pip install --no-cache-dir supervisor \
   && python3 -m venv /opt/certbot/ \
