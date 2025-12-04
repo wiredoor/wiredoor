@@ -110,6 +110,7 @@ LABEL org.opencontainers.image.licenses=Apache-2.0 \
       org.opencontainers.image.documentation=https://www.wiredoor.net/docs \
       org.opencontainers.image.source=https://github.com/wiredoor/wiredoor \
       org.opencontainers.image.url=https://ghcr.io/wiredoor/wiredoor \
+      org.opencontainers.image.architecture=$TARGETARCH \
       org.opencontainers.image.title=wiredoor \
       org.opencontainers.image.version=${VERSION}
 
