@@ -2,7 +2,6 @@ FROM node:22-alpine AS base
 
 WORKDIR /app
 
-ARG TARGETARCH=amd64
 ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
@@ -62,6 +61,7 @@ COPY --chown=node:node . .
 
 FROM python:3.12-alpine AS python-base
 
+ARG TARGETARCH="amd64"
 ARG OAUTH2PROXY_VERSION="7.13.0"
 
 RUN apk add --no-cache py3-pip build-base curl \
