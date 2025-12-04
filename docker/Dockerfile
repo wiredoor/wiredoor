@@ -59,7 +59,7 @@ RUN npm i
 
 COPY --chown=node:node . .
 
-FROM python:3.12-alpine AS python-base
+FROM python:3.12-alpine3.22 AS python-base
 
 ARG TARGETARCH="amd64"
 ARG OAUTH2PROXY_VERSION="7.13.0"
@@ -89,7 +89,7 @@ RUN npm run build
 
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:20-alpine3.21 AS uibuild
+FROM node:22-alpine AS uibuild
 
 WORKDIR /app
 
