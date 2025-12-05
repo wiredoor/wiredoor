@@ -5,14 +5,16 @@ import {
   DNSRecord,
   DNSRecordType,
   FindRecordInput,
-  ListRecordsInput,
-  ListRecordsResult,
   UpdateRecordInput,
-} from '../dns-service';
+} from './dns-provider';
 import { CloudflareConfig } from '../../../config/dns-providers-config';
+
+type ZoneInfo = { id: string; name: string };
 
 export class CloudflareProvider implements DNSProvider {
   private readonly client: Cloudflare;
+  private zonesCache: ZoneInfo[] | null = null;
+  private zonesLoading?: Promise<void>;
 
   constructor(config: CloudflareConfig) {
     this.client = new Cloudflare({
@@ -20,132 +22,101 @@ export class CloudflareProvider implements DNSProvider {
     });
   }
 
-  private mapToRecord(cfRecord: Cloudflare.DNS.Records.Record): DNSRecord {
+  private async loadZonesIfNeeded(): Promise<void> {
+    if (this.zonesCache) return;
+    if (this.zonesLoading) {
+      await this.zonesLoading;
+      return;
+    }
+
+    this.zonesLoading = (async () => {
+      const res = await this.client.zones.list({ per_page: 1000 });
+      this.zonesCache = res.result.map((z: any) => ({
+        id: z.id,
+        name: z.name,
+      }));
+      console.log(
+        '[CloudflareProvider] Loaded zones:',
+        this.zonesCache.map((z) => z.name),
+      );
+    })();
+
+    await this.zonesLoading;
+  }
+
+  private async resolveZoneForDomain(fqdn: string): Promise<ZoneInfo> {
+    await this.loadZonesIfNeeded();
+
+    if (!this.zonesCache || this.zonesCache.length === 0) {
+      throw new Error('No Cloudflare zones available for this token.');
+    }
+
+    const domain = fqdn.toLowerCase();
+
+    let best: ZoneInfo | null = null;
+
+    for (const zone of this.zonesCache) {
+      const zn = zone.name.toLowerCase();
+      if (domain === zn || domain.endsWith('.' + zn)) {
+        if (!best || zn.length > best.name.length) {
+          best = zone;
+        }
+      }
+    }
+
+    if (!best) {
+      throw new Error(`No Cloudflare zone found for domain "${fqdn}".`);
+    }
+
+    return best;
+  }
+
+  private mapToRecord(
+    cfRecord: Cloudflare.DNS.Records.Record,
+    zoneId?: string,
+  ): DNSRecord {
     return {
       id: (cfRecord as any).id,
       type: cfRecord.type as DNSRecordType,
       name: cfRecord.name,
       content: cfRecord.content,
       ttl: cfRecord.ttl,
-      zoneId: (cfRecord as any).zone_id,
+      zoneId: (cfRecord as any).zone_id || zoneId,
       priority: (cfRecord as any).priority,
       proxied: 'proxied' in cfRecord ? cfRecord.proxied : undefined,
     };
   }
 
-  async listRecords(
-    zoneId: string,
-    query?: ListRecordsInput,
-  ): Promise<ListRecordsResult> {
+  async createRecord(input: CreateRecordInput): Promise<DNSRecord> {
     try {
-      const params: Cloudflare.DNS.Records.RecordListParams = {
-        zone_id: zoneId,
-      };
+      const zone = await this.resolveZoneForDomain(input.name);
 
-      if (query?.type) {
-        params.type = query.type as any;
-      }
-      if (query?.name) {
-        params.name.contains = query.name;
-      }
-      if (query?.page) {
-        params.page = query.page;
-      }
-      if (query?.perPage) {
-        params.per_page = query.perPage;
-      }
-
-      const response = await this.client.dns.records.list(params);
-
-      // Cloudflare SDK devuelve una página iterable
-      const records: DNSRecord[] = [];
-      for await (const record of response) {
-        records.push(this.mapToRecord(record));
-      }
-
-      // Obtener información de paginación del primer request
-      const firstPage = await this.client.dns.records.list({
-        ...params,
-        page: 1,
-        per_page: query?.perPage ?? 20,
+      const record = await this.client.dns.records.create({
+        zone_id: zone.id,
+        type: input.type,
+        name: input.name,
+        content: input.content,
+        ttl: input.ttl ?? 1,
+        priority: input.priority,
+        proxied: input.proxied ?? false,
       });
 
-      return {
-        records,
-        totalCount:
-          (firstPage as any).result_info?.total_count || records.length,
-        page: query?.page ?? 1,
-        perPage: query?.perPage ?? 20,
-      };
+      // logger.info('DNS record created successfully', { recordId: record.id });
+      return this.mapToRecord(record, zone.id);
     } catch (error) {
-      // logger.error('Failed to list DNS records', { error, zoneId, query });
+      // logger.error('Failed to create DNS record', { error, zoneId, input });
       throw new Error(
-        `Failed to list DNS records: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Failed to create DNS record: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
 
-  async getRecord(zoneId: string, recordId: string): Promise<DNSRecord | null> {
+  async findRecord(input: FindRecordInput): Promise<DNSRecord | null> {
     try {
-      const record = await this.client.dns.records.get(recordId, {
-        zone_id: zoneId,
-      });
-
-      return this.mapToRecord(record);
-    } catch (error: any) {
-      if (error?.status === 404) {
-        // logger.warn('DNS record not found', { zoneId, recordId });
-        return null;
-      }
-      // logger.error('Failed to get DNS record', { error, zoneId, recordId });
-      throw new Error(
-        `Failed to get DNS record: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
-  }
-
-  async findRecordByName(
-    zoneId: string,
-    name: string,
-    type?: string,
-  ): Promise<DNSRecord | null> {
-    try {
-      const params: Cloudflare.DNS.Records.RecordListParams = {
-        zone_id: zoneId,
-        name: { exact: name },
-        per_page: 1,
-      };
-
-      if (type) {
-        params.type = type as any;
-      }
-
-      const response = await this.client.dns.records.list(params);
-
-      for await (const record of response) {
-        return this.mapToRecord(record);
-      }
-
-      return null;
-    } catch (error) {
-      // logger.error('Failed to find DNS record by name', { error, zoneId, name, type });
-      throw new Error(
-        `Failed to find DNS record: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
-  }
-
-  async findRecord(
-    zoneId: string,
-    input: FindRecordInput,
-  ): Promise<DNSRecord | null> {
-    try {
-      if (input.id) {
-        return this.getRecord(zoneId, input.id);
-      }
+      const zone = await this.resolveZoneForDomain(input.name);
 
       const params: Cloudflare.DNS.Records.RecordListParams = {
-        zone_id: zoneId,
+        zone_id: zone.id,
         per_page: 1,
       };
 
@@ -160,7 +131,7 @@ export class CloudflareProvider implements DNSProvider {
       const response = await this.client.dns.records.list(params);
 
       for await (const record of response) {
-        return this.mapToRecord(record);
+        return this.mapToRecord(record, zone.id);
       }
 
       return null;
@@ -172,42 +143,22 @@ export class CloudflareProvider implements DNSProvider {
     }
   }
 
-  async createRecord(
-    zoneId: string,
-    input: CreateRecordInput,
-  ): Promise<DNSRecord> {
-    try {
-      // logger.info('Creating DNS record', { zoneId, input });
-
-      const record = await this.client.dns.records.create({
-        zone_id: zoneId,
-        type: input.type,
-        name: input.name,
-        content: input.content,
-        ttl: input.ttl ?? 1,
-        priority: input.priority,
-        proxied: input.proxied ?? false,
-      });
-
-      // logger.info('DNS record created successfully', { recordId: record.id });
-      return this.mapToRecord(record);
-    } catch (error) {
-      // logger.error('Failed to create DNS record', { error, zoneId, input });
-      throw new Error(
-        `Failed to create DNS record: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-    }
-  }
-
-  async updateRecord(
-    zoneId: string,
-    input: UpdateRecordInput,
-  ): Promise<DNSRecord> {
+  async updateRecord(input: UpdateRecordInput): Promise<DNSRecord> {
     try {
       // logger.info('Updating DNS record', { zoneId, recordId, input });
+      const zone = await this.resolveZoneForDomain(input.name);
 
-      const record = await this.client.dns.records.edit(input.id, {
-        zone_id: zoneId,
+      const existing = await this.findRecord({
+        name: input.name,
+        type: input.type,
+      });
+
+      if (!existing) {
+        throw new Error(`DNS record not found: ${input.name}`);
+      }
+
+      const record = await this.client.dns.records.edit(existing.id, {
+        zone_id: zone.id,
         type: input.type,
         name: input.name,
         content: input.content,
@@ -217,7 +168,7 @@ export class CloudflareProvider implements DNSProvider {
       });
 
       // logger.info('DNS record updated successfully', { recordId: record.id });
-      return this.mapToRecord(record);
+      return this.mapToRecord(record, zone.id);
     } catch (error) {
       // logger.error('Failed to update DNS record', { error, zoneId, recordId });
       throw new Error(
@@ -226,12 +177,16 @@ export class CloudflareProvider implements DNSProvider {
     }
   }
 
-  async deleteRecord(zoneId: string, recordId: string): Promise<void> {
+  async deleteRecord(input: FindRecordInput): Promise<void> {
     try {
-      // logger.info('Deleting DNS record', { zoneId, recordId });
+      const record = await this.findRecord(input);
 
-      await this.client.dns.records.delete(recordId, {
-        zone_id: zoneId,
+      if (!record) {
+        throw new Error(`DNS record not found: ${input.name}`);
+      }
+
+      await this.client.dns.records.delete(record.id, {
+        zone_id: record.zoneId,
       });
 
       // logger.info('DNS record deleted successfully', { recordId });
