@@ -49,6 +49,16 @@ export interface FindRecordInput {
 
 export const DNSProviderToken = new Token<DNSProvider>('DNSProvider');
 
+export class DNSProviderError extends Error {
+  constructor(
+    public readonly provider: 'cloudflare' | 'godaddy',
+    public readonly code: string,
+    public readonly details?: Record<string, unknown>,
+  ) {
+    super(`[${provider}] ${code}`);
+  }
+}
+
 export interface DNSProvider {
   createRecord(input: CreateRecordInput): Promise<DNSRecord>;
 

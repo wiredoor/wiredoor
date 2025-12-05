@@ -7,46 +7,108 @@ import {
   CreateRecordInput,
   DNSProviderToken,
   UpdateRecordInput,
+  DNSProviderError,
 } from './providers/dns-provider';
+import { createLogger, ILogger } from '../../logger';
 
 @Service()
 export class DNSService {
+  private readonly logger: ILogger;
+
   constructor(
     @Inject(DNSProviderToken) private readonly provider: DNSProvider,
-  ) {}
+  ) {
+    this.logger = createLogger({ serviceName: 'DNSService' });
+  }
 
   async createRecord(input: CreateRecordInput): Promise<DNSRecord> {
-    // logger.info('Creating DNS record', { zoneId, name: input.name, type: input.type });
-    const record = await this.provider.createRecord(input);
+    this.logger.info(`Creating new ${input.type} record ${input.name}`, {
+      ...input,
+    });
+    try {
+      const record = await this.provider.createRecord(input);
 
-    // logger.info('DNS record created successfully', { recordId: record.id });
-    return record;
+      return record;
+    } catch (error: DNSProviderError | Error | any) {
+      if (error instanceof DNSProviderError) {
+        this.logger.error('Unable to create DNS record', error, {
+          provider: error.provider,
+          code: error.code,
+        });
+
+        throw error;
+      }
+
+      throw error;
+    }
   }
 
   async updateRecord(input: UpdateRecordInput): Promise<DNSRecord> {
-    // logger.info('Updating DNS record', { zoneId, recordId });
-    const record = await this.provider.updateRecord(input);
+    this.logger.info(`Updating ${input.type} record ${input.name}`, {
+      ...input,
+    });
+    try {
+      const record = await this.provider.updateRecord(input);
 
-    // logger.info('DNS record updated successfully', { recordId: record.id });
-    return record;
+      return record;
+    } catch (error: DNSProviderError | Error | any) {
+      if (error instanceof DNSProviderError) {
+        this.logger.error('Unable to update DNS record', error, {
+          provider: error.provider,
+          code: error.code,
+        });
+
+        throw error;
+      }
+
+      throw error;
+    }
   }
 
   async deleteRecord(input: FindRecordInput): Promise<void> {
-    // logger.info('Deleting DNS record', { zoneId, recordId });
+    this.logger.info(`Deleting ${input.type} record ${input.name}`, {
+      ...input,
+    });
 
-    await this.provider.deleteRecord(input);
+    try {
+      await this.provider.deleteRecord(input);
+    } catch (error: DNSProviderError | Error | any) {
+      if (error instanceof DNSProviderError) {
+        this.logger.error('Unable to delete DNS record', error, {
+          provider: error.provider,
+          code: error.code,
+        });
 
-    // logger.info('DNS record deleted successfully', { recordId });
+        throw error;
+      }
+
+      throw error;
+    }
   }
 
   async findRecordByName(
     name: string,
     type?: string,
   ): Promise<DNSRecord | null> {
-    // logger.info('Finding DNS record by name', { zoneId, name, type });
-    return this.provider.findRecord({
-      name,
-      type: type as DNSRecordType,
-    });
+    this.logger.info(`Finding ${type} record ${name}`);
+    try {
+      const record = await this.provider.findRecord({
+        name,
+        type: type as DNSRecordType,
+      });
+
+      return record;
+    } catch (error: DNSProviderError | Error | any) {
+      if (error instanceof DNSProviderError) {
+        this.logger.error('Unable to find DNS record', error, {
+          provider: error.provider,
+          code: error.code,
+        });
+
+        throw error;
+      }
+
+      throw error;
+    }
   }
 }
