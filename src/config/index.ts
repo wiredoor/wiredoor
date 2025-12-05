@@ -3,7 +3,7 @@ import path from 'path';
 import { randomBytes } from 'crypto';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 dotenv.config();
 
@@ -41,8 +41,8 @@ function getJWTKey(): string {
 
     fs.writeFileSync(filePath, newKey, { mode: 0o600 });
     return newKey;
-  } catch (error) {
-    logger.error({ err: error }, 'Error loading or generating JWT key:');
+  } catch (error: Error | any) {
+    Logger.error('Error loading or generating JWT key:', error);
     throw error;
   }
 }
@@ -51,6 +51,10 @@ export default {
   app: {
     name: process.env.APP_NAME || 'Wiredoor',
     port: parseInt(process.env.APP_PORT || '') || 3000,
+  },
+  log: {
+    level: process.env.LOG_LEVEL || 'info',
+    format: process.env.LOG_FORMAT || 'console',
   },
   admin: {
     email: process.env.ADMIN_EMAIL || 'admin@example.com',

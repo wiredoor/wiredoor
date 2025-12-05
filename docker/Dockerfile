@@ -1,4 +1,4 @@
-FROM node:22-alpine AS base
+FROM node:22-alpine3.22 AS base
 
 WORKDIR /app
 
@@ -59,14 +59,15 @@ RUN npm i
 
 COPY --chown=node:node . .
 
-FROM python:3.12-alpine AS python-base
+FROM python:3.12-alpine3.22 AS python-base
 
+ARG TARGETARCH
 ARG OAUTH2PROXY_VERSION="7.13.0"
 
 RUN apk add --no-cache py3-pip build-base curl \
-  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64.tar.gz -o /tmp/oauth2-proxy.tar.gz \
+  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
   && tar -xzf /tmp/oauth2-proxy.tar.gz \
-  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-amd64/oauth2-proxy /usr/bin/oauth2-proxy \
+  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}/oauth2-proxy /usr/bin/oauth2-proxy \
   && pip install --upgrade pip setuptools wheel \
   && pip install --no-cache-dir supervisor \
   && python3 -m venv /opt/certbot/ \
@@ -88,7 +89,7 @@ RUN npm run build
 
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:20-alpine3.21 AS uibuild
+FROM node:22-alpine3.22 AS uibuild
 
 WORKDIR /app
 

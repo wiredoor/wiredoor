@@ -5,7 +5,7 @@ import { NginxService } from './nginx-service';
 import { DomainRepository } from '../../repositories/domain-repository';
 import IP_CIDR from '../../utils/ip-cidr';
 import { NginxConf } from './conf/nginx-conf';
-import { logger } from '../../providers/logger';
+import { Logger } from '../../logger';
 
 type LocationType = 'exact' | 'regex';
 
@@ -36,7 +36,7 @@ export class NginxHttpService extends NginxService {
 
     await this.saveFile(confFile, nginxConf.getNginxConf());
 
-    logger.info(
+    Logger.info(
       `Saved HTTP location config for ${service.publicAccess} to ${confFile}`,
     );
 
@@ -48,7 +48,7 @@ export class NginxHttpService extends NginxService {
 
     await this.removeFile(confFile);
 
-    logger.info(
+    Logger.info(
       `HTTP location ${service.publicAccess} config ${confFile} removed `,
     );
 
