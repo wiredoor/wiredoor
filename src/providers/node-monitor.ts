@@ -1,7 +1,7 @@
 import Container from 'typedi';
 import Net from '../utils/net';
 import { NodeRepository } from '../repositories/node-repository';
-import { logger } from './logger';
+import { Logger } from '../logger';
 
 interface PingResult {
   lastPingTs: number;
@@ -38,8 +38,8 @@ export function startPing(): void {
         }),
       );
     }, 5000);
-  } catch (e) {
-    logger.error(e, `Error checking nodes`);
+  } catch (e: Error | any) {
+    Logger.error('Error checking nodes:', e);
   } finally {
     running = false;
   }

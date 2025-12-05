@@ -15,7 +15,7 @@ import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 import { NginxHttpService } from './proxy-server/nginx-http-service';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 @Service()
 export class HttpServicesService extends BaseServices {
@@ -241,13 +241,19 @@ export class HttpServicesService extends BaseServices {
       const response = await axios.get(backendUrl.href, options);
 
       if (response.status >= 200 && response.status < 400) {
+        Logger.info('Ping to HTTP Backend Service Succeeded', {
+          nodeName: httpService.node.name,
+          serviceName: httpService.name,
+          url: backendUrl.href,
+          status: response.status,
+        });
         return {
           status: response.status,
         };
       }
       return;
-    } catch (e) {
-      logger.warn(e, `Ping to HTTP Service Backend Failed`);
+    } catch (e: Error | any) {
+      Logger.warn('Ping to HTTP Backend Service Failed', e);
       throw new BadRequestError('Request to backend failed.');
     }
   }
