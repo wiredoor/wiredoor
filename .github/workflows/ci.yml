@@ -37,7 +37,7 @@ jobs:
         run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build Dev Image
-        run: docker build --pull --no-cache -t ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} --target development -f docker/Dockerfile .
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} --target development -f docker/Dockerfile .
 
       - name: Push image
         run: docker push ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }}
@@ -143,8 +143,6 @@ jobs:
           echo $TAG_ARGS
 
           docker buildx build \
-            --no-cache \
-            --pull \
             --platform linux/amd64,linux/arm64 \
             --target=production \
             --provenance=mode=max \
