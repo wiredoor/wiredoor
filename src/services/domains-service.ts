@@ -19,16 +19,48 @@ import { ProcessManager } from './oauth2-proxy/process-manager';
 import config from '../config';
 import { HttpServicesService } from './http-services-service';
 import { NginxDomainService } from './proxy-server/nginx-domain-service';
+import { DNSService } from './dns/dns-service';
+import Net from '../utils/net';
 
 @Service()
 export class DomainsService {
   private nginxDomainService: NginxDomainService;
+  private dnsService: DNSService;
 
   constructor(
     @Inject() private readonly domainRepository: DomainRepository,
     @Inject() private readonly domainFilter: DomainQueryFilter,
   ) {
     this.nginxDomainService = new NginxDomainService();
+    this.dnsService = Container.get(DNSService);
+  }
+
+  private async addDnsRecordForDomain(domain: string): Promise<void> {
+    if (config.dns.provider) {
+      const dnsCanManageDomain = await this.dnsService.canManageDomain(domain);
+
+      if (dnsCanManageDomain) {
+        const realIp = await Net.getRealPublicIp();
+        try {
+          await this.dnsService.createRecord({
+            name: domain,
+            type: 'A',
+            content: realIp,
+            ttl: 3600,
+            proxied: false,
+          });
+        } catch {
+          throw new ValidationError({
+            body: [
+              {
+                field: 'domain',
+                message: `The DNS provider could not create the required DNS record for the domain.`,
+              },
+            ],
+          });
+        }
+      }
+    }
   }
 
   public async initialize(): Promise<void> {
@@ -91,6 +123,10 @@ export class DomainsService {
     }
 
     const resolveThisServer = await pointToThisServer(domain);
+
+    if (!resolveThisServer) {
+      await this.addDnsRecordForDomain(domain);
+    }
 
     return this.createDomain(
       {

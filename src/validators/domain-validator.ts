@@ -3,8 +3,20 @@ import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
 import Net from '../utils/net';
 import ServerUtils from '../utils/server';
+import config from '../config';
+import Container from 'typedi';
+import { DNSService } from '../services/dns/dns-service';
 
 export const pointToThisServer = async (domain: string): Promise<boolean> => {
+  if (config.dns.provider) {
+    const dnsCanManageDomain =
+      await Container.get(DNSService).canManageDomain(domain);
+
+    if (dnsCanManageDomain) {
+      return true;
+    }
+  }
+
   const lookup = await Net.lookupIncludesThisServer(domain);
 
   if (!lookup) {

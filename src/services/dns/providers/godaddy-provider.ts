@@ -121,6 +121,15 @@ export class GoDaddyProvider implements DNSProvider {
     };
   }
 
+  async canManageDomain(fqdn: string): Promise<boolean> {
+    try {
+      await this.resolveDomainForFqdn(fqdn);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async findRecord(input: FindRecordInput): Promise<DNSRecord | null> {
     const { name: fqdn, type } = input;
 

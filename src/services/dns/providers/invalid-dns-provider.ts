@@ -33,4 +33,9 @@ export class InvalidDNSProvider implements DNSProvider {
     );
     throw new Error('Invalid DNS provider configured.');
   }
+
+  async canManageDomain(domain: string): Promise<boolean> {
+    void domain;
+    return false;
+  }
 }

@@ -67,4 +67,6 @@ export interface DNSProvider {
   deleteRecord(input: FindRecordInput): Promise<void>;
 
   findRecord(input: FindRecordInput): Promise<DNSRecord | null>;
+
+  canManageDomain(domain: string): Promise<boolean>;
 }

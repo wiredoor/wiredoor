@@ -101,6 +101,15 @@ export class CloudflareProvider implements DNSProvider {
     };
   }
 
+  async canManageDomain(fqdn: string): Promise<boolean> {
+    try {
+      await this.resolveZoneForDomain(fqdn);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async createRecord(input: CreateRecordInput): Promise<DNSRecord> {
     try {
       const zone = await this.resolveZoneForDomain(input.name);
