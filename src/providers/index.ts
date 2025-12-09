@@ -7,9 +7,9 @@ import dns from './dns';
 export default async (expressApp: express.Application): Promise<void> => {
   await db();
 
-  await initializer();
-
   await dns();
+
+  await initializer();
 
   expressProvider({ app: expressApp });
 };
