@@ -47,7 +47,7 @@ export class ExpressLogger extends CoreLogger {
           origin: req.headers['origin'],
           xForwardedFor: req.headers['x-forwarded-for'],
           xRealIp: req.headers['x-real-ip'],
-          xAuthUser: req.headers['x-auth-user'],
+          xAuthUser: req.headers['x-auth-user'] || req.headers['X-Auth-Request-User'],
         },
       });
 

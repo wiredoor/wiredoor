@@ -119,9 +119,9 @@ export class CoreLogger implements ILogger {
             const statusCode = log.status_code as number | undefined;
             const responseTimeMs = log.duration as number | undefined;
             const clientIp = log.req_ip as string | undefined;
-            const authUser = (log.req_headers as any)['X-Auth-User'] as
-              | string
-              | undefined;
+            const authUser =
+              (log.req_headers as any)['X-Auth-User'] ||
+              (log.req_headers as any)['X-Auth-Request-User'];
             // const userAgent = (log.req_headers as any)?.userAgent as
             //   | string
             //   | undefined;
