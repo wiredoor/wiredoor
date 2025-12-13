@@ -72,6 +72,9 @@ export class BaseServices {
           `Error creating or checking domain ${domain}: ${err.message}`,
           err,
         );
+        if (err instanceof ValidationError) {
+          throw err;
+        }
         throw new ValidationError({
           body: [
             {
