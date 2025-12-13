@@ -1,0 +1,22 @@
+services:
+  wiredoor-dev:
+    container_name: wiredoor-dev
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+      target: dev-container
+    user: root
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - ${FORWARD_NGINX_HTTP_PORT:-8080}:80
+      - ${FORWARD_NGINX_HTTPS_PORT:-8443}:443
+      - ${FORWARD_UI_PORT:-5173}:5173
+      - ${FORWARD_API_PORT:-3000}:3000
+      - ${FORWARD_WG_PORT:-51820}:51820/udp
+    volumes:
+      - wiredoor-dev-vol:/app
+      - ..:/workspaces/wiredoor
+
+volumes:
+  wiredoor-dev-vol:
