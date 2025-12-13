@@ -119,6 +119,9 @@ export class CoreLogger implements ILogger {
             const statusCode = log.status_code as number | undefined;
             const responseTimeMs = log.duration as number | undefined;
             const clientIp = log.req_ip as string | undefined;
+            const authUser = (log.req_headers as any)?.xAuthUser as
+              | string
+              | undefined;
             // const userAgent = (log.req_headers as any)?.userAgent as
             //   | string
             //   | undefined;
@@ -134,6 +137,7 @@ export class CoreLogger implements ILogger {
             if (statusCode !== undefined) parts.push(`status=${statusCode}`);
             if (responseTimeMs !== undefined)
               parts.push(`time=${responseTimeMs}ms`);
+            if (authUser) parts.push(`user=${authUser}`);
             if (clientIp) parts.push(`ip=${clientIp}`);
             if (requestId) parts.push(`reqId=${requestId}`);
             // if (userAgent) parts.push(`ua="${userAgent}"`);

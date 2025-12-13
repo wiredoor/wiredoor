@@ -1,10 +1,7 @@
 {
   "name": "Wiredoor Dev Container",
-  "build": {
-    "dockerfile": "../docker/Dockerfile",
-    "target": "dev-container",
-    "context": "../"
-  },
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "wiredoor-dev",
   "overrideCommand": false,
   "workspaceFolder": "/app",
   "customizations": {
@@ -25,10 +22,8 @@
       }
     }
   },
-  "mounts": [
-    "source=wiredoor-vol,target=/app,type=volume"
-  ],
   "postCreateCommand": "rsync -a --delete --exclude '**/node_modules' /workspaces/wiredoor/ /app/",
   "remoteUser": "root",
-  "capAdd": [ "NET_ADMIN" ]
+  "capAdd": [ "NET_ADMIN" ],
+  "shutdownAction": "stopCompose"
 }
