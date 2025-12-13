@@ -8,15 +8,6 @@ import Container from 'typedi';
 import { DNSService } from '../services/dns/dns-service';
 
 export const pointToThisServer = async (domain: string): Promise<boolean> => {
-  if (config.dns.provider) {
-    const dnsCanManageDomain =
-      await Container.get(DNSService).canManageDomain(domain);
-
-    if (dnsCanManageDomain) {
-      return true;
-    }
-  }
-
   const lookup = await Net.lookupIncludesThisServer(domain);
 
   if (!lookup) {
@@ -30,9 +21,22 @@ export const pointToThisServer = async (domain: string): Promise<boolean> => {
   return true;
 };
 
+export const isValidDomain = async (domain: string): Promise<boolean> => {
+  if (config.dns.provider) {
+    const dnsCanManageDomain =
+      await Container.get(DNSService).canManageDomain(domain);
+
+    if (dnsCanManageDomain) {
+      return true;
+    }
+  }
+
+  return pointToThisServer(domain);
+};
+
 export const nslookupResolvesServerIp = async (c: string): Promise<string> => {
   if (c) {
-    const resolveThisServer = await pointToThisServer(c);
+    const resolveThisServer = await isValidDomain(c);
 
     if (!resolveThisServer) {
       throw new ValidationError(
