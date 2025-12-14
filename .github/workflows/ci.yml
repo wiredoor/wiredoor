@@ -1,4 +1,4 @@
-name: Wiredoor CI Pipeline
+name: CI Pipeline
 
 on:
   push:
