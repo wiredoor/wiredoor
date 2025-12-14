@@ -1,7 +1,7 @@
 import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import { nslookupResolvesServerIp } from './domain-validator';
+import { isValidDomain } from './domain-validator';
 import Container from 'typedi';
 import { DomainRepository } from '../repositories/domain-repository';
 
@@ -13,7 +13,10 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
   }
 
   const { error } = Joi.string().domain().validate(c);
-  if (error) {
+
+  const valid = await isValidDomain(c);
+
+  if (error || !valid) {
     throw new ValidationError(
       `invalid domain`,
       [
@@ -27,7 +30,7 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
     );
   }
 
-  return nslookupResolvesServerIp(c);
+  return c;
 };
 
 const validateBypassPaths = (input: string): string => {
