@@ -23,7 +23,7 @@
   [![CI Status](https://github.com/wiredoor/wiredoor/actions/workflows/ci.yml/badge.svg)](https://github.com/wiredoor/wiredoor/actions)
   [![Wiredoor Release](https://img.shields.io/github/v/release/wiredoor/wiredoor?label=Wiredoor)](https://github.com/wiredoor/wiredoor-cli/releases)
   [![CLI Release](https://img.shields.io/github/v/release/wiredoor/wiredoor-cli?label=CLI&color=silver)](https://github.com/wiredoor/wiredoor-cli/releases)
-  [![Docker](https://img.shields.io/docker/pulls/wiredoor/wiredoor?label=Docker+Pulls&color=blue)](https://hubs.docker.com/r/wiredoor/wiredoor)
+  [![Docker](https://img.shields.io/docker/pulls/wiredoor/wiredoor?label=Docker+Pulls&color=blue)](https://hub.docker.com/r/wiredoor/wiredoor)
   [![License](https://img.shields.io/github/license/wiredoor/wiredoor?label=Lic)](https://raw.githubusercontent.com/wiredoor/wiredoor/main/LICENSE)
 
 </div>
