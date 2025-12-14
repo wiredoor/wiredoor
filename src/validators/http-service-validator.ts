@@ -1,7 +1,7 @@
 import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import { isValidDomain } from './domain-validator';
+import { nslookupResolvesServerIp } from './domain-validator';
 import Container from 'typedi';
 import { DomainRepository } from '../repositories/domain-repository';
 
@@ -28,23 +28,7 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
     );
   }
 
-  const valid = await isValidDomain(c);
-
-  if (!valid) {
-    throw new ValidationError(
-      `nslookup failed`,
-      [
-        {
-          path: ['domain'],
-          message: `Domain verification failed. The domain does not point to Wiredoor host.`,
-          type: 'Error',
-        },
-      ],
-      null,
-    );
-  }
-
-  return c;
+  return nslookupResolvesServerIp(c);
 };
 
 const validateBypassPaths = (input: string): string => {
