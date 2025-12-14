@@ -1,4 +1,9 @@
-<p align="center"> <img src="https://www.wiredoor.net/images/wiredoor-large-light.svg" alt="Wiredoor logo" height="60" /> </p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.wiredoor.net/images/wiredoor-large-dark.svg">
+    <img src="https://www.wiredoor.net/images/wiredoor-large-light.svg" alt="Wiredoor logo" height="80" />
+  </picture>
+</p>
 
 <p align="center">
   <strong>Expose private services securely through reverse VPN tunnel powered by WireGuard and NGINX.</strong>
