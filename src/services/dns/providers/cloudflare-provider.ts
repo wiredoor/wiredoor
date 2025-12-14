@@ -43,7 +43,10 @@ export class CloudflareProvider implements DNSProvider {
           `Loaded ${this.zonesCache.length} zones from Cloudflare.`,
         );
       } catch (error: Error | any) {
-        this.logger.error('[CloudflareProvider] Failed to load zones:', error);
+        this.logger.error(
+          `[CloudflareProvider] Failed to load zones: ${error.message}`,
+          error,
+        );
         this.zonesCache = [];
       }
     })();

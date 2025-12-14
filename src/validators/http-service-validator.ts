@@ -14,15 +14,29 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
 
   const { error } = Joi.string().domain().validate(c);
 
-  const valid = await isValidDomain(c);
-
-  if (error || !valid) {
+  if (error) {
     throw new ValidationError(
       `invalid domain`,
       [
         {
           path: ['domain'],
           message: `This field must contain a valid domain name`,
+          type: 'Error',
+        },
+      ],
+      null,
+    );
+  }
+
+  const valid = await isValidDomain(c);
+
+  if (!valid) {
+    throw new ValidationError(
+      `nslookup failed`,
+      [
+        {
+          path: ['domain'],
+          message: `Domain verification failed. The domain does not point to Wiredoor host.`,
           type: 'Error',
         },
       ],
