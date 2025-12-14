@@ -1,12 +1,7 @@
-<p align="center"> <img src="https://www.wiredoor.net/images/wiredoor.svg" alt="Wiredoor logo" width="60" /> </p>
-
-<h1 align="center" style="color:#1c398e">
-  Wiredoor
-</h1>
+<p align="center"> <img src="https://www.wiredoor.net/images/wiredoor-large-light.svg" alt="Wiredoor logo" height="60" /> </p>
 
 <p align="center">
-  <strong>Expose private services securely through reverse VPN tunnel powered by WireGuard and NGINX.</strong><br />
-  Open-source | Self-hosted
+  <strong>Expose private services securely through reverse VPN tunnel powered by WireGuard and NGINX.</strong>
 </p>
 
 <p align="center">
@@ -38,14 +33,9 @@
   <a href="https://twitter.com/intent/follow?screen_name=wiredoor_net">
     <img src="https://img.shields.io/twitter/follow/wiredoor_net?style=social&logo=twitter" alt="follow on Twitter">
   </a>
-  <a href="https://github.com/wiredoor/wiredoor/stargazers">
-    <img src="https://img.shields.io/github/stars/wiredoor/wiredoor?style=social" alt="GitHub Stars" />
-  </a>
 </p>
 
 ---
-
-# What is Wiredoor?
 
 **Wiredoor** is a self-hosted, open-source ingress-as-a-service platform that allows you to expose applications and services running in private or local networks to the internet—securely, reliably, and without complex infrastructure.
 
