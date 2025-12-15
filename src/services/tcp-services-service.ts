@@ -24,7 +24,7 @@ export class TcpServicesService extends BaseServices {
     @Inject() private readonly nodeRepository: NodeRepository,
     @Inject() private readonly domainsService: DomainsService,
   ) {
-    super(nodeRepository);
+    super(nodeRepository, domainsService);
     this.nginxTcpService = new NginxTcpService();
   }
 
@@ -35,6 +35,7 @@ export class TcpServicesService extends BaseServices {
 
     for (const service of services) {
       if (service.enabled) {
+        await this.checkOrCreateDomain(service.domain);
         await this.buildServerConfig(service);
       }
     }
@@ -95,6 +96,7 @@ export class TcpServicesService extends BaseServices {
     if (params.proto === 'tcp') {
       await this.checkNodePort(nodeId, params.backendPort, params.backendHost);
     }
+    await this.checkOrCreateDomain(params.domain);
 
     const { id } = await this.tcpServiceRepository.save({
       ...params,
@@ -122,6 +124,7 @@ export class TcpServicesService extends BaseServices {
         params.backendHost,
       );
     }
+    await this.checkOrCreateDomain(params.domain);
 
     await this.nginxTcpService.remove(old, false);
 
@@ -182,10 +185,6 @@ export class TcpServicesService extends BaseServices {
     tcpService: TcpService,
     restart = true,
   ): Promise<void> {
-    if (tcpService.domain) {
-      await this.domainsService.createDomainIfNotExists(tcpService.domain);
-    }
-
     await this.nginxTcpService.create(tcpService, restart);
   }
 }

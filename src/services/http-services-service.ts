@@ -27,7 +27,7 @@ export class HttpServicesService extends BaseServices {
     @Inject() private readonly nodeRepository: NodeRepository,
     @Inject() private readonly domainService: DomainsService,
   ) {
-    super(nodeRepository);
+    super(nodeRepository, domainService);
     this.nginxHttpService = new NginxHttpService();
   }
 
@@ -37,6 +37,7 @@ export class HttpServicesService extends BaseServices {
     });
 
     for (const service of services) {
+      await this.checkOrCreateDomain(service.domain);
       await this.buildServerConfig(service, false);
     }
   }
@@ -85,12 +86,15 @@ export class HttpServicesService extends BaseServices {
     nodeId: number,
     params: HttpServiceType,
   ): Promise<HttpService> {
-    await this.checkNodePort(
-      nodeId,
-      params.backendPort,
-      params.backendHost,
-      params.backendProto === 'https',
-    );
+    await Promise.all([
+      this.checkNodePort(
+        nodeId,
+        params.backendPort,
+        params.backendHost,
+        params.backendProto === 'https',
+      ),
+      this.checkOrCreateDomain(params.domain),
+    ]);
 
     const expiresAt = calculateExpiresAtFromTTL(params.ttl);
 
@@ -130,6 +134,8 @@ export class HttpServicesService extends BaseServices {
         params.backendProto === 'https',
       );
     }
+
+    await this.checkOrCreateDomain(params.domain);
 
     await this.nginxHttpService.remove(old, false);
 
@@ -262,10 +268,6 @@ export class HttpServicesService extends BaseServices {
     httpService: HttpService,
     restart = true,
   ): Promise<void> {
-    if (httpService.domain) {
-      await this.domainService.createDomainIfNotExists(httpService.domain);
-    }
-
     await this.nginxHttpService.create(httpService, restart);
   }
 }

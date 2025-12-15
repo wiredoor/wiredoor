@@ -1,3 +1,10 @@
+---
+title: "Wiredoor Kubernetes Gateway: Secure Ingress for Private Clusters"
+description: 
+  Use Wiredoor Kubernetes Gateway to expose services from private clusters securely over WireGuard VPN. Deploy via Helm, avoid bastion hosts or cloud tunnels, and enable automatic SSL, DNS resolution, and network policies in air-gapped or on-prem environments.
+keywords: ["kubernetes gateway", "kubernetes vpn tunnel", "private cluster", "service exposure"]
+---
+
 import { Callout } from 'nextra/components'
 
 # Wiredoor Kubernetes Gateway
@@ -87,14 +94,14 @@ Run:
 kubectl -n kube-system get svc kube-dns -o wide
 ```
 
-You’ll get something like `10.96.0.10`, meaning your service subnet is `10.96.0.0/12`.
+You'll get something like `10.96.0.10`, meaning your service subnet is `10.96.0.0/12`.
 
 ### 2. Create a Gateway Node in your Wiredoor
 
 - Log into the Wiredoor Web UI
 - Create a new **node** and assign a name
 - Select checkbox `Is Gateway` and define the gateway subnet (e.g. `10.96.0.0/12`)
-- Copy generated token. You’ll use this in the Helm installation.
+- Copy generated token. You'll use this in the Helm installation.
 
 ### 3. Install the Helm Chart
 
@@ -176,6 +183,6 @@ This will ensure that only the argocd-server Pod in the argocd namespace can be 
 - The gateway only routes traffic to **services within the configured subnet**. Be sure to define the correct **service subnet** (e.g. `10.96.0.0/12`) when creating the gateway node in Wiredoor. This limits exposure to unintended parts of your cluster.
 - The gateway Pod **must run in a namespace with access** to the services you intend to expose. If you use Network Policies or strict namespace isolation, adjust accordingly.
 - The gateway runs as a regular Kubernetes Deployment — it does **not require privileged mode**, host networking, or elevated permissions.
-- Wiredoor terminates **SSL connections automatically** using Let’s Encrypt (for public domains) or generates self-signed certs (for local/internal domains).
+- Wiredoor terminates **SSL connections automatically** using Let's Encrypt (for public domains) or generates self-signed certs (for local/internal domains).
 
 Following these best practices will ensure your Wiredoor Gateway is secure, efficient, and production-ready.

@@ -19,16 +19,65 @@ import { ProcessManager } from './oauth2-proxy/process-manager';
 import config from '../config';
 import { HttpServicesService } from './http-services-service';
 import { NginxDomainService } from './proxy-server/nginx-domain-service';
+import { DNSService } from './dns/dns-service';
+import Net from '../utils/net';
 
 @Service()
 export class DomainsService {
   private nginxDomainService: NginxDomainService;
+  private dnsService: DNSService;
 
   constructor(
     @Inject() private readonly domainRepository: DomainRepository,
     @Inject() private readonly domainFilter: DomainQueryFilter,
   ) {
     this.nginxDomainService = new NginxDomainService();
+    this.dnsService = Container.get(DNSService);
+  }
+
+  private async addDnsRecordForDomain(domain: string): Promise<boolean> {
+    if (config.dns.provider) {
+      const dnsCanManageDomain = await this.dnsService.canManageDomain(domain);
+
+      if (dnsCanManageDomain) {
+        const realIp = await Net.getRealPublicIp();
+        try {
+          await this.dnsService.createRecord({
+            name: domain,
+            type: 'A',
+            content: realIp,
+            ttl: 3600,
+            proxied: false,
+          });
+        } catch {
+          throw new ValidationError({
+            body: [
+              {
+                field: 'domain',
+                message: `The DNS provider could not create the required DNS record for the domain.`,
+              },
+            ],
+          });
+        }
+        try {
+          await this.dnsService.waitUntilResolvesTo(domain, realIp, {
+            timeoutMs: 30_000,
+            intervalMs: 1_000,
+          });
+        } catch {
+          throw new ValidationError({
+            body: [
+              {
+                field: 'domain',
+                message: `The domain DNS record was created but is not resolving to the server IP yet. Please wait a few minutes and try again.`,
+              },
+            ],
+          });
+        }
+        return true;
+      }
+    }
+    return false;
   }
 
   public async initialize(): Promise<void> {
@@ -89,15 +138,20 @@ export class DomainsService {
     if (instance) {
       return instance;
     }
-
+    let newDomain = false;
     const resolveThisServer = await pointToThisServer(domain);
+
+    if (!resolveThisServer) {
+      newDomain = await this.addDnsRecordForDomain(domain);
+    }
 
     return this.createDomain(
       {
         domain,
-        ssl: resolveThisServer
-          ? SSLTermination.Certbot
-          : SSLTermination.SelfSigned,
+        ssl:
+          resolveThisServer || newDomain
+            ? SSLTermination.Certbot
+            : SSLTermination.SelfSigned,
       },
       false,
     );

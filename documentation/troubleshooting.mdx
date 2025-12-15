@@ -1,3 +1,10 @@
+---
+title: "Wiredoor Troubleshooting Guide: Fix Common Connectivity & VPN Issues"
+description: 
+  Resolve common Wiredoor issues including VPN connectivity, service exposure, DNS resolution, SSL warnings, token errors, and Kubernetes access. Follow step-by-step fixes for CLI, server, and gateway nodes using Docker and Helm.
+keywords: ["connection error", "invalid token", "ssl issues", "dns resolution", "kubernetes access", "logs"]
+---
+
 # Troubleshooting
 
 If you're running into issues with Wiredoor, here are some common problems and how to solve them.
@@ -12,7 +19,7 @@ If you're running into issues with Wiredoor, here are some common problems and h
 
 ---
 
-### I exposed a service but it’s not reachable
+### I exposed a service but it's not reachable
 
 Check:
 
@@ -24,7 +31,7 @@ Check:
 
 ---
 
-### I can’t connect to my Wiredoor Server
+### I can't connect to my Wiredoor Server
 
 - Ensure ports **80**, **443**, and **VPN_PORT (UDP)** are open
 - Use `curl` or `ping` to check connectivity to the server domain/IP
@@ -32,14 +39,14 @@ Check:
 
 ---
 
-### DNS doesn’t resolve service names in Kubernetes
+### DNS doesn't resolve service names in Kubernetes
 
-- Confirm you’re using a **fully qualified name** like `my-service.default.svc.cluster.local`
+- Confirm you're using a **fully qualified name** like `my-service.default.svc.cluster.local`
 - Make sure the service is running and exposed in the correct namespace
 
 ---
 
-### Let’s Encrypt certificate isn’t generated
+### Let's Encrypt certificate isn't generated
 
 - The domain must resolve publicly to your Wiredoor Server IP
 - Port **80** must be open for HTTP validation
@@ -53,7 +60,7 @@ Check:
 
 ---
 
-### The Wiredoor Gateway Pod can’t access my service
+### The Wiredoor Gateway Pod can't access my service
 
 - Make sure it runs in a namespace with access
 - Use Helm's `networkPolicy.egress` to allow the right Pod/Namespace

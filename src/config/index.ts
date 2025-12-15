@@ -75,6 +75,9 @@ export default {
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,
   },
+  dns: {
+    provider: process.env.DNS_PROVIDER || null,
+  },
   nginx: {
     bodySize: process.env.NGINX_CLIENT_MAX_BODY_SIZE || '100m',
     logs: process.env.SERVER_LOGS_DIR || '/var/log/nginx',

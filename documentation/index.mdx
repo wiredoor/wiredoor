@@ -1,35 +1,42 @@
+---
+title: "Wiredoor Documentation: Secure Ingress for Private Networks with WireGuard"
+description: 
+  Self-hosted and open-source Ingress-as-a-Service platform powered by WireGuard. Expose Docker, Kubernetes, IoT, or on-prem services securely without opening firewall ports. Learn how to deploy and manage private-to-public ingress with Wiredoor.
+keywords: ["wireguard", "reverse proxy", "self-hosted ingress", "vpn tunnel", "docker", "kubernetes"]
+---
+
 # Wiredoor Documentation
 
-Welcome to the official documentation for **Wiredoor** — a self-hosted, open-source Ingress-as-a-Service platform that lets you expose local services from any private network
-— Docker containers, on-prem servers, even IoT devices — to the public internet, **without opening firewall ports or setting up reverse proxies manually**. Everything
+Welcome to the official documentation for **Wiredoor** — a self-hosted, open-source Ingress-as-a-Service platform that lets you expose local services from any private network 
+— Docker containers, on-prem servers, even IoT devices — to the public internet, **without opening firewall ports or setting up reverse proxies manually**. Everything 
 runs over a secure, encrypted reverse VPN tunnel powered by [WireGuard](https://www.wireguard.com).
 
-Wiredoor acts as your own ingress controller, giving you full control and visibility over how external traffic
+Wiredoor acts as your own ingress controller, giving you full control and visibility over how external traffic 
 reaches your services—whether they're running in Docker, Kubernetes, on-prem servers, industrial devices, or IoT setups.
 
 ---
 
 ## What is Wiredoor?
 
-**Wiredoor** is a self-hosted ingress-as-a-service platform that enables you to securely expose internal services, devices,
-or infrastructure located in **private networks**, **LANs**, or **isolated environments** without needing to open firewall ports,
+**Wiredoor** is a self-hosted ingress-as-a-service platform that enables you to securely expose internal services, devices, 
+or infrastructure located in **private networks**, **LANs**, or **isolated environments** without needing to open firewall ports, 
 configure public cloud load balancers, or deploy reverse proxies manually.
 
-At its core, Wiredoor creates a **reverse VPN tunnel** using [WireGuard](https://www.wireguard.com), allowing your internal services
-to establish outbound, encrypted connections to the Wiredoor Server, which acts as a public ingress point. Once connected,
+At its core, Wiredoor creates a **reverse VPN tunnel** using [WireGuard](https://www.wireguard.com), allowing your internal services 
+to establish outbound, encrypted connections to the Wiredoor Server, which acts as a public ingress point. Once connected, 
 traffic from the internet can be securely routed into your network via domain-based rules, without requiring any inbound access to your local environment.
 
-New in v1.1.0: Wiredoor now supports OAuth2-based authentication per domain with [OAuth2-Proxy](https://oauth2-proxy.github.io/oauth2-proxy/).
+New in v1.1.0: Wiredoor now supports OAuth2-based authentication per domain with [OAuth2-Proxy](https://oauth2-proxy.github.io/oauth2-proxy/). 
 You can restrict access to services using Google, GitHub, or any compatible OpenID provider — directly from the dashboard, with per-service granularity.
 
 ### Core components
 
-| Component     | Role                                                             |
-| ------------- | ---------------------------------------------------------------- |
-| WireGuard VPN | Establishes encrypted tunnel between nodes and server            |
-| NGINX Proxy   | Routes incoming internet traffic to internal services            |
-| Admin Panel   | UI + API to manage domains, nodes, and certificates              |
-| Wiredoor CLI  | Tool to register, connect, and expose services from your devices |
+| Component      | Role                                                                 |
+|----------------|----------------------------------------------------------------------|
+| WireGuard VPN  | Establishes encrypted tunnel between nodes and server                |
+| NGINX Proxy    | Routes incoming internet traffic to internal services                |
+| Admin Panel    | UI + API to manage domains, nodes, and certificates                  |
+| Wiredoor CLI   | Tool to register, connect, and expose services from your devices     |
 
 ### How is it different from traditional ingress or tunnels?
 
@@ -42,7 +49,7 @@ Most existing ingress solutions require:
 
 **Wiredoor flips this model:**
 
-Your services stay hidden in private networks. Only outbound WireGuard connections are needed. All ingress is managed from the outside, through a secure,
+Your services stay hidden in private networks. Only outbound WireGuard connections are needed. All ingress is managed from the outside, through a secure, 
 authenticated VPN tunnel that you fully control.
 
 ---
@@ -95,13 +102,11 @@ graph TD
 
 ## Get Started
 
-→ Ready to deploy? Continue to the [Installation Guide](/docs/quickstart)
+→ Ready to deploy? Continue to the [Installation Guide](/documentation/quickstart)
 
 ---
 
 ## Community & Support
 
-Wiredoor is built with ❤️ by INFLADOOR LLC.
-
-If you have questions, suggestions, or want to contribute,
+If you have questions, suggestions, or want to contribute, 
 feel free to open an [issue](https://github.com/wiredoor/wiredoor) or contact us via support@wiredoor.net.
