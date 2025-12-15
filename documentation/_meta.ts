@@ -1,4 +1,6 @@
-export default {
+import { MetaRecord } from 'nextra';
+
+const meta: MetaRecord = {
   index: 'Introduction',
   quickstart: ' Quickstart',
   usage: 'Usage',
@@ -10,5 +12,6 @@ export default {
   configuration: 'Advanced Configuration',
   faq: 'FAQ',
   troubleshooting: 'Troubleshooting',
-  contributing: 'Contributing',
-};
+}
+
+export default meta;

@@ -1,9 +1,48 @@
+---
+title: "Wiredoor Configuration Guide: Environment Variables, Ports, and Volumes"
+description: 
+  Configure Wiredoor using environment variables, Docker volumes, and custom ports. Learn how to define secure .env files, manage NGINX logs, SSL certificates, and adjust VPN/TCP service settings for a secure self-hosted setup.
+keywords: ["advanced configuration", "env variables", "docker volumes", "ssl certificates", "vpn port", "nginx logs", "tcp port range"]
+---
+
 # Wiredoor Configuration
 
 Wiredoor is configured through environment variables passed to the container (e.g. via `docker-compose.yml`).
 This page describes all available configuration options.
 
 ---
+
+## DNS Providers Integration
+
+Wiredoor can integrate with external DNS providers to manage DNS zones automatically.
+
+### Cloudflare
+
+To enable Cloudflare DNS management, Wiredoor requires a Cloudflare API Token with DNS edit permissions for the zones you want to use.
+
+The token must include at least:
+
+- **Zone → DNS → Edit**
+
+You can create a token at [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).
+
+Make sure the token has access only to the specific zones you intend to manage for improved security.
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `DNS_PROVIDER` | Set to `cloudflare` to enable Cloudflare DNS integration |  ❌ Optional | `cloudflare` |
+| `CLOUDFLARE_API_TOKEN` | API token with DNS edit permissions |  ❌ Optional | `01ab23cd45ef6789ghij0123klmn4567opqrs890tuvwx` |
+
+### GoDaddy
+
+To enable GoDaddy DNS integration, set the following environment variables:
+
+| Variable | Description | Required | Example |
+|----------|-------------|----------|---------|
+| `DNS_PROVIDER` | Set to `godaddy` to enable GoDaddy DNS integration | |  ❌ Optional | `godaddy` |
+| `GODADDY_API_KEY` | GoDaddy API key |  ❌ Optional | `ABCD1234EFGH5678` |
+| `GODADDY_API_SECRET` | GoDaddy API secret |  ❌ Optional | `a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6` |
+
 
 ## Advanced Environment Variables
 

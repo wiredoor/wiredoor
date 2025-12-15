@@ -1,3 +1,10 @@
+---
+title: "Wiredoor Monitoring: Grafana Dashboards for NGINX & WireGuard Metrics"
+description: 
+  Enable native monitoring in Wiredoor v1.3.0+ using Prometheus and Grafana. Track VPN activity and HTTP traffic with official dashboards for NGINX and WireGuard. Expose Grafana securely using Wiredoor_Local without external dependencies.
+keywords: ["grafana", "prometheus", "nginx metrics", "wireguard stats", "docker monitoring", "http traffic"]
+---
+
 import { Callout } from 'nextra/components'
 
 # Monitoring (Available since v1.3.0)
@@ -73,13 +80,13 @@ Wiredoor provides two official dashboards designed for use with Grafana. These d
 
 This dashboard helps you monitor your VPN traffic and node connectivity:
 
-![Wiredoor Dashboard to Monitor Wireguard](https://www.wiredoor.net/images/docs/monitoring/wiredoor-wireguard-monitoring-dashboard.png)
+![Wiredoor Dashboard to Monitor Wireguard](/images/docs/monitoring/wiredoor-wireguard-monitoring-dashboard.png)
 
 ### Wiredoor: Nginx Monitoring
 
 This dashboard provides visibility into your public HTTP traffic:
 
-![Wiredoor Dashboard to Monitor Nginx](https://www.wiredoor.net/images/docs/monitoring/wiredoor-nginx-monitoring-dashboard.png)
+![Wiredoor Dashboard to Monitor Nginx](/images/docs/monitoring/wiredoor-nginx-monitoring-dashboard.png)
 
 <Callout type="info" emoji="ℹ️">
   Depending on your setup, you may configure other dashboards available in Grafana (e.g., for **CrowdSec**, **Node Exporter**, etc.).
