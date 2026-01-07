@@ -3,6 +3,7 @@ import express from 'express';
 import Container from 'typedi';
 import { MetricsService } from './services/metrics-service';
 import db from './providers/db';
+import dns from './providers/dns';
 
 export async function loadApp(): Promise<express.Application> {
   const metricsPort = 9586;
@@ -10,6 +11,8 @@ export async function loadApp(): Promise<express.Application> {
   const app = express();
 
   await db();
+
+  await dns();
 
   app.get('/', (req, res) => {
     res.set('Content-Type', 'text/plain');
