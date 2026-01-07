@@ -1,11 +1,5 @@
 import { loadApp } from '../metrics';
 import supertest from 'supertest';
-import {
-  mockGenPrivateKey,
-  mockGenPublicKey,
-  mockQuickUp,
-  mockSaveToFile,
-} from './.jest/global-mocks';
 
 let app;
 let request;
