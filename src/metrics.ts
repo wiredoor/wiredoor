@@ -6,8 +6,6 @@ import db from './providers/db';
 import dns from './providers/dns';
 
 export async function loadApp(): Promise<express.Application> {
-  const metricsPort = 9586;
-
   const app = express();
 
   await db();
@@ -31,13 +29,22 @@ export async function loadApp(): Promise<express.Application> {
     }
   });
 
-  app.listen(metricsPort, () => {
-    console.log(
-      `WireGuard metrics server running at http://127.0.0.1:${metricsPort}/metrics`,
-    );
-  });
-
   return app;
 }
 
-loadApp();
+async function bootstrap(): Promise<void> {
+  const metricsPort = 9586;
+
+  const app = await loadApp();
+
+  app.listen(metricsPort, () => {
+    console.log(`Wiredoor Metrics Server is running on port ${metricsPort}`);
+  });
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  bootstrap().catch((err) => {
+    console.log('Failed to bootstrap application', err);
+    process.exit(1);
+  });
+}
