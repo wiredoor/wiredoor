@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["vite-env.d.ts", "src/**/*"],
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "target": "es2022",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "lib": ["es2022", "DOM"],
+    "module": "es2020",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  }
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 340 60"
+  role="img" aria-labelledby="title desc">
+  <title id="title">Wiredoor logo</title>
+  <desc id="desc">Wiredoor large brand mark</desc>
+
+  <defs>
+    <style>
+      .wd-fill-1 { fill: #152168; }
+      .wd-fill-2 { fill: #06B6D4; }
+      .wd-fill-3 { fill: #0EA5E9; }
+      .wd-fill-4 { fill: #1D4ED8; }
+      .wd-fill-5 { fill: #1E40AF; }
+      .wd-fill-6 { fill: #2563EB; }
+      .wd-fill-7 { fill: #1E3A8A; }
+      .wd-text { fill: #1E293B; }
+      .wd-font {
+        font-family: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+    </style>
+  </defs>
+
+  <g id="mark" transform="translate(2,5) scale(0.50)">
+    <polygon class="wd-fill-1"
+      points="3.703,43.836 0.003,40.142 0.000,9.876 18.829,28.705" />
+    <polygon class="wd-fill-1"
+      points="96.297,43.836 81.163,28.702 100.000,9.876 99.997,40.142" />
+    <polygon class="wd-fill-1"
+      points="36.507,46.383 50.003,9.867 63.502,46.374" />
+    <polygon class="wd-fill-2"
+      points="36.507,46.383 36.507,23.369 36.504,23.366 36.507,23.363 50.003,9.867" />
+    <polygon class="wd-fill-3"
+      points="63.502,46.374 50.003,9.867 63.502,23.366" />
+    <polygon class="wd-fill-4"
+      points="9.872,50.004 24.994,34.870 36.507,46.383" />
+    <polygon class="wd-fill-5"
+      points="90.128,50.004 63.502,46.374 74.994,34.870" />
+    <polygon class="wd-fill-6"
+      points="36.507,76.640 9.872,50.004 36.507,46.383 50.000,90.133" />
+    <polygon class="wd-fill-6"
+      points="50.000,90.133 63.502,46.374 90.128,50.004 63.502,76.631" />
+    <polygon class="wd-fill-7"
+      points="50.000,90.133 36.507,46.383 63.502,46.374" />
+  </g>
+
+  <text id="wordmark"
+    x="62" y="48"
+    class="wd-text wd-font"
+    font-size="50">
+    WIREDOOR
+  </text>
+</svg>

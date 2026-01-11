@@ -1,0 +1,145 @@
+:root {
+  /* radius base */
+  --radius: 0.625rem;
+
+  /* ====== Surfaces ====== */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(229 85% 5%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(229 85% 5%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(229 85% 5%);
+
+  /* ====== Brand / roles ====== */
+  --primary: hsl(231 66% 25%);
+  --primary-foreground: hsl(210 40% 98%);
+
+  --secondary: hsl(210 40% 96%);
+  --secondary-foreground: hsl(223 48% 11%);
+
+  --accent: hsl(210 40% 96%);
+  --accent-foreground: hsl(223 48% 11%);
+
+  /* ====== Neutral helpers ====== */
+  --muted: hsl(210 40% 96%);
+  --muted-foreground: hsl(215 18% 47%);
+
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(215 23% 65%);
+
+  /* ====== Semantic states ====== */
+  --success: hsl(142 76% 36%);
+  --success-foreground: hsl(0 0% 98%);
+
+  --warning: hsl(38 92% 50%);
+  --warning-foreground: hsl(20 15% 10%);
+
+  --info: hsl(198 93% 60%);
+  --info-foreground: hsl(0 0% 100%);
+
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  /* ====== Data viz (si usas charts) ====== */
+  --chart-1: hsl(18 100% 48%);
+  --chart-2: hsl(175 100% 29%);
+  --chart-3: hsl(196 72% 23%);
+  --chart-4: hsl(44 100% 50%);
+  --chart-5: hsl(36 100% 50%);
+
+  /* ====== Sidebar (si lo necesitas) ====== */
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(229 85% 5%);
+  --sidebar-primary: hsl(223 48% 11%);
+  --sidebar-primary-foreground: hsl(210 40% 98%);
+  --sidebar-accent: hsl(210 40% 96%);
+  --sidebar-accent-foreground: hsl(223 48% 11%);
+  --sidebar-border: hsl(214 32% 91%);
+  --sidebar-ring: hsl(215 23% 65%);
+
+  /* ====== NEW tokens que te faltan para “customizar pro” ======
+   * (muy útiles para componentes reales)
+   */
+
+  /* Overlays & focus */
+  --overlay: hsl(229 85% 5% / 0.55); /* para Dialog overlay */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Typography */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Code font */
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+
+
+  /* Component sizing (muy útil para Buttons/Inputs) */
+  --control-height-sm: 2rem;   /* 32px */
+  --control-height-md: 2.5rem; /* 40px */
+  --control-height-lg: 3rem;   /* 48px */
+
+  /* Motion tokens */
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --duration-slow: 260ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Shadow tokens */
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04);
+  --shadow-md: 0 6px 16px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 14px 32px hsl(0 0% 0% / 0.12);
+}
+
+.dark {
+  --background: hsl(229 85% 5%);
+  --foreground: hsl(210 40% 98%);
+
+  --card: hsl(223 48% 11%);
+  --card-foreground: hsl(210 40% 98%);
+
+  --popover: hsl(223 48% 11%);
+  --popover-foreground: hsl(210 40% 98%);
+
+  --primary: hsl(231 66% 25%);
+  --primary-foreground: hsl(210 40% 98%);
+
+  --secondary: hsl(223 48% 11%);
+  --secondary-foreground: hsl(210 40% 98%);
+
+  --muted: hsl(223 35% 14%);
+  --muted-foreground: hsl(215 20% 65%);
+
+  --accent: hsl(223 35% 14%);
+  --accent-foreground: hsl(210 40% 98%);
+
+  --border: hsl(223 30% 18%);
+  --input: hsl(223 30% 18%);
+  --ring: hsl(215 23% 65%);
+
+  --success: hsl(142 71% 45%);
+  --success-foreground: hsl(0 0% 98%);
+
+  --warning: hsl(45 93% 47%);
+  --warning-foreground: hsl(20 15% 10%);
+
+  --info: hsl(198 100% 50%);
+  --info-foreground: hsl(0 0% 98%);
+
+  --destructive: hsl(0 62.8% 30.6%);
+  --destructive-foreground: hsl(0 0% 98%);
+
+  --sidebar: hsl(229 85% 5%);
+  --sidebar-foreground: hsl(210 40% 98%);
+
+  --overlay: hsl(0 0% 0% / 0.6);
+
+  /* shadows */
+  --shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.35);
+  --shadow-md: 0 8px 20px hsl(0 0% 0% / 0.35);
+  --shadow-lg: 0 18px 40px hsl(0 0% 0% / 0.40);
+}

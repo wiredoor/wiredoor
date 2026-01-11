@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* order matters */
+@import "./tokens.css";
+@import "./theme.css";
+@import "./base.css";
+@import "./utilities.css";
+@import "./motion.css";
