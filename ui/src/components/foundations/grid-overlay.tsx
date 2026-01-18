@@ -16,10 +16,7 @@ const bpPrefix: Record<Breakpoint, string> = {
   "2xl": "2xl:",
 };
 
-function responsiveVars<T extends string | number>(
-  value: Responsive<T> | undefined,
-  toVar: (v: T) => string,
-) {
+function responsiveVars<T extends string | number>(value: Responsive<T> | undefined, toVar: (v: T) => string) {
   if (!value) return [];
   const out: string[] = [];
   for (const [bp, v] of Object.entries(value) as [Breakpoint, T][]) {
@@ -28,10 +25,7 @@ function responsiveVars<T extends string | number>(
   return out;
 }
 
-export type GridOverlayProps = Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "children"
-> & {
+export type GridOverlayProps = Omit<React.HTMLAttributes<HTMLDivElement>, "children"> & {
   containerSize?: ContainerProps["size"];
   padded?: ContainerProps["padded"];
 
@@ -52,18 +46,10 @@ export type GridOverlayProps = Omit<
 };
 
 function borderClass(style: LineStyle) {
-  return style === "dashed"
-    ? "border-l border-dashed"
-    : "border-l border-solid";
+  return style === "dashed" ? "border-l border-dashed" : "border-l border-solid";
 }
 
-export function DashedDivider({
-  className,
-  dash = 6,
-  gap = 6,
-  opacity = 0.16,
-  ...props
-}: DashedDividerProps) {
+export function DashedDivider({ className, dash = 6, gap = 6, opacity = 0.16, ...props }: DashedDividerProps) {
   return (
     <div
       aria-hidden="true"
@@ -97,10 +83,8 @@ export function GridOverlay({
 
   const fadeStyle: React.CSSProperties | undefined = fade
     ? {
-        maskImage:
-          "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.75) 18%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%)",
-        WebkitMaskImage:
-          "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.75) 18%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%)",
+        maskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.75) 18%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.75) 18%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%)",
       }
     : undefined;
 
@@ -110,11 +94,7 @@ export function GridOverlay({
   const lineColor = `color-mix(in oklab, currentColor ${opacity * 100}%, transparent)`;
 
   return (
-    <div
-      aria-hidden="true"
-      className={cn("pointer-events-none absolute inset-0 z-0", className)}
-      {...props}
-    >
+    <div aria-hidden="true" className={cn("pointer-events-none absolute inset-0 z-0", className)} {...props}>
       <Container
         size={containerSize}
         padded={padded}
@@ -134,22 +114,14 @@ export function GridOverlay({
 
             const isLeftEdge = i === 0;
             const isRightEdge = i === lineCount - 1;
-            const isOuter =
-              isLeftEdge ||
-              isRightEdge ||
-              i <= outerLines ||
-              i >= lineCount - 1 - outerLines;
+            const isOuter = isLeftEdge || isRightEdge || i <= outerLines || i >= lineCount - 1 - outerLines;
 
             const style = isOuter ? outerStyle : innerStyle;
 
             return (
               <div
                 key={i}
-                className={cn(
-                  "absolute top-0 h-full",
-                  borderClass(style),
-                  style === "dashed" ? "[border-left-style:dashed]" : "",
-                )}
+                className={cn("absolute top-0 h-full", borderClass(style), style === "dashed" ? "[border-left-style:dashed]" : "")}
                 style={{
                   left: `${(i / cols) * 100}%`,
                   borderLeftColor: lineColor,
@@ -168,11 +140,7 @@ export function ResponsiveGridOverlay() {
   return (
     <>
       <GridOverlay className="md:hidden" columns={{ base: 4 }} outerLines={2} />
-      <GridOverlay
-        className="hidden md:block"
-        columns={{ base: 6 }}
-        outerLines={2}
-      />
+      <GridOverlay className="hidden md:block" columns={{ base: 6 }} outerLines={2} />
     </>
   );
 }

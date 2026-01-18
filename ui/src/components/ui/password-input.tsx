@@ -4,29 +4,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "./input";
 
-type PasswordInputProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "type"
-> & {
+type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> & {
   ref?: React.Ref<HTMLInputElement>;
 };
 
-export function PasswordInput({
-  className,
-  disabled,
-  ref,
-  ...props
-}: PasswordInputProps) {
+export function PasswordInput({ className, disabled, ref, ...props }: PasswordInputProps) {
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
     <div className={cn("relative rounded-md", className)}>
-      <Input
-        type={showPassword ? "text" : "password"}
-        ref={ref}
-        disabled={disabled}
-        {...props}
-      />
+      <Input type={showPassword ? "text" : "password"} ref={ref} disabled={disabled} {...props} />
       <Button
         type="button"
         size="icon"

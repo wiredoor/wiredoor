@@ -4,9 +4,7 @@ import { useUIStore } from "@/stores/ui-store";
 type Theme = "light" | "dark" | "system";
 
 function resolveSystemTheme(): "light" | "dark" {
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function applyThemeToDOM(theme: Theme) {

@@ -1,12 +1,6 @@
 import { toast as sonnerToast } from "sonner";
 
-export type ToastTone =
-  | "default"
-  | "success"
-  | "info"
-  | "warning"
-  | "destructive"
-  | "loading";
+export type ToastTone = "default" | "success" | "info" | "warning" | "destructive" | "loading";
 
 export type ToastAction = {
   label: string;
@@ -30,12 +24,8 @@ function buildOptions(opts?: ToastOptions) {
     description: opts.description,
     duration: opts.duration,
     important: opts.important,
-    action: opts.action
-      ? { label: opts.action.label, onClick: opts.action.onClick }
-      : undefined,
-    cancel: opts.cancel
-      ? { label: opts.cancel.label, onClick: opts.cancel.onClick }
-      : undefined,
+    action: opts.action ? { label: opts.action.label, onClick: opts.action.onClick } : undefined,
+    cancel: opts.cancel ? { label: opts.cancel.label, onClick: opts.cancel.onClick } : undefined,
   };
 }
 
@@ -50,9 +40,7 @@ export const toast = {
     return sonnerToast.message(title, buildOptions(opts));
   },
   warning(title: string, opts?: ToastOptions) {
-    return sonnerToast.warning
-      ? sonnerToast.warning(title, buildOptions(opts))
-      : sonnerToast(title, buildOptions(opts));
+    return sonnerToast.warning ? sonnerToast.warning(title, buildOptions(opts)) : sonnerToast(title, buildOptions(opts));
   },
   destructive(title: string, opts?: ToastOptions) {
     return sonnerToast.error(title, buildOptions(opts));

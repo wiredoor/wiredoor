@@ -1,10 +1,14 @@
 import React from "react";
 import { ThemeProvider } from "@/app/providers/ThemeProvider";
 import { AppBootstrap } from "@/app/providers/AppBootstrap";
-import { Toaster } from '@/components/compound/toast';
-// import { Toaster } from "@/ui/shadcn/toast"; // o "@/ui/shadcn/sonner" si usas sonner
+import { Toaster } from "@/components/compound/toast";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ErrorBoundary } from "react-error-boundary";
+import { queryConfig } from "@/lib/react-query";
+import { MainErrorFallback } from "@/components/errors/main";
 
 // - Theme provider (dark/light/system)
+// - React Query provider + config
 // - Toaster/sonner
 // - Bootstrap de config (tu /api/config con TTL)
 // - Error boundary global (opcional)
@@ -13,11 +17,23 @@ import { Toaster } from '@/components/compound/toast';
 type Props = { children: React.ReactNode };
 
 export function AppProviders({ children }: Props) {
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: queryConfig,
+      }),
+  );
+
   return (
-    <ThemeProvider>
-      <AppBootstrap />
-      <Toaster position="top-right" richColors />
-      {children}
-    </ThemeProvider>
+    <ErrorBoundary FallbackComponent={MainErrorFallback}>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          {/* {import.meta.env.DEV && <ReactQueryDevtools />} */}
+          <AppBootstrap />
+          <Toaster position="top-right" richColors />
+          {children}
+        </QueryClientProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,9 +1,8 @@
 import * as React from "react";
+import { Path, useController, type FieldValues } from "react-hook-form";
 
 import {
   Field,
-  Input,
-  PasswordInput,
   FieldLabel,
   FieldTitle,
   FieldDescription,
@@ -14,25 +13,15 @@ import {
   FieldSet,
   FieldLegend,
 } from "@/components/ui";
+import { Inline } from "@/components/foundations";
+import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from "./types";
 
-type ControlA11y = {
-  id: string;
-  name?: string;
-  disabled?: boolean;
-  "aria-invalid"?: true;
-  "aria-describedby"?: string;
-};
+const Ctx = React.createContext<FormFieldCtx<any> | null>(null);
 
-type FormFieldContextValue = ControlA11y;
-
-const FormFieldContext = React.createContext<FormFieldContextValue | null>(
-  null,
-);
-
-function useFormField() {
-  const ctx = React.useContext(FormFieldContext);
+export function useFormField<T extends FieldValues>() {
+  const ctx = React.useContext(Ctx);
   if (!ctx) throw new Error("FormField.* must be used within <FormField />");
-  return ctx;
+  return ctx as FormFieldCtx<T>;
 }
 
 function joinIds(ids: Array<string | undefined>) {
@@ -40,55 +29,27 @@ function joinIds(ids: Array<string | undefined>) {
   return s.length ? s : undefined;
 }
 
-export type FormFieldProps = React.HTMLAttributes<HTMLDivElement> & {
-  id?: string;
-  name?: string;
-
-  // text
-  title?: React.ReactNode;
-  label?: React.ReactNode;
-  description?: React.ReactNode;
-  error?: React.ReactNode;
-
-  // flags
-  required?: boolean;
-  disabled?: boolean;
-  invalid?: boolean;
-
-  // layout helpers
-  /**
-   * When true, wraps content in FieldSet/FieldLegend (useful for grouped inputs).
-   */
-  asFieldSet?: boolean;
-  legend?: React.ReactNode;
-  /**
-   * Adds a separator between header (title/label/description) and the control
-   */
-  separator?: boolean;
-
-  /**
-   * Control renderer so we can inject a11y props into your Input components.
-   */
-  render: (control: ControlA11y) => React.ReactNode;
-};
-
-export function FormField({
+export function FormField<T extends FieldValues>({
   className,
   id: idProp,
+  form,
   name,
   title,
   label,
+  helper,
   description,
-  error,
   required,
   disabled = false,
   invalid: invalidProp,
+  errorMessage,
   asFieldSet = false,
   legend,
   separator = false,
-  render,
+  children,
   ...props
-}: FormFieldProps) {
+}: FormFieldProps<T>) {
+  const { error } = form.getFieldState(name, form.formState);
+
   const reactId = React.useId();
   const id = idProp ?? `field-${reactId}`;
 
@@ -98,48 +59,44 @@ export function FormField({
   const invalid = Boolean(invalidProp || error);
   const describedBy = joinIds([descriptionId, errorId]);
 
-  const control: ControlA11y = {
-    id,
-    name,
-    disabled,
-    "aria-invalid": invalid ? true : undefined,
-    "aria-describedby": describedBy,
-  };
-
   const Header = (
     <>
       {title ? <FieldTitle>{title}</FieldTitle> : null}
 
-      {label ? (
-        <FieldLabel htmlFor={id}>
-          {label}
-          {required ? <span aria-hidden="true"> *</span> : null}
-        </FieldLabel>
-      ) : null}
+      <Inline justify="between" align="center">
+        {label ? (
+          <FieldLabel htmlFor={id}>
+            {label}
+            {required ? <span aria-hidden="true"> *</span> : null}
+          </FieldLabel>
+        ) : null}
+        {helper ? helper : null}
+      </Inline>
 
-      {description ? (
-        <FieldDescription id={descriptionId}>{description}</FieldDescription>
-      ) : null}
+      {description ? <FieldDescription id={descriptionId}>{description}</FieldDescription> : null}
 
       {separator ? <FieldSeparator /> : null}
     </>
   );
 
+  const ctxValue: FormFieldCtx<T> = {
+    form,
+    name,
+    a11y: { id, disabled, required, describedBy, invalid },
+  };
+
   const Body = (
-    <FormFieldContext.Provider value={control}>
+    <Ctx.Provider value={ctxValue}>
       <FieldContent>
-        <FieldGroup>{render(control)}</FieldGroup>
-        {invalid ? (
-          <FieldError id={errorId}>{error ?? "Invalid value"}</FieldError>
-        ) : null}
+        <FieldGroup>{children}</FieldGroup>
+        {invalid ? <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? "Invalid value"}</FieldError> : null}
       </FieldContent>
-    </FormFieldContext.Provider>
+    </Ctx.Provider>
   );
 
-  // root wrapper: Field (y luego opcional FieldSet)
   return (
     <div className={className} {...props}>
-      <Field id={id}>
+      <Field>
         {asFieldSet ? (
           <FieldSet>
             {legend ? <FieldLegend>{legend}</FieldLegend> : null}
@@ -157,64 +114,44 @@ export function FormField({
   );
 }
 
-/**
- * Helpers: para que tu "render" sea consistente y no repitas a11y props.
- * Los usas dentro de render={() => <FormField.Input .../>}
- */
-FormField.Input = function FormFieldInput(
-  props: Omit<
-    React.ComponentProps<typeof Input>,
-    "id" | "name" | "disabled" | "aria-invalid" | "aria-describedby"
-  >,
-) {
-  const c = useFormField();
-  return (
-    <Input
-      {...props}
-      id={c.id}
-      name={c.name}
-      disabled={c.disabled}
-      aria-invalid={c["aria-invalid"]}
-      aria-describedby={c["aria-describedby"]}
-    />
-  );
+FormField.Register = function Register<T extends FieldValues>(props: { children: (args: RegisterRenderArgs<T>) => React.ReactNode }) {
+  const c = useFormField<T>();
+  const reg = c.form.register(c.name);
+
+  const a11y = {
+    id: c.a11y.id,
+    disabled: c.a11y.disabled,
+    required: c.a11y.required,
+    "aria-invalid": c.a11y.invalid ? true : undefined,
+    "aria-describedby": c.a11y.describedBy,
+  };
+
+  return <>{props.children({ reg, a11y })}</>;
 };
 
-FormField.Password = function FormFieldPassword(
-  props: Omit<
-    React.ComponentProps<typeof PasswordInput>,
-    "id" | "name" | "disabled" | "aria-invalid" | "aria-describedby"
-  >,
-) {
-  const c = useFormField();
-  return (
-    <PasswordInput
-      {...props}
-      id={c.id}
-      name={c.name}
-      disabled={c.disabled}
-      aria-invalid={c["aria-invalid"]}
-      aria-describedby={c["aria-describedby"]}
-    />
-  );
+FormField.Control = function Control<T extends FieldValues>(props: { children: (args: ControlRenderArgs<T>) => React.ReactNode }) {
+  const c = useFormField<T>();
+
+  const { field } = useController({
+    control: c.form.control,
+    name: c.name as Path<T>,
+    disabled: c.a11y.disabled,
+  });
+
+  const a11y = {
+    id: c.a11y.id,
+    disabled: c.a11y.disabled,
+    required: c.a11y.required,
+    "aria-invalid": c.a11y.invalid ? true : undefined,
+    "aria-describedby": c.a11y.describedBy,
+  };
+
+  return <>{props.children({ field: field as any, a11y })}</>;
 };
 
-// FormField.Otp = function FormFieldOtp(
-//   props: Omit<
-//     React.ComponentProps<typeof InputOTP>,
-//     "id" | "name" | "disabled" | "aria-invalid" | "aria-describedby"
-//   >,
-// ) {
-//   const c = useFormField();
-//   return (
-//     <InputOTP
-//       {...props}
-//       id={c.id}
-//       name={c.name}
-//       disabled={c.disabled}
-//       maxLength={6}
-//       aria-invalid={c["aria-invalid"]}
-//       aria-describedby={c["aria-describedby"]}
-//     />
-//   );
-// };
+export type FormFieldRadioOption<V extends string = string> = {
+  value: V;
+  label: React.ReactNode;
+  description?: React.ReactNode;
+  disabled?: boolean;
+};

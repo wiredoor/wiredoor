@@ -22,14 +22,7 @@ export type StepsProps = {
   className?: string;
 };
 
-export function Steps({
-  steps,
-  currentIndex,
-  onStepClick,
-  orientation = "horizontal",
-  style = "default",
-  className,
-}: StepsProps) {
+export function Steps({ steps, currentIndex, onStepClick, orientation = "horizontal", style = "default", className }: StepsProps) {
   const isVertical = orientation === "vertical";
 
   // VERTICAL: igual que antes
@@ -94,17 +87,7 @@ type StepItemProps = {
   style: StepsStyle;
 };
 
-function StepItem({
-  title,
-  description,
-  optional,
-  active,
-  completed,
-  isLast,
-  onClick,
-  orientation,
-  style,
-}: StepItemProps) {
+function StepItem({ title, description, optional, active, completed, isLast, onClick, orientation, style }: StepItemProps) {
   const clickable = Boolean(onClick);
   const isVertical = orientation === "vertical";
 
@@ -121,26 +104,15 @@ function StepItem({
     // Vertical: puedes mantener tu versión anterior (sin cambios grandes)
     return (
       <div
-        className={cn(
-          "w-full rounded-lg",
-          baseClickable,
-          clickable ? "hover:bg-muted/40" : undefined,
-        )}
+        className={cn("w-full rounded-lg", baseClickable, clickable ? "hover:bg-muted/40" : undefined)}
         onClick={onClick}
         role={clickable ? "button" : undefined}
         tabIndex={clickable ? 0 : undefined}
       >
         <Inline gap={3} align="start" className="p-2">
           <div className="relative flex flex-col items-center">
-            <StatusDot
-              size="md"
-              halo={active}
-              tone={tone}
-              motion={active ? "pulse" : "none"}
-            />
-            {!isLast ? (
-              <div className={cn("mt-2 h-full w-px flex-1", "bg-border")} />
-            ) : null}
+            <StatusDot size="md" halo={active} tone={tone} motion={active ? "pulse" : "none"} />
+            {!isLast ? <div className={cn("mt-2 h-full w-px flex-1", "bg-border")} /> : null}
           </div>
 
           <Stack gap={0} className="min-w-0">
@@ -171,31 +143,17 @@ function StepItem({
     <div className={cn("relative flex-1", baseClickable)} onClick={onClick}>
       {/* clickable area */}
       <div
-        className={cn(
-          "group flex w-full flex-col items-center px-2",
-          clickable ? "hover:opacity-95" : undefined,
-        )}
+        className={cn("group flex w-full flex-col items-center px-2", clickable ? "hover:opacity-95" : undefined)}
         role={clickable ? "button" : undefined}
         tabIndex={clickable ? 0 : undefined}
       >
         {/* Top row: dot + connector */}
         <div className="relative flex w-full items-center justify-center">
-          <StatusDot
-            size="md"
-            halo={active}
-            tone={tone}
-            motion={active ? "pulse" : "none"}
-          />
+          <StatusDot size="md" halo={active} tone={tone} motion={active ? "pulse" : "none"} />
 
           {/* Connector line to next step */}
           {!isLast ? (
-            <div
-              aria-hidden="true"
-              className={cn(
-                "absolute left-1/2 top-1/2 h-px w-[calc(100%-2rem)] -translate-y-1/2 translate-x-4",
-                connector,
-              )}
-            />
+            <div aria-hidden="true" className={cn("absolute left-1/2 top-1/2 h-px w-[calc(100%-2rem)] -translate-y-1/2 translate-x-4", connector)} />
           ) : null}
         </div>
 

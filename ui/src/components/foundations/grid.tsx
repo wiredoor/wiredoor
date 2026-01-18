@@ -54,10 +54,7 @@ const alignItemsClass: Record<Align, string> = {
   stretch: "items-stretch",
 };
 
-function responsiveClasses<T extends string | number>(
-  value: Responsive<T> | undefined,
-  toClass: (v: T) => string,
-) {
+function responsiveClasses<T extends string | number>(value: Responsive<T> | undefined, toClass: (v: T) => string) {
   if (!value) return [];
   const out: string[] = [];
   for (const [bp, v] of Object.entries(value) as [Breakpoint, T][]) {

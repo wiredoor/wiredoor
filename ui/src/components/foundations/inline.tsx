@@ -21,14 +21,7 @@ export type InlineProps = React.HTMLAttributes<HTMLDivElement> & {
   wrap?: boolean;
 };
 
-export function Inline({
-  gap = 3,
-  align = "center",
-  justify = "start",
-  wrap = false,
-  className,
-  ...props
-}: InlineProps) {
+export function Inline({ gap = 3, align = "center", justify = "start", wrap = false, className, ...props }: InlineProps) {
   const alignClass =
     align === "start"
       ? "items-start"
@@ -41,25 +34,7 @@ export function Inline({
             : "items-center";
 
   const justifyClass =
-    justify === "start"
-      ? "justify-start"
-      : justify === "center"
-        ? "justify-center"
-        : justify === "end"
-          ? "justify-end"
-          : "justify-between";
+    justify === "start" ? "justify-start" : justify === "center" ? "justify-center" : justify === "end" ? "justify-end" : "justify-between";
 
-  return (
-    <div
-      className={cn(
-        "flex",
-        wrap ? "flex-wrap" : "flex-nowrap",
-        gapClasses[gap],
-        alignClass,
-        justifyClass,
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div className={cn("flex", wrap ? "flex-wrap" : "flex-nowrap", gapClasses[gap], alignClass, justifyClass, className)} {...props} />;
 }

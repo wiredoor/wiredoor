@@ -67,10 +67,7 @@ const orderClass = (n: Order) =>
     12: "order-12",
   })[n];
 
-function responsiveClasses<T extends string | number>(
-  value: Responsive<T> | undefined,
-  toClass: (v: T) => string,
-) {
+function responsiveClasses<T extends string | number>(value: Responsive<T> | undefined, toClass: (v: T) => string) {
   if (!value) return [];
   const out: string[] = [];
   for (const [bp, v] of Object.entries(value) as [Breakpoint, T][]) {
@@ -86,13 +83,7 @@ export type GridItemProps = React.HTMLAttributes<HTMLDivElement> & {
   order?: Responsive<Order>;
 };
 
-export function GridItem({
-  className,
-  span,
-  start,
-  order,
-  ...props
-}: GridItemProps) {
+export function GridItem({ className, span, start, order, ...props }: GridItemProps) {
   return (
     <div
       className={cn(

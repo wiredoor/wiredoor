@@ -15,8 +15,7 @@ export function Toaster({ className, ...props }: ToasterProps) {
           toast:
             "group toast group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:border group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           description: "text-muted-foreground",
-          actionButton:
-            "bg-primary text-primary-foreground hover:bg-primary/90",
+          actionButton: "bg-primary text-primary-foreground hover:bg-primary/90",
           cancelButton: "bg-muted text-muted-foreground hover:bg-muted/80",
         },
       }}

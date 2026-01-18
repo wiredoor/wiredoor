@@ -2,13 +2,8 @@ import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Icon } from '@/components/foundations/icon';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Icon } from "@/components/foundations/icon";
 
 type Theme = "light" | "dark" | "system";
 
@@ -28,10 +23,7 @@ export function ThemeToggle({ className }: { className?: string }) {
           type="button"
           variant="ghost"
           size="icon-sm"
-          className={cn(
-            "rounded-full bg-background/40 hover:bg-muted/40",
-            className
-          )}
+          className={cn("rounded-full bg-background/40 hover:bg-muted/40", className)}
           aria-label="Toggle theme"
         >
           <ThemeIcon theme={theme} />

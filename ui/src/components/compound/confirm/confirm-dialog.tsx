@@ -90,8 +90,7 @@ export function ConfirmDialog({
 
   const isConfirmDisabled = Boolean(confirmDisabled) || loading || !typedOk;
 
-  const finalConfirmVariant: React.ComponentProps<typeof Button>["variant"] =
-    confirmVariant ?? (tone === "destructive" ? "destructive" : "default");
+  const finalConfirmVariant: React.ComponentProps<typeof Button>["variant"] = confirmVariant ?? (tone === "destructive" ? "destructive" : "default");
 
   async function handleConfirm() {
     try {
@@ -121,9 +120,7 @@ export function ConfirmDialog({
         if (!next) setTyped("");
       }}
     >
-      {trigger ? (
-        <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
-      ) : null}
+      {trigger ? <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger> : null}
 
       <AlertDialogContent className={cn("sm:max-w-lg")}>
         <AlertDialogHeader>
@@ -148,9 +145,7 @@ export function ConfirmDialog({
 
           {needsType ? (
             <Stack gap={2}>
-              <Text variant="label">
-                {requireTextLabel ?? `Type "${requireText}" to confirm`}
-              </Text>
+              <Text variant="label">{requireTextLabel ?? `Type "${requireText}" to confirm`}</Text>
               <Input
                 value={typed}
                 onChange={(e) => setTyped(e.target.value)}
@@ -170,22 +165,14 @@ export function ConfirmDialog({
         <AlertDialogFooter className="pt-2">
           {/* Cancel */}
           <AlertDialogCancel asChild>
-            <Button
-              variant={cancelVariant}
-              onClick={handleCancel}
-              disabled={loading && lockWhileConfirming}
-            >
+            <Button variant={cancelVariant} onClick={handleCancel} disabled={loading && lockWhileConfirming}>
               {cancelText}
             </Button>
           </AlertDialogCancel>
 
           {/* Confirm */}
           <AlertDialogAction asChild>
-            <Button
-              variant={finalConfirmVariant}
-              onClick={handleConfirm}
-              disabled={isConfirmDisabled}
-            >
+            <Button variant={finalConfirmVariant} onClick={handleConfirm} disabled={isConfirmDisabled}>
               {loading ? "Working…" : confirmText}
             </Button>
           </AlertDialogAction>

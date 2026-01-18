@@ -20,41 +20,11 @@ export type StackProps = React.HTMLAttributes<HTMLDivElement> & {
   justify?: "start" | "center" | "end" | "between";
 };
 
-export function Stack({
-  gap = 4,
-  align = "stretch",
-  justify = "start",
-  className,
-  ...props
-}: StackProps) {
-  const alignClass =
-    align === "start"
-      ? "items-start"
-      : align === "center"
-        ? "items-center"
-        : align === "end"
-          ? "items-end"
-          : "items-stretch";
+export function Stack({ gap = 4, align = "stretch", justify = "start", className, ...props }: StackProps) {
+  const alignClass = align === "start" ? "items-start" : align === "center" ? "items-center" : align === "end" ? "items-end" : "items-stretch";
 
   const justifyClass =
-    justify === "start"
-      ? "justify-start"
-      : justify === "center"
-        ? "justify-center"
-        : justify === "end"
-          ? "justify-end"
-          : "justify-between";
+    justify === "start" ? "justify-start" : justify === "center" ? "justify-center" : justify === "end" ? "justify-end" : "justify-between";
 
-  return (
-    <div
-      className={cn(
-        "flex flex-col",
-        gapClasses[gap],
-        alignClass,
-        justifyClass,
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div className={cn("flex flex-col", gapClasses[gap], alignClass, justifyClass, className)} {...props} />;
 }

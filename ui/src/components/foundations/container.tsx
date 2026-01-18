@@ -15,21 +15,6 @@ const sizes = {
   xl: "max-w-7xl",
 } as const;
 
-export function Container({
-  size = "lg",
-  padded = true,
-  className,
-  ...props
-}: ContainerProps) {
-  return (
-    <div
-      className={cn(
-        "mx-auto w-full",
-        sizes[size],
-        padded ? "px-4 md:px-6" : "",
-        className,
-      )}
-      {...props}
-    />
-  );
+export function Container({ size = "lg", padded = true, className, ...props }: ContainerProps) {
+  return <div className={cn("mx-auto w-full", sizes[size], padded ? "px-4 md:px-6" : "", className)} {...props} />;
 }

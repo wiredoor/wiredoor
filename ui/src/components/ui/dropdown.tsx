@@ -79,14 +79,7 @@ function getVariantClass(variant?: DropdownVariant) {
   return "";
 }
 
-export function Dropdown({
-  trigger = "Open",
-  items,
-  classNames,
-  contentProps,
-  triggerVariant = "outline",
-  triggerSize = "default",
-}: DropdownProps) {
+export function Dropdown({ trigger = "Open", items, classNames, contentProps, triggerVariant = "outline", triggerSize = "default" }: DropdownProps) {
   const triggerNode =
     typeof trigger === "string" ? (
       <Button variant={triggerVariant} size={triggerSize}>
@@ -100,16 +93,7 @@ export function Dropdown({
     <Root>
       <DropdownMenuTrigger asChild>{triggerNode}</DropdownMenuTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuContent
-          align="start"
-          sideOffset={8}
-          {...contentProps}
-          className={cn(
-            "min-w-56",
-            classNames?.content,
-            contentProps?.className,
-          )}
-        >
+        <DropdownMenuContent align="start" sideOffset={8} {...contentProps} className={cn("min-w-56", classNames?.content, contentProps?.className)}>
           {renderNodes(items, classNames)}
         </DropdownMenuContent>
       </DropdownMenuPortal>
@@ -117,36 +101,21 @@ export function Dropdown({
   );
 }
 
-function renderNodes(
-  nodes: DropdownNode[],
-  slots?: DropdownSlots,
-): React.ReactNode {
+function renderNodes(nodes: DropdownNode[], slots?: DropdownSlots): React.ReactNode {
   return nodes.map((n, i) => renderNode(n, i, slots));
 }
 
-function renderNode(
-  node: DropdownNode,
-  key: React.Key,
-  slots?: DropdownSlots,
-): React.ReactNode {
+function renderNode(node: DropdownNode, key: React.Key, slots?: DropdownSlots): React.ReactNode {
   switch (node.type) {
     case "label":
       return (
-        <DropdownMenuLabel
-          key={key}
-          className={cn(slots?.label, node.className)}
-        >
+        <DropdownMenuLabel key={key} className={cn(slots?.label, node.className)}>
           {node.label}
         </DropdownMenuLabel>
       );
 
     case "separator":
-      return (
-        <DropdownMenuSeparator
-          key={key}
-          className={cn(slots?.separator, node.className)}
-        />
-      );
+      return <DropdownMenuSeparator key={key} className={cn(slots?.separator, node.className)} />;
 
     case "item": {
       const vcls = getVariantClass(node.variant);
@@ -162,9 +131,7 @@ function renderNode(
           }}
         >
           {node.label}
-          {node.shortcut && (
-            <DropdownMenuShortcut>{node.shortcut}</DropdownMenuShortcut>
-          )}
+          {node.shortcut && <DropdownMenuShortcut>{node.shortcut}</DropdownMenuShortcut>}
         </ItemBase>
       );
     }
@@ -172,19 +139,12 @@ function renderNode(
     case "group": {
       const content = (
         <>
-          {node.label && (
-            <DropdownMenuLabel className={cn("pt-1", slots?.label)}>
-              {node.label}
-            </DropdownMenuLabel>
-          )}
+          {node.label && <DropdownMenuLabel className={cn("pt-1", slots?.label)}>{node.label}</DropdownMenuLabel>}
           {renderNodes(node.children, slots)}
         </>
       );
       return (
-        <DropdownMenuGroup
-          key={key}
-          className={cn("grid gap-0.5", slots?.group, node.className)}
-        >
+        <DropdownMenuGroup key={key} className={cn("grid gap-0.5", slots?.group, node.className)}>
           {content}
         </DropdownMenuGroup>
       );
@@ -193,15 +153,9 @@ function renderNode(
     case "sub":
       return (
         <DropdownMenuSub key={key}>
-          <DropdownMenuSubTrigger
-            className={cn(slots?.subTrigger, node.className)}
-          >
-            {node.label}
-          </DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger className={cn(slots?.subTrigger, node.className)}>{node.label}</DropdownMenuSubTrigger>
           <DropdownMenuPortal>
-            <DropdownMenuSubContent className={cn(slots?.subContent)}>
-              {renderNodes(node.children, slots)}
-            </DropdownMenuSubContent>
+            <DropdownMenuSubContent className={cn(slots?.subContent)}>{renderNodes(node.children, slots)}</DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
       );

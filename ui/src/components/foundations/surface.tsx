@@ -27,22 +27,6 @@ const radii = {
   xl: "rounded-xl",
 } as const;
 
-export function Surface({
-  variant = "default",
-  elevation = "none",
-  radius = "lg",
-  className,
-  ...props
-}: SurfaceProps) {
-  return (
-    <div
-      className={cn(
-        variants[variant],
-        elevations[elevation],
-        radii[radius],
-        className,
-      )}
-      {...props}
-    />
-  );
+export function Surface({ variant = "default", elevation = "none", radius = "lg", className, ...props }: SurfaceProps) {
+  return <div className={cn(variants[variant], elevations[elevation], radii[radius], className)} {...props} />;
 }

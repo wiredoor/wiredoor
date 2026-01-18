@@ -14,6 +14,6 @@ export const useUIStore = create<UIState>()(
       theme: "system",
       setTheme: (t) => set({ theme: t }),
     }),
-    { name: "ui" }
-  )
+    { name: "ui" },
+  ),
 );

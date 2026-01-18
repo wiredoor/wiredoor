@@ -1,25 +1,9 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 
-type TextVariant =
-  | "h1"
-  | "h2"
-  | "h3"
-  | "h4"
-  | "body"
-  | "body-sm"
-  | "caption"
-  | "label"
-  | "code";
+type TextVariant = "h1" | "h2" | "h3" | "h4" | "body" | "body-sm" | "caption" | "label" | "code";
 
-type TextTone =
-  | "default"
-  | "muted"
-  | "subtle"
-  | "info"
-  | "success"
-  | "warning"
-  | "danger";
+type TextTone = "default" | "muted" | "subtle" | "info" | "success" | "warning" | "danger";
 
 const variantClasses: Record<TextVariant, string> = {
   h1: "text-4xl font-semibold tracking-tight",
@@ -59,19 +43,7 @@ export type TextProps<T extends React.ElementType> = {
   children?: React.ReactNode;
 } & Omit<React.ComponentPropsWithoutRef<T>, "as" | "color">;
 
-export function Text<T extends React.ElementType = "p">({
-  as,
-  variant = "body",
-  tone = "default",
-  align,
-  className,
-  ...props
-}: TextProps<T>) {
+export function Text<T extends React.ElementType = "p">({ as, variant = "body", tone = "default", align, className, ...props }: TextProps<T>) {
   const Comp = (as ?? "p") as React.ElementType;
-  return (
-    <Comp
-      className={cn(variantClasses[variant], toneClasses[tone], align ? alignClasses[align] : undefined, className)}
-      {...props}
-    />
-  );
+  return <Comp className={cn(variantClasses[variant], toneClasses[tone], align ? alignClasses[align] : undefined, className)} {...props} />;
 }

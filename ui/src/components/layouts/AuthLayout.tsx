@@ -2,16 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-import {
-  Text,
-  Stack,
-  Inline,
-  Container,
-  Surface,
-  BackgroundPreset,
-  BackgroundLayer,
-  ContainerSize
-} from "@/components/foundations";
+import { Text, Stack, Inline, Container, Surface, BackgroundPreset, BackgroundLayer, ContainerSize } from "@/components/foundations";
 
 export type AuthLayoutVariant = "centered" | "split";
 export type AuthLayoutCardSize = "sm" | "default" | "lg";
@@ -82,22 +73,10 @@ export function AuthLayout({
   ...props
 }: AuthLayoutProps) {
   return (
-    <div
-      className={cn(
-        "min-h-screen text-foreground flex flex-col",
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn("min-h-screen text-foreground flex flex-col animate-fade-in", className)} {...props}>
       <BackgroundLayer background={background} />
 
-      {header ? (
-        <header className="shrink-0">
-          <Container size={containerSize} className="py-5 border-b border-border/40">
-            {header}
-          </Container>
-        </header>
-      ) : null}
+      {header ? <header className="shrink-0">{header}</header> : null}
 
       <main className="flex-1">
         <Container className="py-5 md:py-10 lg:py-14" size={containerSize}>
@@ -146,13 +125,7 @@ export function AuthLayout({
         </Container>
       </main>
 
-      {pageFooter ? (
-        <footer className="shrink-0 border-t border-border/60">
-          <Container size={containerSize} className="py-4 border-t border-border/40">
-            {pageFooter}
-          </Container>
-        </footer>
-      ) : null}
+      {pageFooter ? pageFooter : null}
     </div>
   );
 }
@@ -186,12 +159,7 @@ function AuthCard({
 }) {
   return (
     <div className={cn("w-full", className)}>
-      <Surface
-        elevation="sm"
-        radius="lg"
-        className="p-6 sm:p-8"
-        style={stableCard ? { minHeight: cardMinHeight } : {}}
-      >
+      <Surface elevation="sm" radius="lg" className="p-6 sm:p-8 md:p-9 lg:p-12" style={stableCard ? { minHeight: cardMinHeight } : {}}>
         <Stack gap={6} className={stableCard ? "h-full" : undefined}>
           <Stack gap={3}>
             <Inline align="center" gap={3}>
@@ -222,16 +190,11 @@ function AuthCard({
             ) : null}
           </Stack>
 
-          <div
-            className={stableCard ? "overflow-auto" : undefined}
-            style={stableCard ? { maxHeight: contentMaxHeight } : {}}
-          >
+          <div className={stableCard ? "overflow-auto" : undefined} style={stableCard ? { maxHeight: contentMaxHeight } : {}}>
             {children}
           </div>
 
-          {footer ? (
-            <div className="border-t border-border/40 pt-4">{footer}</div>
-          ) : null}
+          {footer ? <div className="border-t border-border/40 pt-4">{footer}</div> : null}
         </Stack>
       </Surface>
     </div>

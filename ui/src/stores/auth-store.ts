@@ -1,6 +1,6 @@
 import Cookies from "js-cookie";
 import { create } from "zustand";
-import axios from "@/api/axios";
+import axios from "@/lib/axios";
 
 type LoginResponse = {
   token: string;

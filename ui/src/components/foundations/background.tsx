@@ -2,13 +2,7 @@ import { cn } from "@/lib/utils";
 
 export type LayoutDensity = "compact" | "default" | "comfy";
 
-export type BackgroundPreset =
-  | "none"
-  | "grid"
-  | "dots"
-  | "noise"
-  | "gradient"
-  | "mesh";
+export type BackgroundPreset = "none" | "grid" | "dots" | "noise" | "gradient" | "mesh";
 
 export type Background =
   | BackgroundPreset
@@ -36,8 +30,7 @@ export type LayoutTokens = {
 };
 
 function normalizeBackground(bg: Background | undefined) {
-  if (!bg)
-    return { kind: "preset" as const, preset: "grid" as BackgroundPreset };
+  if (!bg) return { kind: "preset" as const, preset: "grid" as BackgroundPreset };
   if (typeof bg === "string") return { kind: "preset" as const, preset: bg };
   if ("render" in bg) return { kind: "custom" as const, ...bg };
   return { kind: "preset" as const, ...bg };
@@ -76,11 +69,7 @@ export function BackgroundLayer({ background }: { background?: Background }) {
     return (
       <div
         aria-hidden="true"
-        className={cn(
-          "absolute inset-0 pointer-events-none -z-10",
-          presetClass(preset),
-          className,
-        )}
+        className={cn("absolute inset-0 pointer-events-none -z-10", presetClass(preset), className)}
         style={{ ...(style ?? {}), opacity }}
       />
     );
@@ -88,11 +77,7 @@ export function BackgroundLayer({ background }: { background?: Background }) {
 
   // custom render (SVG/Canvas/ReactNode)
   return (
-    <div
-      aria-hidden="true"
-      className={cn("absolute inset-0 pointer-events-none -z-10", bg.className)}
-      style={bg.style}
-    >
+    <div aria-hidden="true" className={cn("absolute inset-0 pointer-events-none -z-10", bg.className)} style={bg.style}>
       {bg.render()}
     </div>
   );

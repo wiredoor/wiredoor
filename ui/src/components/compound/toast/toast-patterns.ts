@@ -7,12 +7,7 @@ export function toastSaved(entity = "Changes") {
 }
 
 export function toastError(err: unknown, opts?: ToastOptions) {
-  const message =
-    err instanceof Error
-      ? err.message
-      : typeof err === "string"
-        ? err
-        : "Something went wrong";
+  const message = err instanceof Error ? err.message : typeof err === "string" ? err : "Something went wrong";
   toast.destructive("Error", { description: message, ...opts });
 }
 

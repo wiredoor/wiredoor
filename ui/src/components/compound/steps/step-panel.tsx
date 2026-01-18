@@ -6,16 +6,9 @@ export type StepsPanelProps = React.HTMLAttributes<HTMLDivElement> & {
   direction?: "forward" | "back";
 };
 
-export function StepsPanel({
-  stepKey,
-  direction = "forward",
-  className,
-  children,
-  ...props
-}: StepsPanelProps) {
+export function StepsPanel({ stepKey, direction = "forward", className, children, ...props }: StepsPanelProps) {
   // key forces re-mount per step for animation
-  const animIn =
-    direction === "forward" ? "step-anim-in-right" : "step-anim-in-left";
+  const animIn = direction === "forward" ? "step-anim-in-right" : "step-anim-in-left";
 
   return (
     <div
@@ -24,9 +17,7 @@ export function StepsPanel({
         "w-full",
         animIn,
         "animate-[stepInRight_220ms_ease-out] md:animate-[stepInRight_240ms_ease-out]",
-        direction === "back"
-          ? "animate-[stepInLeft_220ms_ease-out] md:animate-[stepInLeft_240ms_ease-out]"
-          : undefined,
+        direction === "back" ? "animate-[stepInLeft_220ms_ease-out] md:animate-[stepInLeft_240ms_ease-out]" : undefined,
         className,
       )}
       {...props}

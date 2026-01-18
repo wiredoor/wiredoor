@@ -1,6 +1,7 @@
 import * as React from "react";
 
 import {
+  LayoutDashboard,
   Shield,
   User,
   Settings,
@@ -32,133 +33,65 @@ import {
   Ellipsis,
   Loader,
   Sun,
+  Server,
+  Boxes,
+  Network,
+  Activity,
+  BarChart3,
+  FileText,
+  CreditCard,
+  Key,
+  Users,
+  TrendingUp,
+  TrendingDown,
   Laptop,
+  Star,
+  ExternalLink,
 } from "lucide-react";
 import { IconRenderer, IconRendererProps } from "./icon";
 
 const lucide =
-  (Comp: React.ComponentType<IconRendererProps>): IconRenderer =>
+  (Comp: React.ComponentType<any>): IconRenderer =>
   ({ size = 18, strokeWidth = 2, className, title }: IconRendererProps) => (
-    <Comp
-      size={size}
-      strokeWidth={strokeWidth}
-      className={className}
-      aria-hidden={title ? undefined : true}
-    />
+    <Comp size={size} strokeWidth={strokeWidth} className={className} aria-hidden={title ? undefined : true} />
   );
 
 const svg =
   (Svg: React.ComponentType<React.SVGProps<SVGSVGElement>>): IconRenderer =>
   ({ size = 18, className, title }: IconRendererProps) => (
-    <Svg
-      width={size}
-      height={size}
-      className={className}
-      role={title ? "img" : "presentation"}
-      aria-hidden={title ? undefined : true}
-    />
+    <Svg width={size} height={size} className={className} role={title ? "img" : "presentation"} aria-hidden={title ? undefined : true} />
   );
 
 const WiredoorLight: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 100 100"
-    role="img"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" {...props}>
     <g id="mark">
-      <polygon
-        fill="#152168"
-        points="3.703,43.836 0.003,40.142 0.000,9.876 18.829,28.705"
-      />
-      <polygon
-        fill="#152168"
-        points="96.297,43.836 81.163,28.702 100.000,9.876 99.997,40.142"
-      />
-      <polygon
-        fill="#152168"
-        points="36.507,46.383 50.003,9.867 63.502,46.374"
-      />
-      <polygon
-        fill="#06B6D4"
-        points="36.507,46.383 36.507,23.369 36.504,23.366 36.507,23.363 50.003,9.867"
-      />
-      <polygon
-        fill="#0EA5E9"
-        points="63.502,46.374 50.003,9.867 63.502,23.366"
-      />
-      <polygon
-        fill="#1D4ED8"
-        points="9.872,50.004 24.994,34.870 36.507,46.383"
-      />
-      <polygon
-        fill="#1E40AF"
-        points="90.128,50.004 63.502,46.374 74.994,34.870"
-      />
-      <polygon
-        fill="#2563EB"
-        points="36.507,76.640 9.872,50.004 36.507,46.383 50.000,90.133"
-      />
-      <polygon
-        fill="#2563EB"
-        points="50.000,90.133 63.502,46.374 90.128,50.004 63.502,76.631"
-      />
-      <polygon
-        fill="#1E3A8A"
-        points="50.000,90.133 36.507,46.383 63.502,46.374"
-      />
+      <polygon fill="#152168" points="3.703,43.836 0.003,40.142 0.000,9.876 18.829,28.705" />
+      <polygon fill="#152168" points="96.297,43.836 81.163,28.702 100.000,9.876 99.997,40.142" />
+      <polygon fill="#152168" points="36.507,46.383 50.003,9.867 63.502,46.374" />
+      <polygon fill="#06B6D4" points="36.507,46.383 36.507,23.369 36.504,23.366 36.507,23.363 50.003,9.867" />
+      <polygon fill="#0EA5E9" points="63.502,46.374 50.003,9.867 63.502,23.366" />
+      <polygon fill="#1D4ED8" points="9.872,50.004 24.994,34.870 36.507,46.383" />
+      <polygon fill="#1E40AF" points="90.128,50.004 63.502,46.374 74.994,34.870" />
+      <polygon fill="#2563EB" points="36.507,76.640 9.872,50.004 36.507,46.383 50.000,90.133" />
+      <polygon fill="#2563EB" points="50.000,90.133 63.502,46.374 90.128,50.004 63.502,76.631" />
+      <polygon fill="#1E3A8A" points="50.000,90.133 36.507,46.383 63.502,46.374" />
     </g>
   </svg>
 );
 
 const WiredoorDark: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 100 100"
-    role="img"
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" {...props}>
     <g id="mark">
-      <polygon
-        fill="#1D4ED8"
-        points="3.703,43.836 0.003,40.142 0.000,9.876 18.829,28.705"
-      />
-      <polygon
-        fill="#1D4ED8"
-        points="96.297,43.836 81.163,28.702 100.000,9.876 99.997,40.142"
-      />
-      <polygon
-        fill="#1D4ED8"
-        points="36.507,46.383 50.003,9.867 63.502,46.374"
-      />
-      <polygon
-        fill="#67E8F9"
-        points="36.507,46.383 36.507,23.369 36.504,23.366 36.507,23.363 50.003,9.867"
-      />
-      <polygon
-        fill="#22D3EE"
-        points="63.502,46.374 50.003,9.867 63.502,23.366"
-      />
-      <polygon
-        fill="#0EA5E9"
-        points="9.872,50.004 24.994,34.870 36.507,46.383"
-      />
-      <polygon
-        fill="#2563EB"
-        points="90.128,50.004 63.502,46.374 74.994,34.870"
-      />
-      <polygon
-        fill="#38BDF8"
-        points="36.507,76.640 9.872,50.004 36.507,46.383 50.000,90.133"
-      />
-      <polygon
-        fill="#38BDF8"
-        points="50.000,90.133 63.502,46.374 90.128,50.004 63.502,76.631"
-      />
-      <polygon
-        fill="#1D4ED8"
-        points="50.000,90.133 36.507,46.383 63.502,46.374"
-      />
+      <polygon fill="#1D4ED8" points="3.703,43.836 0.003,40.142 0.000,9.876 18.829,28.705" />
+      <polygon fill="#1D4ED8" points="96.297,43.836 81.163,28.702 100.000,9.876 99.997,40.142" />
+      <polygon fill="#1D4ED8" points="36.507,46.383 50.003,9.867 63.502,46.374" />
+      <polygon fill="#67E8F9" points="36.507,46.383 36.507,23.369 36.504,23.366 36.507,23.363 50.003,9.867" />
+      <polygon fill="#22D3EE" points="63.502,46.374 50.003,9.867 63.502,23.366" />
+      <polygon fill="#0EA5E9" points="9.872,50.004 24.994,34.870 36.507,46.383" />
+      <polygon fill="#2563EB" points="90.128,50.004 63.502,46.374 74.994,34.870" />
+      <polygon fill="#38BDF8" points="36.507,76.640 9.872,50.004 36.507,46.383 50.000,90.133" />
+      <polygon fill="#38BDF8" points="50.000,90.133 63.502,46.374 90.128,50.004 63.502,76.631" />
+      <polygon fill="#1D4ED8" points="50.000,90.133 36.507,46.383 63.502,46.374" />
     </g>
   </svg>
 );
@@ -174,14 +107,19 @@ const Github: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 export const icons = {
   // Lucide
+  activity: lucide(Activity),
   back: lucide(ArrowLeftToLine),
+  boxes: lucide(Boxes),
+  chart: lucide(BarChart3),
   close: lucide(X),
   connect: lucide(Unplug),
   contact: lucide(MessageSquareShare),
   copy: lucide(Copy),
   copyCheck: lucide(CopyCheck),
+  creditCard: lucide(CreditCard),
   cube: lucide(Box),
   danger: lucide(TriangleAlert),
+  dashboard: lucide(LayoutDashboard),
   delete: lucide(Trash2),
   disconnect: lucide(ShieldBan),
   docs: lucide(BookText),
@@ -190,22 +128,31 @@ export const icons = {
   eye: lucide(Eye),
   "eye-off": lucide(EyeOff),
   expose: lucide(HardDriveUpload),
+  external: lucide(ExternalLink),
   forward: lucide(ArrowRightFromLine),
   gateway: lucide(Router),
   globe: lucide(Globe),
   heart: lucide(Heart),
   home: lucide(House),
+  key: lucide(Key),
   info: lucide(Info),
   laptop: lucide(Laptop),
   "link-off": lucide(Link2Off),
   logout: lucide(LogOut),
+  logs: lucide(FileText),
   moon: lucide(MoonStar),
   more: lucide(Ellipsis),
+  network: lucide(Network),
+  server: lucide(Server),
   settings: lucide(Settings),
   shield: lucide(Shield),
   spin: lucide(Loader),
+  star: lucide(Star),
   sun: lucide(Sun),
+  trendingUp: lucide(TrendingUp),
+  trendingDown: lucide(TrendingDown),
   user: lucide(User),
+  users: lucide(Users),
 
   // Custom SVG
   github: svg(Github),
