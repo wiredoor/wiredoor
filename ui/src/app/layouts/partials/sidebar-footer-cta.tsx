@@ -19,7 +19,7 @@ export function SidebarFooterCTA({
   const isCollapsed = (sidebar as any)?.state === "collapsed";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 mb-5">
       <Surface elevation="lg" radius="lg" className={cn("p-4", isCollapsed ? "items-center text-center" : "")}>
         <Inline>
           {!isCollapsed ? (

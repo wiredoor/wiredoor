@@ -3,6 +3,7 @@ import { TopNav } from "./partials/top-nav";
 import { Text } from "@/components/foundations";
 import { Footer } from "./partials/footer";
 import { Logo } from "./partials/logo";
+import { ThemeToggle } from "./partials/theme-toggle";
 
 export type AppAuthLayoutProps = React.HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ export function AppAuthLayout({ children }: AppAuthLayoutProps) {
         </Text>
       }
       title="Sign in to your account"
-      header={<TopNav brand={<Logo />} containerSize="xl" />}
+      header={<TopNav brand={<Logo />} containerSize="xl" rightSlot={<ThemeToggle />} />}
       pageFooter={<Footer containerSize="xl" />}
     >
       {children}
