@@ -10,8 +10,10 @@ import {
   Patch,
   Post,
   QueryParams,
+  Req,
   UseBefore,
 } from 'routing-controllers';
+import { Request } from 'express';
 import { NodesService } from '../services/nodes-service';
 import { HttpServicesService } from '../services/http-services-service';
 import { TcpServicesService } from '../services/tcp-services-service';
@@ -52,8 +54,15 @@ export default class CLiController extends BaseController {
 
   @Get('/node')
   async getCliNode(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
   ): Promise<NodeInfo> {
+    req.logger.audit(`Node info requested for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.nodesService.getNodeInfo(+cli.nodeId, [
       'httpServices',
       'tcpServices',
@@ -62,15 +71,29 @@ export default class CLiController extends BaseController {
 
   @Get('/config')
   async getCliConfig(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
   ): Promise<string> {
+    req.logger.audit(`Node config requested for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.nodesService.getNodeConfig(+cli.nodeId);
   }
 
   @Get('/wgconfig')
   async getCliWGConfig(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
   ): Promise<WGConfigObject> {
+    req.logger.audit(`WireGuard config requested for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.nodesService.getNodeWGConfig(+cli.nodeId);
   }
 
@@ -84,6 +107,7 @@ export default class CLiController extends BaseController {
     }),
   )
   async updateGatewayNetwork(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Body() params: { gatewayNetwork: string; gatewayInterface?: string },
   ): Promise<Node> {
@@ -92,15 +116,47 @@ export default class CLiController extends BaseController {
       'tcpServices',
     ]);
 
+    req.logger.audit(
+      `Trying to update gateway network for node ${cli.nodeName}`,
+      {
+        params,
+        nodeName: cli.nodeName,
+        patName: cli.tokenName,
+        nodeId: cli.nodeId,
+        patId: cli.id,
+      },
+    );
+
     if (node.isGateway) {
       const gatewayNetworks = node.gatewayNetworks;
       gatewayNetworks[0].interface = params.gatewayInterface || 'eth0';
       gatewayNetworks[0].subnet = params.gatewayNetwork;
 
-      return this.nodesService.updateNode(+cli.nodeId, {
+      const updated = await this.nodesService.updateNode(+cli.nodeId, {
         gatewayNetworks,
       });
+
+      req.logger.audit(
+        `Gateway network updated to ${params.gatewayNetwork} for node ${cli.nodeName}`,
+        {
+          nodeName: cli.nodeName,
+          patName: cli.tokenName,
+          nodeId: cli.nodeId,
+          patId: cli.id,
+        },
+      );
+
+      return updated;
     } else {
+      req.logger.audit(
+        `Attempted to update gateway network for non-gateway node ${cli.nodeName} failed`,
+        {
+          nodeName: cli.nodeName,
+          patName: cli.tokenName,
+          nodeId: cli.nodeId,
+          patId: cli.id,
+        },
+      );
       throw new BadRequestError(
         `This node isn't a gateway. Update node from wiredoor dashboard using administrative account`,
       );
@@ -114,9 +170,16 @@ export default class CLiController extends BaseController {
     }),
   )
   async getCliServices(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @QueryParams() params: HttpServiceFilterQueryParams,
   ): Promise<HttpService | HttpService[] | PagedData<HttpService>> {
+    req.logger.audit(`HTTP services info requested for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.httpServicesService.getNodeHttpServices(+cli.nodeId, params);
   }
 
@@ -129,10 +192,23 @@ export default class CLiController extends BaseController {
     }),
   )
   async disableHttpService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
   ): Promise<HttpService> {
-    return this.httpServicesService.disableNodeService(id, cli.nodeId);
+    const svc = await this.httpServicesService.disableNodeService(
+      id,
+      cli.nodeId,
+    );
+    req.logger.audit(`Disabling HTTP service ${id} for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceId: id,
+      serviceName: svc.name,
+    });
+    return svc;
   }
 
   @Patch('/services/http/:id/enable')
@@ -147,15 +223,26 @@ export default class CLiController extends BaseController {
     }),
   )
   async enableHttpService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
     @Body() params: { ttl: string | undefined },
   ): Promise<HttpService> {
-    return this.httpServicesService.enableNodeService(
+    const svc = await this.httpServicesService.enableNodeService(
       id,
       cli.nodeId,
       params.ttl,
     );
+    req.logger.audit(`Enabling HTTP service ${id} for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceId: id,
+      serviceName: svc.name,
+      ttl: params.ttl,
+    });
+    return svc;
   }
 
   @Get('/services/tcp')
@@ -165,9 +252,16 @@ export default class CLiController extends BaseController {
     }),
   )
   async getCliTcpServices(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @QueryParams() params: TcpServiceFilterQueryParams,
   ): Promise<TcpService | TcpService[] | PagedData<TcpService>> {
+    req.logger.audit(`TCP services info requested for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.tcpServicesService.getNodeTcpServices(+cli.nodeId, params);
   }
 
@@ -180,10 +274,23 @@ export default class CLiController extends BaseController {
     }),
   )
   async disableTcpService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
   ): Promise<TcpService> {
-    return this.tcpServicesService.disableNodeService(id, cli.nodeId);
+    const svc = await this.tcpServicesService.disableNodeService(
+      id,
+      cli.nodeId,
+    );
+    req.logger.audit(`Disabling TCP service ${id} for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceId: id,
+      serviceName: svc.name,
+    });
+    return svc;
   }
 
   @Patch('/services/tcp/:id/enable')
@@ -198,15 +305,26 @@ export default class CLiController extends BaseController {
     }),
   )
   async enableTcpService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Param('id') id: number,
     @Body() params: { ttl: string | undefined },
   ): Promise<TcpService> {
-    return this.tcpServicesService.enableNodeService(
+    const svc = await this.tcpServicesService.enableNodeService(
       id,
       cli.nodeId,
       params.ttl,
     );
+    req.logger.audit(`Enabling TCP service ${id} for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceId: id,
+      serviceName: svc.name,
+      ttl: params.ttl,
+    });
+    return svc;
   }
 
   @Post('/expose/http')
@@ -216,9 +334,17 @@ export default class CLiController extends BaseController {
     }),
   )
   async createNodeService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Body() params: HttpServiceType,
   ): Promise<HttpService> {
+    req.logger.audit(`Exposing HTTP service for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceParams: params,
+    });
     return this.httpServicesService.createHttpService(+cli.nodeId, params);
   }
 
@@ -229,16 +355,31 @@ export default class CLiController extends BaseController {
     }),
   )
   async createNodeTcpService(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
     @Body() params: TcpServiceType,
   ): Promise<TcpService> {
+    req.logger.audit(`Exposing TCP service for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      serviceParams: params,
+    });
     return this.tcpServicesService.createTcpService(+cli.nodeId, params);
   }
 
   @Patch('/regenerate')
   async regenerateNodeKeys(
+    @Req() req: Request,
     @CurrentUser({ required: true }) cli: AuthenticatedUser,
   ): Promise<NodeWithToken> {
+    req.logger.audit(`Regenerating keys for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
     return this.nodesService.regenerateNodeKeys(cli.nodeId);
   }
 }

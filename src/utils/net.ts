@@ -7,7 +7,9 @@ import CLI from './cli';
 import config from '../config';
 import { Resolver } from 'dns/promises';
 import IP_CIDR from './ip-cidr';
-import { logger } from '../providers/logger';
+import { createLogger } from '../logger';
+
+const logger = createLogger({ serviceName: 'Net' });
 
 export default class Net {
   static async addRoute(
@@ -23,7 +25,7 @@ export default class Net {
       return true;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      logger.debug(e, `NET: Failed to add route`);
+      logger.error(`NET: Failed to add route`, e);
       return false;
     }
   }

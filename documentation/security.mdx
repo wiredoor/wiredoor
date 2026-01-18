@@ -1,3 +1,10 @@
+---
+title: "Wiredoor Security: VPN Tunnels, Tokens, CrowdSec & IP Restrictions"
+description: 
+  Discover how Wiredoor secures your private services with WireGuard VPN tunnels, SSL certificates, token-based authentication, IP restrictions, and CrowdSec integration. Follow best practices for safe service exposure in self-hosted environments.
+keywords: ["encryption", "ip restriction", "crowdsec", "access tokens", "ssl certificates", "vpn security"]
+---
+
 import { Callout } from 'nextra/components'
 
 # Security
@@ -28,13 +35,13 @@ Wiredoor supports integration with CrowdSec, a collaborative intrusion preventio
 
 When enabled, CrowdSec can:
 
-- Detect abusive IPs by analyzing access logs from Wiredoor’s NGINX gateway
+- Detect abusive IPs by analyzing access logs from Wiredoor's NGINX gateway
 - Automatically block malicious traffic using the **CrowdSec firewall bouncer** at host level
 - Enrich your security posture with community-sourced threat intelligence
 
 <Callout type="info" emoji="🛡️">
   For a full setup guide, see: 
-  [How to block malicious IPs in Wiredoor using CrowdSec](https://www.wiredoor.net/guides/how-to-block-malicious-ip-in-wiredoor-using-crowdsec-firewall-bouncer)
+  [How to block malicious IPs in Wiredoor using CrowdSec](/guides/how-to-block-malicious-ip-in-wiredoor-using-crowdsec-firewall-bouncer)
 </Callout>
 
 ---

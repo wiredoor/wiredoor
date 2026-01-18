@@ -1,51 +1,34 @@
-<p align="center"> <img src="https://www.wiredoor.net/images/wiredoor.svg" alt="Wiredoor logo" width="60" /> </p>
-
-<h1 align="center" style="color:#1c398e">
-  Wiredoor
-</h1>
-
 <p align="center">
-  <strong>Expose private services securely through reverse VPN tunnel powered by WireGuard and NGINX.</strong><br />
-  Open-source | Self-hosted
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.wiredoor.net/images/wiredoor-large-dark.svg">
+    <img src="https://www.wiredoor.net/images/wiredoor-large-light.svg" alt="Wiredoor logo" height="80" />
+  </picture>
 </p>
 
 <p align="center">
-  <a href="https://www.wiredoor.net/docs">Documentation</a> •
-  <a href="https://github.com/wiredoor/wiredoor">Core Server</a> •
-  <a href="https://github.com/wiredoor/wiredoor-cli">CLI</a> •
+  <strong>Expose private services securely through reverse VPN tunnel powered by WireGuard and NGINX.</strong>
+</p>
+
+<h4 align="center">
+  <a href="https://www.wiredoor.net/docs">Documentation</a>
+  <span> • </span>
+  <a href="https://github.com/wiredoor/wiredoor-cli">CLI</a>
+  <span> • </span>
   <a href="https://charts.wiredoor.net">Helm Charts</a>
-</p>
+</h4>
 
-<p align="center">
-  <a href="https://github.com/wiredoor/wiredoor/actions">
-    <img src="https://github.com/wiredoor/wiredoor/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
-  </a>
-  <a href="https://github.com/wiredoor/wiredoor/releases">
-    <img src="https://img.shields.io/github/v/release/wiredoor/wiredoor?label=Wiredoor" alt="Wiredoor Release" />
-  </a>
-  <a href="https://github.com/wiredoor/wiredoor-cli/releases">
-    <img src="https://img.shields.io/github/v/release/wiredoor/wiredoor-cli?label=CLI&color=silver" alt="Wiredoor CLI Release" />
-  </a>
-  <a href="https://github.com/wiredoor/wiredoor">
-    <img src="https://img.shields.io/github/license/wiredoor/wiredoor" alt="License" />
-  </a>
-  <a href="https://ghcr.io/wiredoor/wiredoor">
-    <img src="https://img.shields.io/badge/GHCR-wiredoor-blue?logo=github" alt="Wiredoor GHCR" />
-  </a>
-  <a href="https://ghcr.io/wiredoor/wiredoor-cli">
-    <img src="https://img.shields.io/badge/GHCR-gateway-silver?logo=github" alt="Wiredoor Docker Gateway GHCR" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=wiredoor_net">
-    <img src="https://img.shields.io/twitter/follow/wiredoor_net?style=social&logo=twitter" alt="follow on Twitter">
-  </a>
-  <a href="https://github.com/wiredoor/wiredoor/stargazers">
-    <img src="https://img.shields.io/github/stars/wiredoor/wiredoor?style=social" alt="GitHub Stars" />
-  </a>
-</p>
+
+<div align="center">
+
+  [![CI Status](https://github.com/wiredoor/wiredoor/actions/workflows/ci.yml/badge.svg)](https://github.com/wiredoor/wiredoor/actions)
+  [![Wiredoor Release](https://img.shields.io/github/v/release/wiredoor/wiredoor?label=Wiredoor)](https://github.com/wiredoor/wiredoor-cli/releases)
+  [![CLI Release](https://img.shields.io/github/v/release/wiredoor/wiredoor-cli?label=CLI&color=silver)](https://github.com/wiredoor/wiredoor-cli/releases)
+  [![Docker](https://img.shields.io/docker/pulls/wiredoor/wiredoor?label=Docker+Pulls&color=blue)](https://hub.docker.com/r/wiredoor/wiredoor)
+  [![License](https://img.shields.io/github/license/wiredoor/wiredoor?label=Lic)](https://raw.githubusercontent.com/wiredoor/wiredoor/main/LICENSE)
+
+</div>
 
 ---
-
-# What is Wiredoor?
 
 **Wiredoor** is a self-hosted, open-source ingress-as-a-service platform that allows you to expose applications and services running in private or local networks to the internet—securely, reliably, and without complex infrastructure.
 

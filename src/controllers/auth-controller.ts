@@ -4,8 +4,10 @@ import {
   Get,
   JsonController,
   Post,
+  Req,
   UseBefore,
 } from 'routing-controllers';
+import { Request } from 'express';
 import { Inject, Service } from 'typedi';
 import { AdminAuthService, JWTResponse } from '../services/admin-auth-service';
 import { celebrate, Joi } from 'celebrate';
@@ -50,8 +52,23 @@ export default class AuthController {
     }),
   )
   async authenticate(
+    @Req() req: Request,
     @Body() params: { username: string; password: string },
   ): Promise<JWTResponse> {
-    return this.authService.auth(params.username, params.password);
+    try {
+      req.logger.audit(`Authentication attempt for user ${params.username}`);
+
+      const response = await this.authService.auth(
+        params.username,
+        params.password,
+      );
+
+      req.logger.audit(`Authentication successful for user ${params.username}`);
+
+      return response;
+    } catch (error: Error | any) {
+      req.logger.error('Error logging authentication attempt', error);
+      throw error;
+    }
   }
 }

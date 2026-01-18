@@ -20,8 +20,15 @@ export default class ServerUtils {
   }
 
   static async verifyDomainHttp01(domain: string): Promise<boolean> {
+    const webroot = '/var/www/wiredoor-verify';
+    const wellKnownPath = '.well-known/wiredoor-verify';
+
     const token = randomBytes(16).toString('hex');
-    const tokenPath = path.join('/var/www/wiredoor-verify', token);
+    const challengePath = path.join(webroot, wellKnownPath);
+
+    FileManager.mkdirSync(challengePath);
+
+    const tokenPath = path.join(challengePath, token);
 
     try {
       await FileManager.saveToFile(tokenPath, token, 'utf-8', 0o644);
@@ -29,13 +36,10 @@ export default class ServerUtils {
       await delay(150);
 
       const { data } = await axios.get(
-        `http://${domain}/.well-known/wiredoor-verify/${encodeURIComponent(token)}`,
+        `http://${domain}/${wellKnownPath}/${encodeURIComponent(token)}`,
         {
           timeout: 3000,
           responseType: 'text',
-          headers: {
-            'User-Agent': 'wiredoor-http01/1.0',
-          },
           validateStatus: (s) => s >= 200 && s < 300,
         },
       );

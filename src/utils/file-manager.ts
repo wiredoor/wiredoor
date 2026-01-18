@@ -1,7 +1,9 @@
 import fs, { Mode } from 'fs';
 import path from 'path';
 import fsPromises from 'fs/promises';
-import { logger } from '../providers/logger';
+import { createLogger } from '../logger';
+
+const logger = createLogger({ serviceName: 'FileManager' });
 
 export default class FileManager {
   static isFile(dir: string, filename: string): boolean {
@@ -37,8 +39,8 @@ export default class FileManager {
       }
 
       return true;
-    } catch (e) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      logger.error(`Error creating directory ${directoryPath}`, e);
       return false;
     }
   }

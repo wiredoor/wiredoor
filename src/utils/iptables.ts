@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { logger } from '../providers/logger';
+import { createLogger } from '../logger';
 
 export enum Table {
   filter = 'filter',
@@ -63,6 +63,8 @@ export interface IptablesRule {
   };
 }
 
+const logger = createLogger({ serviceName: 'Iptables' });
+
 export default class Iptables {
   /**
    * Format iptables json rule to iptables rule string
@@ -103,8 +105,8 @@ export default class Iptables {
     try {
       const output = execSync(`iptables -t ${table} -S`).toString();
       return output.trim().split('\n');
-    } catch (error) {
-      logger.error(error, 'Error listing rules:');
+    } catch (error: Error | any) {
+      logger.error('Error listing rules:', error);
       return [];
     }
   }
@@ -133,8 +135,8 @@ export default class Iptables {
       this.execIptablesCmd(cmd);
       this.debugMessage(`Rule added: ${JSON.stringify(rule, null, 2)}`);
       return true;
-    } catch (error) {
-      logger.error(error, 'Error adding rule:');
+    } catch (error: Error | any) {
+      logger.error('Error adding rule:', error);
       return false;
     }
   }
@@ -163,8 +165,8 @@ export default class Iptables {
       this.execIptablesCmd(cmd);
       this.debugMessage(`Rule deleted: ${JSON.stringify(rule, null, 2)}`);
       return true;
-    } catch (error) {
-      logger.error(error, 'Error deleting rule:');
+    } catch (error: Error | any) {
+      logger.error('Error deleting rule:', error);
       return false;
     }
   }
@@ -173,8 +175,8 @@ export default class Iptables {
     this.debugMessage(`Executing ${cmd}`);
     try {
       execSync(cmd, { stdio: 'ignore' });
-    } catch (e) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      logger.error('Error executing iptables command:', e);
       throw e;
     }
   }

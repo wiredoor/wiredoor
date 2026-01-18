@@ -13,6 +13,7 @@ export const validateServiceDomain = async (c: string): Promise<string> => {
   }
 
   const { error } = Joi.string().domain().validate(c);
+
   if (error) {
     throw new ValidationError(
       `invalid domain`,

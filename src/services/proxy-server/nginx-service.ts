@@ -5,7 +5,7 @@ import Iptables from '../../utils/iptables';
 import { HttpService } from '../../database/models/http-service';
 import { TcpService } from '../../database/models/tcp-service';
 import { NginxLocationConf } from './conf/nginx-location-conf';
-import { logger } from '../../providers/logger';
+import { Logger } from '../../logger';
 
 export abstract class NginxService {
   protected async saveFile(path: string, content: string): Promise<void> {
@@ -32,8 +32,8 @@ export abstract class NginxService {
     try {
       await CLI.exec('nginx -t');
       return true;
-    } catch (e) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      Logger.error('NGINX config test failed', e);
       return false;
     }
   }
@@ -45,9 +45,9 @@ export abstract class NginxService {
     const valid = await this.testConfig();
 
     if (!valid) {
-      logger.warn(`Nginx config test failed for ${confFile}`);
+      Logger.warn(`Nginx config test failed for ${confFile}`);
       await this.renameFile(confFile, `${confFile}.err`);
-      logger.warn(
+      Logger.warn(
         `Nginx config ${confFile} moved to ${confFile}.err to avoid errors`,
       );
       return false;
@@ -106,8 +106,8 @@ export abstract class NginxService {
       await CLI.exec(
         `conntrack -D -p tcp --dst ${service.node.address} --dport ${service.backendPort}`,
       );
-    } catch (err) {
-      logger.warn(err, `Unable to reset TCP connection:`);
+    } catch (err: Error | any) {
+      Logger.warn('Unable to reset TCP connection:', err);
     }
   }
 }

@@ -1,3 +1,10 @@
+---
+title: "Wiredoor CLI: Command-Line Tool to Expose Private Services Securely"
+description: 
+  Use the Wiredoor CLI to register nodes, expose HTTP/TCP/UDP services, and manage VPN tunnels securely from any terminal. Ideal for headless servers, Docker, and IoT devices. Automate connectivity with systemd or OpenRC support.
+keywords: ["wiredoor cli", "expose services", "vpn connection", "http exposure", "tcp exposure", "private networks"]
+---
+
 # Wiredoor CLI
 
 [Wiredoor CLI](https://github.com/wiredoor/wiredoor-cli)  is the command-line interface for interacting with the Wiredoor platform. 
@@ -38,11 +45,11 @@ wiredoor login --url https://your-wiredoor-instance-or-ip
 ```
 
 - Prompts for your admin credentials (email/password)
-- Prompts you to assign a name to the node. Defaults to the machine’s hostname.
+- Prompts you to assign a name to the node. Defaults to the machine's hostname.
 - Prompts you if you want to make this a gateway.
 - Network configuration for gateway and traffic.
 
-This command retrieves and saves the node’s token to `/etc/wiredoor/config.ini` and connect to wiredoor server.
+This command retrieves and saves the node's token to `/etc/wiredoor/config.ini` and connect to wiredoor server.
 
 ### Connect to Wiredoor Node
 

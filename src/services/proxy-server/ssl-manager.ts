@@ -3,7 +3,7 @@ import FileManager from '../../utils/file-manager';
 import CLI from '../../utils/cli';
 import { SSLTermination, SSLCerts } from '../../database/models/domain';
 import config from '../../config';
-import { logger } from '../../providers/logger';
+import { Logger } from '../../logger';
 
 const selfSignedCertificatePath = '/etc/nginx/ssl';
 const opensslConf = '/etc/openssl/openssl.cnf';
@@ -73,8 +73,8 @@ export class SSLManager {
     if (FileManager.isPath(`${certPath}/privkey.pem`)) {
       try {
         await CLI.exec(`certbot delete --cert-name ${domain} -n`);
-      } catch (e) {
-        logger.error(e);
+      } catch (e: Error | any) {
+        Logger.error('Certbot delete failed', e);
       }
     }
   }

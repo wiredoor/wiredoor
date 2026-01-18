@@ -1,3 +1,10 @@
+---
+title: "Wiredoor Docker Gateway: Expose Docker Services via Secure VPN Tunnel"
+description: 
+  Set up the Wiredoor Docker Gateway to expose containers securely over WireGuard VPN. Learn how to connect your Docker services to Wiredoor, resolve service names with dnsmasq, and expose private apps using gateway nodes.
+keywords: ["docker gateway", "wireguard vpn", "container network", "docker-compose", "private services", "docker exposure"]
+---
+
 import { Callout } from 'nextra/components'
 
 # Docker Gateway
@@ -45,7 +52,7 @@ flowchart LR
 The `wiredoor-gateway` image includes a preconfigured `dnsmasq` service that allows you to resolve services in your Docker Compose stack by name, 
 just like internal DNS inside Docker.
 
-This means that when exposing services through Wiredoor, you don’t need to know the internal IPs of your containers — you can simply use 
+This means that when exposing services through Wiredoor, you don't need to know the internal IPs of your containers — you can simply use 
 their service name (e.g. `wordpress`, `app1`, etc.).
 
 ## Exposing services from `docker-compose.yml` stack
@@ -143,7 +150,7 @@ Wiredoor will securely route requests from `https://blog.example.com` to the int
 
 | Problem |	Possible Cause | Solution |
 |---------|----------------|----------|
-| Service not reachable | Not on the same subnet	| Add container to the gateway’s Docker network |
+| Service not reachable | Not on the same subnet	| Add container to the gateway's Docker network |
 | DNS name not resolved |	Typo or unsupported characters | Use valid service/container name |
 | "Unauthorized" error | Invalid token | Check if the token is for a gateway node |
 | No connection to server |	Wrong `WIREDOOR_URL` or server unreachable | Test with `curl` or `ping` |

@@ -4,7 +4,7 @@ import { Domain } from '../database/models/domain';
 import BaseRepository from './base-repository';
 import Net from '../utils/net';
 import { ValidationError } from '../utils/errors/validation-error';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 @Service()
 export class DomainRepository extends BaseRepository<Domain> {
@@ -30,8 +30,8 @@ export class DomainRepository extends BaseRepository<Domain> {
         min,
         max,
       );
-    } catch (e: any) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      Logger.error('Error getting available port:', e);
       throw new ValidationError({
         body: [
           {

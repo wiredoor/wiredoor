@@ -1,6 +1,7 @@
 import {
   Authorized,
   Body,
+  CurrentUser,
   Delete,
   Get,
   JsonController,
@@ -9,8 +10,10 @@ import {
   Post,
   QueryParam,
   QueryParams,
+  Req,
   UseBefore,
 } from 'routing-controllers';
+import { Request } from 'express';
 import { Inject, Service } from 'typedi';
 import Joi from 'joi';
 import { celebrate } from 'celebrate';
@@ -32,8 +35,10 @@ import { TcpServicesService } from '../services/tcp-services-service';
 import { HttpService } from '../database/models/http-service';
 import { PagedData } from '../repositories/filters/repository-query-filter';
 import { TcpService } from '../database/models/tcp-service';
-import { AdminTokenHandler } from '../middlewares/admin-token-handler';
-import { ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER } from '../utils/constants';
+import {
+  AdminTokenHandler,
+  AuthenticatedUser,
+} from '../middlewares/admin-token-handler';
 
 @Service()
 @JsonController('/services')
@@ -84,9 +89,24 @@ export default class NodeServiceController extends BaseController {
   )
   async createNodeService(
     @Param('nodeId') nodeId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Body() params: HttpServiceType,
   ): Promise<HttpService> {
-    return this.httpServicesService.createHttpService(+nodeId, params);
+    const svc = await this.httpServicesService.createHttpService(
+      +nodeId,
+      params,
+    );
+    req.logger.audit(
+      `Created HTTP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Get('/:nodeId/http/:serviceId')
@@ -112,9 +132,24 @@ export default class NodeServiceController extends BaseController {
   async updateService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Body() params,
   ): Promise<HttpService> {
-    return this.httpServicesService.updateHttpService(+serviceId, params);
+    const svc = await this.httpServicesService.updateHttpService(
+      +serviceId,
+      params,
+    );
+    req.logger.audit(
+      `Updated HTTP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Patch('/:nodeId/http/:serviceId/enable')
@@ -129,9 +164,21 @@ export default class NodeServiceController extends BaseController {
   )
   async enableService(
     @Param('nodeId') nodeId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Param('serviceId') serviceId: string,
   ): Promise<HttpService> {
-    return this.httpServicesService.enableService(+serviceId);
+    const svc = await this.httpServicesService.enableService(+serviceId);
+    req.logger.audit(
+      `Enabled HTTP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Patch('/:nodeId/http/:serviceId/disable')
@@ -146,17 +193,39 @@ export default class NodeServiceController extends BaseController {
   )
   async disableService(
     @Param('nodeId') nodeId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Param('serviceId') serviceId: string,
   ): Promise<HttpService> {
-    return this.httpServicesService.disableService(+serviceId);
+    const svc = await this.httpServicesService.disableService(+serviceId);
+    req.logger.audit(
+      `Disabled HTTP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Delete('/:nodeId/http/:serviceId')
   // @Authorized([ROLE_ADMIN])
   async deleteNodeService(
     @Param('nodeId') nodeId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Param('serviceId') serviceId: string,
   ): Promise<string> {
+    req.logger.audit(
+      `Deleting HTTP service with id ${serviceId} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: serviceId,
+        user: user.name,
+      },
+    );
     return this.httpServicesService.deleteHttpService(+serviceId);
   }
 
@@ -208,9 +277,21 @@ export default class NodeServiceController extends BaseController {
   )
   async createNodeTcpService(
     @Param('nodeId') nodeId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Body() params: TcpServiceType,
   ): Promise<TcpService> {
-    return this.tcpServicesService.createTcpService(+nodeId, params);
+    const svc = await this.tcpServicesService.createTcpService(+nodeId, params);
+    req.logger.audit(
+      `Created TCP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Get('/:nodeId/tcp/:serviceId')
@@ -236,9 +317,24 @@ export default class NodeServiceController extends BaseController {
   async updateTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
     @Body() params: TcpServiceType,
   ): Promise<TcpService> {
-    return this.tcpServicesService.updateTcpService(+serviceId, params);
+    const svc = await this.tcpServicesService.updateTcpService(
+      +serviceId,
+      params,
+    );
+    req.logger.audit(
+      `Updated TCP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Patch('/:nodeId/tcp/:serviceId/enable')
@@ -254,8 +350,20 @@ export default class NodeServiceController extends BaseController {
   async enableTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
   ): Promise<TcpService> {
-    return this.tcpServicesService.enableService(+serviceId);
+    const svc = await this.tcpServicesService.enableService(+serviceId);
+    req.logger.audit(
+      `Enabled TCP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
 
   @Patch('/:nodeId/tcp/:serviceId/disable')
@@ -271,16 +379,37 @@ export default class NodeServiceController extends BaseController {
   async disableTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
   ): Promise<TcpService> {
-    return this.tcpServicesService.disableService(+serviceId);
+    const svc = await this.tcpServicesService.disableService(+serviceId);
+    req.logger.audit(
+      `Disabled TCP service ${svc.name} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: svc.id,
+        serviceName: svc.name,
+        user: user.name,
+      },
+    );
+    return svc;
   }
-
   @Delete('/:nodeId/tcp/:serviceId')
   // @Authorized([ROLE_ADMIN])
   async deleteNodeTcpService(
     @Param('nodeId') nodeId: string,
     @Param('serviceId') serviceId: string,
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
   ): Promise<string> {
+    req.logger.audit(
+      `Deleting TCP service with id ${serviceId} for node with id ${nodeId}`,
+      {
+        nodeId: nodeId,
+        serviceId: serviceId,
+        user: user.name,
+      },
+    );
     return this.tcpServicesService.deleteTcpService(+serviceId);
   }
 }

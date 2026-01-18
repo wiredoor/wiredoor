@@ -1,30 +1,55 @@
 import { ObjectSchema, ValidationError } from 'joi';
 import Joi from './joi-validator';
 import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-// import Net from '../utils/net';
+import Net from '../utils/net';
 import ServerUtils from '../utils/server';
+import config from '../config';
+import Container from 'typedi';
+import { DNSService } from '../services/dns/dns-service';
+
+export const pointToThisServer = async (domain: string): Promise<boolean> => {
+  const lookup = await Net.lookupIncludesThisServer(domain);
+
+  if (!lookup) {
+    const http01Verification = await ServerUtils.verifyDomainHttp01(domain);
+
+    if (!http01Verification) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export const isValidDomain = async (domain: string): Promise<boolean> => {
+  if (config.dns.provider) {
+    const dnsCanManageDomain =
+      await Container.get(DNSService).canManageDomain(domain);
+
+    if (dnsCanManageDomain) {
+      return true;
+    }
+  }
+
+  return pointToThisServer(domain);
+};
 
 export const nslookupResolvesServerIp = async (c: string): Promise<string> => {
   if (c) {
-    // const lookup = await Net.lookupIncludesThisServer(c);
-    const lookup = false;
+    const resolveThisServer = await isValidDomain(c);
 
-    if (!lookup) {
-      const http01Verification = await ServerUtils.verifyDomainHttp01(c);
-
-      if (!http01Verification) {
-        throw new ValidationError(
-          `nslookup failed`,
-          [
-            {
-              path: ['domain'],
-              message: `Domain verification failed. The domain does not point to Wiredoor host.`,
-              type: 'Error',
-            },
-          ],
-          null,
-        );
-      }
+    if (!resolveThisServer) {
+      throw new ValidationError(
+        `nslookup failed`,
+        [
+          {
+            path: ['domain'],
+            message: `Domain verification failed. The domain does not point to Wiredoor host.`,
+            type: 'Error',
+          },
+        ],
+        null,
+      );
     }
   }
 

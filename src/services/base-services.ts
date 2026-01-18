@@ -5,10 +5,15 @@ import IP_CIDR from '../utils/ip-cidr';
 import Net from '../utils/net';
 import { ValidationError } from '../utils/errors/validation-error';
 import config from '../config';
+import { DomainsService } from './domains-service';
+import { Logger } from '../logger';
 
 @Service()
 export class BaseServices {
-  constructor(private readonly nodeRepo: NodeRepository) {}
+  constructor(
+    private readonly nodeRepo: NodeRepository,
+    private readonly domainSvc: DomainsService,
+  ) {}
 
   protected async checkNodePort(
     nodeId: number,
@@ -55,6 +60,30 @@ export class BaseServices {
           },
         ],
       });
+    }
+  }
+
+  protected async checkOrCreateDomain(domain: string): Promise<void> {
+    if (domain) {
+      try {
+        await this.domainSvc.createDomainIfNotExists(domain);
+      } catch (err: any) {
+        Logger.error(
+          `Error creating or checking domain ${domain}: ${err.message}`,
+          err,
+        );
+        if (err instanceof ValidationError) {
+          throw err;
+        }
+        throw new ValidationError({
+          body: [
+            {
+              field: 'domain',
+              message: `Unable to create or use this domain`,
+            },
+          ],
+        });
+      }
     }
   }
 }

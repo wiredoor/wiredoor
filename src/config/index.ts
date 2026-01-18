@@ -3,7 +3,7 @@ import path from 'path';
 import { randomBytes } from 'crypto';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import { logger } from '../providers/logger';
+import { Logger } from '../logger';
 
 dotenv.config();
 
@@ -51,9 +51,10 @@ function getKey(
 
     logger.info(`Secret ${name} was generated and stored at ${file}`);
 
-    return secret;
-  } catch (error) {
-    logger.error({ err: error }, 'Error loading or generating JWT key:');
+    fs.writeFileSync(filePath, newKey, { mode: 0o600 });
+    return newKey;
+  } catch (error: Error | any) {
+    Logger.error('Error loading or generating JWT key:', error);
     throw error;
   }
 }
@@ -62,6 +63,10 @@ export default {
   app: {
     name: process.env.APP_NAME || 'Wiredoor',
     port: parseInt(process.env.APP_PORT || '') || 3000,
+  },
+  log: {
+    level: process.env.LOG_LEVEL || 'info',
+    format: process.env.LOG_FORMAT || 'console',
   },
   admin: {
     email: process.env.ADMIN_EMAIL || 'admin@example.com',
@@ -86,6 +91,9 @@ export default {
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,
   },
+  dns: {
+    provider: process.env.DNS_PROVIDER || null,
+  },
   nginx: {
     bodySize: process.env.NGINX_CLIENT_MAX_BODY_SIZE || '100m',
     logs: process.env.SERVER_LOGS_DIR || '/var/log/nginx',
@@ -102,10 +110,10 @@ export default {
     postUp: (process.env.WG_POST_UP_SCRIPT || defaultPostUpScript)
       .split('\n')
       .join(' '),
-    preDown: (process.env.WG_PRE_UP_SCRIPT || defaultPreDownScript)
+    preDown: (process.env.WG_PRE_DOWN_SCRIPT || defaultPreDownScript)
       .split('\n')
       .join(' '),
-    postDown: (process.env.WG_POST_UP_SCRIPT || defaultPostDownScript)
+    postDown: (process.env.WG_POST_DOWN_SCRIPT || defaultPostDownScript)
       .split('\n')
       .join(' '),
   },

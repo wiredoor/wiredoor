@@ -2,7 +2,6 @@ import { HttpError } from 'routing-controllers';
 import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../utils/errors/validation-error';
 import { isCelebrateError } from 'celebrate';
-import { logger } from '../providers/logger';
 
 export function errorHandlerMiddleware(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -61,8 +60,6 @@ export function errorHandlerMiddleware(
       errors: err.errors,
     });
   }
-
-  logger.error({ err });
 
   if (err instanceof HttpError) {
     res.status(err.httpCode);

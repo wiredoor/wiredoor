@@ -14,7 +14,7 @@ import {
 import IP_CIDR from '../../utils/ip-cidr';
 import config from '../../config';
 import { getPing } from '../../providers/node-monitor';
-import { logger } from '../../providers/logger';
+import { createLogger, ILogger } from '../../logger';
 
 export interface ConnectionStatus {
   status: 'online' | 'offline' | 'idle';
@@ -43,10 +43,13 @@ export interface WGConfigObject {
 
 @Service()
 class WireguardService {
+  private readonly logger: ILogger;
   constructor(
     @Inject() private readonly wgInterfaceRepository: WgInterfaceRepository,
     @Inject() private readonly nodeRepository: NodeRepository,
-  ) {}
+  ) {
+    this.logger = createLogger({ serviceName: 'wireguard' });
+  }
 
   async initialize(wgInterface = 'wg0'): Promise<void> {
     await this.saveConfig(wgInterface);
@@ -112,8 +115,8 @@ class WireguardService {
 
     const config = this.getServerConfig(serverConfig, clients);
 
-    logger.info(
-      `Saving Wireguard config to /etc/wireguard/${wgInterface}.conf`,
+    this.logger.info(
+      `Saving WireGuard config to /etc/wireguard/${wgInterface}.conf`,
     );
 
     await FileManager.saveToFile(
@@ -208,7 +211,7 @@ class WireguardService {
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      logger.error(e);
+      this.logger.error('Error getting runtime info', e);
       return nodes;
     }
   }
@@ -291,8 +294,8 @@ class WireguardService {
       } else {
         await WGCli.quickUp(wgInterface);
       }
-    } catch (e) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      this.logger.error('Error starting WireGuard', e);
       throw e;
     }
   }
@@ -301,8 +304,8 @@ class WireguardService {
     try {
       await WGCli.quickDown(wgInterface);
       await WGCli.quickUp(wgInterface);
-    } catch (e) {
-      logger.error(e);
+    } catch (e: Error | any) {
+      this.logger.error('Error restarting WireGuard', e);
       throw e;
     }
   }

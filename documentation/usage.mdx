@@ -1,3 +1,10 @@
+---
+title: "How to Use Wiredoor: Domains, Nodes, OAuth2, and Exposing Services"
+description:
+  Learn how to use Wiredoor to expose internal services securely with domains, nodes, and OAuth2 authentication. Configure the Local, Client, and Gateway Nodes, expose HTTP/TCP/UDP services via CLI or Web UI, and monitor access logs in real-time.
+keywords: ["domain routing", "oauth2", "wireguard", "access control", "http services", "private networks"]
+---
+
 import { Callout } from 'nextra/components';
 
 # Usage
@@ -23,7 +30,7 @@ Domains define how traffic is routed from the public internet into your internal
 ### Public Domains (Recommended)
 
 - Must point to your Wiredoor server's public IP (via A/CNAME DNS record)
-- Automatically get SSL certificates via Let’s Encrypt
+- Automatically get SSL certificates via Let's Encrypt
 - Ideal for production and public access
 
 ### Internal or Local Domains
@@ -31,6 +38,26 @@ Domains define how traffic is routed from the public internet into your internal
 - Do not require DNS registration (e.g. `dashboard.lan`, `test.internal`)
 - Use self-signed certificates
 - May trigger browser warnings unless trusted
+
+### Automatic DNS Providers
+
+Wiredoor can automatically create or update DNS records when exposing a service, as long as the domain belongs to a DNS provider that is configured on the Wiredoor Server.
+
+This feature removes the need to manually create A or CNAME records every time you expose a new service.
+
+Supported providers:
+- Cloudflare
+- GoDaddy
+- (More providers coming soon)
+
+If a domain is managed by a configured provider, Wiredoor will:
+- Detect the correct DNS zone
+- Create or update the DNS record automatically
+- Trigger TLS certificate issuance using Let's Encrypt
+
+If no DNS provider is configured, domains must be created manually.
+
+For more details on how to configure DNS providers, see the [Advanced Configuration](/documentation/configuration#dns-providers-integration).
 
 ## Enabling OAuth2 Authentication
 
@@ -58,7 +85,7 @@ Without these variables, the dashboard will not allow you to enable OAuth2 authe
 You can protect specific services under this domain by checking **Require Authentication** when exposing them from the node.
 
 <Callout type="warning" emoji="⚠️">
-  When configuring your OAuth2 application in the provider’s dashboard, you must register the Redirect URI like `https://<your-domain>/oauth2/callback`
+  When configuring your OAuth2 application in the provider's dashboard, you must register the Redirect URI like `https://<your-domain>/oauth2/callback`
 </Callout>
 
 ### Bypass Authentication for Specific Paths

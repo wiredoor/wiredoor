@@ -7,7 +7,7 @@ import config from './config';
 import FileManager from './utils/file-manager';
 import { startPing, stopPing } from './providers/node-monitor';
 import rateLimit from 'express-rate-limit';
-import { logger } from './providers/logger';
+import { Logger } from './logger';
 
 let server: http.Server | null = null;
 
@@ -26,7 +26,7 @@ export async function loadApp(): Promise<express.Application> {
   if (FileManager.isFile(publicUIPath, 'index.html')) {
     app.use('/', express.static(publicUIPath));
   } else {
-    logger.warn(`UI Files not found! ${publicUIPath}`);
+    Logger.warn(`UI Files not found! ${publicUIPath}`);
     app.get('/', (req, res) => {
       return res.status(200).end(`Welcome to ${config.app.name}!`);
     });
@@ -50,14 +50,6 @@ export async function loadApp(): Promise<express.Application> {
     return res.sendFile(path.join(publicUIPath, 'index.html'));
   });
 
-  if (process.env.NODE_ENV !== 'test') {
-    server = app.listen(config.app.port, () => {
-      logger.info(`${config.app.name} listening on port: ${config.app.port}`);
-    });
-
-    startPing();
-  }
-
   return app;
 }
 
@@ -74,12 +66,36 @@ async function shutDownApp(): Promise<void> {
   stopPing();
 }
 
-process.on('SIGINT', shutDownApp);
-process.on('SIGTERM', shutDownApp);
+async function bootstrap(): Promise<void> {
+  Logger.configure({ serviceName: 'wiredoor-app' });
 
-process.on('uncaughtException', (err) => {
-  logger.error({ err }, 'UncaughtException');
-  shutDownApp();
-});
+  const app = await loadApp();
 
-loadApp();
+  server = app.listen(config.app.port, () => {
+    Logger.info(`${config.app.name} listening on port: ${config.app.port}`);
+  });
+
+  startPing();
+
+  process.on('SIGINT', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
+
+  process.on('SIGTERM', () => {
+    shutDownApp().finally(() => process.exit(0));
+  });
+
+  process.on('uncaughtException', (err: Error) => {
+    Logger.error('Uncaught Exception - Application will exit', err, {
+      event: 'uncaught_exception',
+    });
+    shutDownApp().finally(() => setTimeout(() => process.exit(1), 1000));
+  });
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  bootstrap().catch((err) => {
+    Logger.error('Failed to bootstrap application', err);
+    process.exit(1);
+  });
+}

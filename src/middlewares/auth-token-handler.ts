@@ -10,6 +10,7 @@ import { PersonalAccessToken } from '../database/models/personal-access-token';
 
 export interface AuthenticatedUser extends PersonalAccessToken {
   nodeName?: string;
+  tokenName?: string;
   address?: string;
 }
 
