@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateTcpServicePortIndex1760193711989
-  implements MigrationInterface
-{
+export class UpdateTcpServicePortIndex1760193711989 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX IF EXISTS "unique_port_per_node"`);
     await queryRunner.query(

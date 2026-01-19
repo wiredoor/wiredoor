@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateLocalWiredoorService1745979577159
-  implements MigrationInterface
-{
+export class UpdateLocalWiredoorService1745979577159 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         UPDATE "http_services"

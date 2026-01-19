@@ -1,4 +1,4 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -19,10 +19,7 @@ export class User {
   email: string;
 
   @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
+  name: string;
 
   @Exclude()
   @Column()
@@ -49,6 +46,9 @@ export class User {
   })
   totpSecret: string;
 
+  @Column({ default: false })
+  mustChangePassword!: boolean;
+
   // @Column({
   //   type: 'enum',
   //   enum: USER_ROLES,
@@ -57,13 +57,8 @@ export class User {
   // role: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
-
-  @Expose()
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`.trim();
-  }
+  updated_at: Date;
 }

@@ -11,6 +11,28 @@ import { createLogger } from '../logger';
 
 const logger = createLogger({ serviceName: 'Net' });
 
+const httpGet = (url: string, timeout: number = 10000): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { timeout }, (res) => {
+      let data = '';
+      res.setEncoding('utf8');
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        resolve(data);
+      });
+    });
+
+    req.on('error', (err) => {
+      reject(err);
+    });
+    req.on('timeout', () => {
+      req.destroy(new Error('Request timed out'));
+    });
+  });
+};
+
 export default class Net {
   static async addRoute(
     subnet: string,
@@ -260,19 +282,27 @@ export default class Net {
   }
 
   static async getRealPublicIp(): Promise<string> {
-    return new Promise((resolve) => {
-      https
-        .get('https://checkip.amazonaws.com', (res) => {
-          if (res.statusCode !== 200) {
-            resolve('');
-            return;
-          }
+    const providers = [
+      'https://checkip.amazonaws.com',
+      'https://api.ipify.org',
+      'https://ifconfig.me/ip',
+    ];
 
-          let data = '';
-          res.on('data', (chunk) => (data += chunk));
-          res.on('end', () => resolve(data.trim()));
-        })
-        .on('error', () => resolve(''));
-    });
+    let error = false;
+
+    for (const url of providers) {
+      try {
+        const ip = await httpGet(url, 5000);
+        const ipTrimmed = ip.trim();
+        if (ipTrimmed) return ipTrimmed;
+      } catch {
+        error = true;
+      }
+    }
+    if (error) {
+      throw new Error('Unable to determine public IP address');
+    } else {
+      return '';
+    }
   }
 }

@@ -5,8 +5,16 @@ import { TcpServicesService } from '../services/tcp-services-service';
 import { DomainsService } from '../services/domains-service';
 import { NginxManager } from '../services/proxy-server/nginx-manager';
 import { Logger } from '../logger';
+import { BootstrapService } from '../services/bootstrap-service';
 
 export default async (): Promise<void> => {
+  try {
+    await Container.get(BootstrapService).initialize();
+  } catch (e: Error | any) {
+    Logger.error('Unable to bootstrap config:', e);
+    process.exit(1);
+  }
+
   try {
     await Container.get(WireguardService).initialize();
   } catch (e: Error | any) {

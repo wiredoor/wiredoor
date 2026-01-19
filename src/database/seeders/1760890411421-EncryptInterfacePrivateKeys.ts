@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { decrypt, encrypt } from '../../utils/cypher';
 
-export class EncryptInterfacePrivateKeys1760890411421
-  implements MigrationInterface
-{
+export class EncryptInterfacePrivateKeys1760890411421 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const interfaces = await queryRunner.query(`
       SELECT config, privateKey

@@ -122,6 +122,8 @@ export class CoreLogger implements ILogger {
             const authUser = (log.req_headers as any)?.xAuthUser as
               | string
               | undefined;
+            const err = (log.err ?? log.error) as any;
+            const errMsg = err?.message ?? err?.msg;
             // const userAgent = (log.req_headers as any)?.userAgent as
             //   | string
             //   | undefined;
@@ -140,6 +142,9 @@ export class CoreLogger implements ILogger {
             if (authUser) parts.push(`user=${authUser}`);
             if (clientIp) parts.push(`ip=${clientIp}`);
             if (requestId) parts.push(`reqId=${requestId}`);
+            if (errMsg) parts.push(`\n"${errMsg}"\n ${err.stack || ''}`);
+            if (log.data && Object.keys(log.data).length > 0)
+              parts.push(`\n${JSON.stringify(log.data, null, 2)}`);
             // if (userAgent) parts.push(`ua="${userAgent}"`);
 
             return parts.join(' ') + `\n`;

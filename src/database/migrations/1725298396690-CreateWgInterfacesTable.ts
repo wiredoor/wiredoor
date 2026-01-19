@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateWgInterfacesTable1725298396690
-  implements MigrationInterface
-{
+export class CreateWgInterfacesTable1725298396690 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "wg_interfaces" (

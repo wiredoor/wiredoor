@@ -109,6 +109,7 @@ jest.mock('../../utils/net.ts', () => {
     getAvailableLocalPort: mockGetAvailablePort,
     checkPort: mockCheckPort,
     getWireguardIP: jest.fn(() => config.wireguard.host),
+    getRealPublicIp: jest.fn(() => config.wireguard.host),
   };
 });
 

@@ -3,9 +3,7 @@ import config from '../../config';
 import WGCli from '../../utils/wg-cli';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateMainInterfaceSeeder1725299161636
-  implements MigrationInterface
-{
+export class CreateMainInterfaceSeeder1725299161636 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     const privateKey = await WGCli.genPrivateKey();
     const publicKey = await WGCli.genPublicKey(privateKey);

@@ -1,7 +1,6 @@
 import { Inject, Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import {
-  Authorized,
   Body,
   CurrentUser,
   Delete,

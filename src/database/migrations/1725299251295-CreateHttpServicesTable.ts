@@ -1,9 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import { addColumnIfMissing } from '../../utils/migration-helpers';
 
-export class CreateHttpServicesTable1725299251295
-  implements MigrationInterface
-{
+export class CreateHttpServicesTable1725299251295 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "http_services" (

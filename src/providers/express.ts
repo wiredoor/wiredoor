@@ -12,6 +12,7 @@ import ConfigController from '../controllers/config-controller';
 import LogController from '../controllers/log-controller';
 import { errorHandlerMiddleware } from '../middlewares/error-handler-middleware';
 import { createExpressLogger } from '../logger/express-logger';
+import AuthWebController from '../controllers/auth-web-controller';
 
 export default ({ app }: { app: express.Application }): void => {
   const { middleware, errorMiddleware } = createExpressLogger({
@@ -38,6 +39,7 @@ export default ({ app }: { app: express.Application }): void => {
       NodeServiceController,
       CLiController,
       LogController,
+      AuthWebController,
     ],
     cors: {
       origin: function (origin, callback) {

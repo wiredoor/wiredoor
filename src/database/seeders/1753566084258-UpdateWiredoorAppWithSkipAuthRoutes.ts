@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class UpdateWiredoorAppWithSkipAuthRoutes1753566084258
-  implements MigrationInterface
-{
+export class UpdateWiredoorAppWithSkipAuthRoutes1753566084258 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
         UPDATE "http_services"

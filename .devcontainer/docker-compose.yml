@@ -1,6 +1,5 @@
 services:
   wiredoor-dev:
-    container_name: wiredoor-dev
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
@@ -13,7 +12,7 @@ services:
       - ${FORWARD_NGINX_HTTPS_PORT:-8443}:443
       - ${FORWARD_UI_PORT:-5173}:5173
       - ${FORWARD_API_PORT:-3000}:3000
-      - ${FORWARD_WG_PORT:-51820}:51820/udp
+      # - ${FORWARD_WG_PORT:-51821}:51821/udp
     volumes:
       - wiredoor-dev-vol:/app
       - ..:/workspaces/wiredoor

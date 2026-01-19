@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreatePersonalAccessTokensTable1725299081971
-  implements MigrationInterface
-{
+export class CreatePersonalAccessTokensTable1725299081971 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE TABLE IF NOT EXISTS "personal-access-tokens" (

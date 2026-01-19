@@ -12,8 +12,10 @@ import { PersonalAccessToken } from './personal-access-token';
 import { TcpService } from './tcp-service';
 import { decrypt, encrypt } from '../../utils/cypher';
 
-export interface NodeInfo
-  extends Omit<Node, 'publicKey' | 'privateKey' | 'preSharedKey'> {
+export interface NodeInfo extends Omit<
+  Node,
+  'publicKey' | 'privateKey' | 'preSharedKey'
+> {
   clientIp?: string;
   latestHandshakeTimestamp?: number;
   transferRx?: number;

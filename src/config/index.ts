@@ -36,25 +36,28 @@ function getKey(
   base64 = true,
 ): string {
   const envValue = process.env[name];
-  if (envValue) return envValue.trim();
+  if (envValue && envValue.trim().length > 0) return envValue.trim();
 
   try {
     if (fs.existsSync(file)) {
-      return fs.readFileSync(file, 'utf-8').trim();
+      const existing = fs.readFileSync(file, 'utf-8').trim();
+      if (existing.length > 0) return existing;
     }
     const rawKey = randomBytes(length);
     const secret = base64 ? rawKey.toString('base64') : rawKey.toString('hex');
 
     const dir = path.dirname(file);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(file, secret, { mode: 0o600 });
 
-    logger.info(`Secret ${name} was generated and stored at ${file}`);
+    fs.writeFileSync(file, `${secret}\n`, { mode: 0o600 });
 
-    fs.writeFileSync(filePath, newKey, { mode: 0o600 });
-    return newKey;
-  } catch (error: Error | any) {
-    Logger.error('Error loading or generating JWT key:', error);
+    Logger.info(`Secret ${name} was generated and stored at ${file}`);
+    return secret;
+  } catch (error: any) {
+    Logger.error(
+      `Error loading or generating secret "${name}" (${file}):`,
+      error,
+    );
     throw error;
   }
 }
@@ -69,8 +72,14 @@ export default {
     format: process.env.LOG_FORMAT || 'console',
   },
   admin: {
-    email: process.env.ADMIN_EMAIL || 'admin@example.com',
-    password: bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'ChangeMe1st!', 10),
+    email: process.env.ADMIN_EMAIL,
+    password: process.env.ADMIN_PASSWORD
+      ? bcrypt.hashSync(process.env.ADMIN_PASSWORD, 10)
+      : undefined,
+  },
+  session: {
+    name: process.env.SESSION_COOKIE_NAME || 'wiredoor_session',
+    secret: process.env.SESSION_SECRET,
   },
   db: {
     type: process.env.DB_CONNECTION || ('sqlite' as 'mysql' | 'sqlite'),
