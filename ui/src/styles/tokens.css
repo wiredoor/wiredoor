@@ -96,16 +96,16 @@
 }
 
 .dark {
-  --background: hsl(229 85% 5%);
+  --background: hsl(240, 14%, 7%);
   --foreground: hsl(210 40% 98%);
 
-  --card: hsl(223 48% 11%);
+  --card: hsl(240, 10%, 11%);
   --card-foreground: hsl(210 40% 98%);
 
   --popover: hsl(223 48% 11%);
   --popover-foreground: hsl(210 40% 98%);
 
-  --primary: hsl(221, 83%, 53%);
+  --primary: hsl(224, 76%, 48%);
   --primary-foreground: hsl(210 40% 98%);
 
   --secondary: hsl(223 48% 11%);

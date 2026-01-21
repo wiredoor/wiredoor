@@ -2,17 +2,20 @@ import React from "react";
 import { ActionFunction, createBrowserRouter, LoaderFunction, ShouldRevalidateFunction } from "react-router-dom";
 import { QueryClient } from "@tanstack/react-query";
 
-import { Guard, Middleware } from "@/app/middlewares/guard";
 import { LayoutTypes } from "@/app/layouts/types";
 import { AppAuthLayout } from "@/app/layouts/app-auth-layout";
 import { AppRootLayout } from "./layouts/app-root-layout";
+import { ProtectedRoute } from "./auth/protected-route";
+import { GuestRoute } from "./auth/guest-route";
+
+export type AuthGuard = "auth" | "guest";
 
 export type RouteModule = {
   default: React.ComponentType;
 
   // metadata
   layout?: LayoutTypes;
-  middleware?: Middleware[];
+  guards?: AuthGuard[];
 
   // data router (client-side)
   clientLoader?: (qc: QueryClient) => LoaderFunction;
@@ -29,10 +32,14 @@ export type RouteModule = {
 /**
  * Wrap element with guards
  */
-function withGuards(element: React.ReactElement, middleware: Middleware[] = []) {
-  if (!middleware.length) return element;
-
-  return <Guard middleware={middleware}>{element}</Guard>;
+function withGuard(element: React.ReactElement, guard: AuthGuard) {
+  if (guard === "auth") {
+    return <ProtectedRoute>{element}</ProtectedRoute>;
+  }
+  if (guard === "guest") {
+    return <GuestRoute>{element}</GuestRoute>;
+  }
+  return element;
 }
 
 /**
@@ -51,16 +58,16 @@ function withLayout(element: React.ReactElement, layout: LayoutTypes = "none") {
 /**
  * Middleware + Layout helper
  */
-function routePage(opts: { page: React.ReactElement; layout?: LayoutTypes; middleware?: Middleware[] }) {
-  const { page, middleware = [], layout = "none" } = opts;
+function routePage(opts: { page: React.ReactElement; layout?: LayoutTypes; guards?: AuthGuard[] }) {
+  const { page, guards = [], layout = "none" } = opts;
 
   const wrapped = withLayout(page, layout);
 
-  return withGuards(wrapped, middleware);
+  return guards.reduce((acc, guard) => withGuard(acc, guard), wrapped);
 }
 
 export const convert = (queryClient: QueryClient) => async (m: RouteModule) => {
-  const { default: Component, layout, middleware, clientLoader, clientAction, ErrorBoundary, handle, shouldRevalidate } = m;
+  const { default: Component, layout, guards, clientLoader, clientAction, ErrorBoundary, handle, shouldRevalidate } = m;
 
   return {
     handle,
@@ -68,7 +75,7 @@ export const convert = (queryClient: QueryClient) => async (m: RouteModule) => {
     loader: clientLoader?.(queryClient),
     action: clientAction?.(queryClient),
 
-    Component: () => routePage({ page: <Component />, layout, middleware }),
+    Component: () => routePage({ page: <Component />, layout, guards }),
 
     ErrorBoundary,
   };
@@ -87,7 +94,7 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
       },
       {
         path: "/",
-        element: <AppRootLayout />,
+        element: routePage({ page: <AppRootLayout />, layout: "none", guards: ["auth"] }),
         children: [
           {
             index: true,
@@ -103,7 +110,7 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
           },
           {
             path: "nodes",
-            lazy: () => import("@/app/pages/nodes").then(convert(queryClient)),
+            lazy: () => import("@/app/pages/remotes/remotes-page").then(convert(queryClient)),
           },
           {
             path: "settings",

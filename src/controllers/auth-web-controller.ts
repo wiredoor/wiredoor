@@ -12,10 +12,11 @@ import { Request, Response } from 'express';
 import { Inject, Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import rateLimit from 'express-rate-limit';
-import { AuthTokenHandler } from '../middlewares/auth-token-handler';
 import { SessionService } from '../services/sessions-service';
 import { UsersService } from '../services/users-service';
 import config from '../config';
+import { AuthWebHandler } from '../middlewares/auth-web-handler';
+import { User } from '../database/models/user';
 
 @Service()
 @JsonController('/auth/web')
@@ -32,24 +33,17 @@ export default class AuthWebController {
       max: 60,
       message: 'Rate Limit exceeded',
     }),
-    AuthTokenHandler,
+    AuthWebHandler,
   )
-  async me(
-    @Req() req: Request,
-    @Res() res: Response,
-  ): Promise<Response<{ user: { id: string; email: string } | null }>> {
-    const sid = (req as any).cookies?.sid;
-    if (!sid) return res.status(401).json({ user: null });
+  async me(@Req() req: Request): Promise<{ user: User | null }> {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedError();
+    }
 
-    const session = await this.sessionsService.getValidSessionBySid(sid);
-    if (!session) return res.status(401).json({ user: null });
-
-    const user = await this.usersService.findById(session.userId);
-    if (!user) return res.status(401).json({ user: null });
-
-    return res.json({
-      user: { id: user.id, email: user.email },
-    });
+    return {
+      user: req.user,
+    };
   }
 
   @Post('/login')
@@ -58,6 +52,7 @@ export default class AuthWebController {
       body: {
         username: Joi.string().required(),
         password: Joi.string().required(),
+        rememberMe: Joi.boolean().optional(),
       },
     }),
     rateLimit({
@@ -96,7 +91,10 @@ export default class AuthWebController {
       maxAge: 1000 * 60 * 60 * 24 * 30,
     });
 
-    return res.json({ id: user.id, name: user.name, email: user.email });
+    return res.json({
+      user: { id: user.id, name: user.name, email: user.email },
+      mustChangePassword: user.mustChangePassword,
+    });
   }
 
   @Post('/logout')

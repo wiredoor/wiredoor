@@ -5,7 +5,10 @@ import {
   Index,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from './user';
 
 @Entity('sessions')
 export class Session {
@@ -40,6 +43,10 @@ export class Session {
 
   @Column({ name: 'device_id', type: 'text', nullable: true })
   deviceId!: string | null;
+
+  @ManyToOne(() => User, { eager: false })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

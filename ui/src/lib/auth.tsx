@@ -1,83 +1,89 @@
-import { configureAuth } from "react-query-auth";
-import { Navigate, useLocation } from "react-router";
-import { z } from "zod";
-
-import { AuthResponse, User } from "@/types/api";
+import { useQuery, useMutation, useQueryClient, QueryKey } from "@tanstack/react-query";
 
 import axios from "./axios";
 
-// api call definitions for auth (types, schemas, requests):
-// these are not part of features as this is a module shared across features
-
-const getUser = async (): Promise<User> => {
-  const response = await axios.get("/auth/me");
-
-  return response.data;
+export type User = {
+  id: number;
+  email: string;
+  name: string;
 };
 
-const logout = (): Promise<void> => {
-  return axios.post("/auth/logout");
-};
+type LoginInput = { username: string; password: string; rememberMe?: boolean };
+type MeResponse = { user: User; mustChangePassword?: boolean; requireOtp?: boolean };
+type LoginResponse = { user: User };
+type LogoutResponse = { ok: true };
 
-export const loginInputSchema = z.object({
-  email: z.string().min(1, "Required").email("Invalid email"),
-  password: z.string().min(5, "Required"),
-});
+const authUserKey: QueryKey = ["auth", "user"];
 
-export type LoginInput = z.infer<typeof loginInputSchema>;
-const loginWithEmailAndPassword = (data: LoginInput): Promise<AuthResponse> => {
-  return axios.post("/auth/login", data);
-};
+export function useUserQuery() {
+  return useQuery({
+    queryKey: authUserKey,
+    queryFn: getUser,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error: any) => {
+      const status = error?.status ?? error?.response?.status;
+      if (status === 401) return false;
+      return failureCount < 2;
+    },
+  });
+}
 
-export const setupInputSchema = z
-  .object({
-    email: z.string().min(1, "Required"),
-    firstName: z.string().min(1, "Required"),
-    lastName: z.string().min(1, "Required"),
-    password: z.string().min(5, "Required"),
-  })
-  .and(
-    z
-      .object({
-        teamId: z.string().min(1, "Required"),
-        teamName: z.null().default(null),
-      })
-      .or(
-        z.object({
-          teamName: z.string().min(1, "Required"),
-          teamId: z.null().default(null),
-        }),
-      ),
-  );
-
-export type SetupInput = z.infer<typeof setupInputSchema>;
-
-const registerWithEmailAndPassword = (data: SetupInput): Promise<AuthResponse> => {
-  return axios.post("/auth/setup", data);
-};
-
-const authConfig = {
-  userFn: getUser,
-  loginFn: async (data: LoginInput) => {
-    const response = await loginWithEmailAndPassword(data);
-    return response.user;
-  },
-  registerFn: async (data: SetupInput) => {
-    const response = await registerWithEmailAndPassword(data);
-    return response.user;
-  },
-  logoutFn: logout,
-};
-
-export const { useUser, useLogin, useLogout, useRegister, AuthLoader } = configureAuth(authConfig);
-
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const user = useUser();
-  const location = useLocation();
-
-  if (!user.data) {
-    return <Navigate to={`/login?redirect=${location.pathname}`} replace />;
+async function getUser(): Promise<MeResponse | null> {
+  try {
+    const { data } = await axios.get<MeResponse>("/api/auth/web/me");
+    return data || null;
+  } catch (err: any) {
+    if (err.response?.status === 401) {
+      return null;
+    }
+    throw err;
   }
+}
 
-  return children;
-};
+async function loginWithEmailAndPassword(credentials: LoginInput): Promise<User> {
+  const { data } = await axios.post<LoginResponse>("/api/auth/web/login", credentials);
+  return data.user;
+}
+
+async function postLogout(): Promise<void> {
+  await axios.post<LogoutResponse>("/api/auth/web/logout");
+}
+
+export function useAuth() {
+  const qc = useQueryClient();
+  const me = useUserQuery();
+
+  const user = me.data?.user ?? null;
+  const isLoading = me.isLoading;
+
+  const login = useMutation({
+    mutationFn: loginWithEmailAndPassword,
+    onSuccess: (u) => {
+      qc.setQueryData(authUserKey, { user: u });
+    },
+  });
+
+  const logout = useMutation({
+    mutationFn: postLogout,
+    onSuccess: () => {
+      qc.setQueryData(authUserKey, { user: null });
+    },
+  });
+
+  return {
+    user,
+    isLoading,
+    // flags para tus flows
+    mustChangePassword: !!me.data?.mustChangePassword,
+    requireOtp: !!me.data?.requireOtp,
+
+    login: login.mutateAsync,
+    logout: logout.mutateAsync,
+
+    // estados útiles
+    loginState: login,
+    logoutState: logout,
+    refetchMe: me.refetch,
+  };
+}

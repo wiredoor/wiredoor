@@ -1,6 +1,7 @@
 import express from 'express';
 // import bodyParser from 'body-parser';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import { Container } from 'typedi';
 import { Action, useContainer, useExpressServer } from 'routing-controllers';
 import AuthController from '../controllers/auth-controller';
@@ -20,6 +21,7 @@ export default ({ app }: { app: express.Application }): void => {
     errorHandler: errorHandlerMiddleware,
   });
 
+  app.use(cookieParser());
   app.use(middleware);
   app.use(compression());
 

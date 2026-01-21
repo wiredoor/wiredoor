@@ -3,6 +3,7 @@ export * from "./inline";
 export * from "./stack";
 export * from "./surface";
 export * from "./text";
+export * from "./icon";
 export * from "./grid";
 export * from "./grid-item";
 export * from "./background";

@@ -2,15 +2,15 @@ import { Container } from "@/components/foundations";
 import { PageHeader } from "@/app/layouts/partials/page-header";
 import { PageContent } from "@/app/layouts/partials/page-content";
 
-export default function TcpServicesPage() {
+export default function RemotesPage() {
   return (
     <PageContent
       constrain={false}
       header={
         <PageHeader
           container="xl"
-          title="Network Services (TCP/UDP)"
-          description="Provides port-based TCP and UDP traffic routing with encrypted transport, access controls, and flexible upstream targeting for services running across private and public environments."
+          title="Remote nodes"
+          description="Securely connects private environments using managed remote agents and gateways, enabling encrypted traffic routing and controlled access to isolated services."
         />
       }
     >

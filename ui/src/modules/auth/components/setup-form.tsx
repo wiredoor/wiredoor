@@ -7,7 +7,6 @@ import { PasswordField, TextField } from "@/components/compound/form";
 import { useForm } from "@/hooks/use-form";
 import { FieldValues } from "react-hook-form";
 import { z } from "zod";
-import { useAuthStore } from "@/stores/auth-store";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@/components/ui/alert";
 
@@ -18,7 +17,6 @@ export function SetupForm() {
   }
 
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
 
   const form = useForm<{
     email: string;
@@ -37,7 +35,6 @@ export function SetupForm() {
     }),
     onSubmit: async function (values: FieldValues): Promise<any> {
       console.log("LoginForm submitted:", values);
-      await login(values.email, values.password);
       navigate("/");
     },
     onError: (errors) => {

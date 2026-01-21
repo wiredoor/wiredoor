@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Inline } from "@/components/foundations";
+import { useAuth } from "@/lib/auth";
 
 export type UserMenuUser = {
   name: string;
@@ -21,8 +22,6 @@ export type UserMenuUser = {
 };
 
 export type UserMenuProps = {
-  user: UserMenuUser;
-
   profileHref?: string;
   settingsHref?: string;
   teamHref?: string;
@@ -30,7 +29,6 @@ export type UserMenuProps = {
 
   onLogout?: () => void;
 
-  /** Optional "Upgrade" CTA in menu */
   showUpgrade?: boolean;
   upgradeHref?: string;
 };
@@ -41,7 +39,6 @@ function initials(name: string) {
 }
 
 export function UserMenu({
-  user,
   profileHref = "/account",
   settingsHref = "/settings",
   teamHref = "/team",
@@ -50,6 +47,9 @@ export function UserMenu({
   showUpgrade = false,
   upgradeHref = "/billing?upgrade=1",
 }: UserMenuProps) {
+  const auth = useAuth();
+  const user = auth.user!;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -122,7 +122,9 @@ export function UserMenu({
           onSelect={(e) => {
             if (!onLogout) return;
             e.preventDefault();
-            onLogout();
+            auth.logout().then(() => {
+              onLogout();
+            });
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />

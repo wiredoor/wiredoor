@@ -90,7 +90,8 @@ export function AppSidebar({ brand, navItems, activeMatchMode = "prefix", sideba
   const topLevelButtonClass = cn(
     "relative h-10",
     "hover:bg-primary/10",
-    "data-[state=open]:hover:bg-primary/10 data-[state=open]:hover:text-sidebar-accent-foreground",
+    "active:bg-primary/40 active:text-primary",
+    "data-[state=open]:hover:bg-primary/10 data-[state=open]:hover:text-primary",
     "data-[active=true]:bg-primary/20 data-[active=true]:text-primary font-semibold transition-colors",
     "data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:font-semibold",
     "data-[active=true]:before:h-6 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary",
@@ -99,6 +100,8 @@ export function AppSidebar({ brand, navItems, activeMatchMode = "prefix", sideba
   const subButtonClass = cn(
     "relative h-9",
     "hover:bg-primary/10",
+    "active:bg-primary/40 active:text-primary",
+    "data-[state=open]:hover:bg-primary/10 data-[state=open]:hover:text-primary",
     "data-[active=true]:bg-primary/20 data-[active=true]:text-primary font-semibold transition-colors",
     "data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:font-semibold",
     "data-[active=true]:before:h-6 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary/80",

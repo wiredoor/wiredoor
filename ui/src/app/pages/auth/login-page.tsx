@@ -1,8 +1,8 @@
-import guest from "@/app/middlewares/guest";
 import { LoginForm } from "@/modules/auth/components/login-form";
+import { AuthGuard } from "../../router";
 
 export const layout = "auth";
-export const middleware = [guest];
+export const guards: AuthGuard[] = ["guest"];
 
 export default function LoginPage() {
   return <LoginForm />;

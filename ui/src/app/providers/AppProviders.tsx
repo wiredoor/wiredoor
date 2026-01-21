@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
 import { queryConfig } from "@/lib/react-query";
 import { MainErrorFallback } from "@/components/errors/main";
+import { DialogHost } from "@/components/compound/dialogs";
 
 // - Theme provider (dark/light/system)
 // - React Query provider + config
@@ -31,6 +32,7 @@ export function AppProviders({ children }: Props) {
           {/* {import.meta.env.DEV && <ReactQueryDevtools />} */}
           <AppBootstrap />
           <Toaster position="top-right" richColors />
+          <DialogHost />
           {children}
         </QueryClientProvider>
       </ThemeProvider>

@@ -35,11 +35,6 @@ const navItems: NavItem[] = [
 ];
 
 export function AppRootLayout() {
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-  };
-
   const onLogout = () => {
     console.log("Logout clicked");
   };
@@ -53,7 +48,7 @@ export function AppRootLayout() {
             <div className="flex items-center gap-1">
               <ThemeToggle />
               <HelpMenu />
-              <UserMenu user={user} onLogout={onLogout} showUpgrade />
+              <UserMenu onLogout={onLogout} showUpgrade />
             </div>
           }
         />

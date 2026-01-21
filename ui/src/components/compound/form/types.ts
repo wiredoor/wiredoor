@@ -1,4 +1,4 @@
-import { useForm } from "@ui/hooks/use-form";
+import { useForm } from "@/hooks/use-form";
 import { ControllerRenderProps, FieldValues, Path } from "react-hook-form";
 
 export type A11y = {

@@ -3,22 +3,24 @@ import * as React from "react";
 import { Stack } from "@/components/foundations";
 import { Link } from "@/components/foundations/link";
 import { Button } from "@/components/ui/button";
-import { PasswordField, TextField } from "@/components/compound/form";
+import { CheckboxRow, PasswordField, TextField } from "@/components/compound/form";
 import { useForm } from "@/hooks/use-form";
 import { FieldValues } from "react-hook-form";
 import { z } from "zod";
-import { useAuthStore } from "@/stores/auth-store";
 import { useNavigate } from "react-router-dom";
 import { Alert } from "@/components/ui/alert";
+import { useAuth } from "../../../lib/auth";
+import { openForgotPasswordDialog } from "./forgot-password-dialog";
 
 export function LoginForm() {
-  function forgotPassword(e: React.MouseEvent) {
+  const auth = useAuth();
+  async function forgotPassword(e: React.MouseEvent) {
     e.preventDefault();
-    alert("Forgot password clicked!");
+
+    openForgotPasswordDialog({ username: form.getValues("email") });
   }
 
   const navigate = useNavigate();
-  const login = useAuthStore((s) => s.login);
 
   const form = useForm<{
     email: string;
@@ -36,8 +38,11 @@ export function LoginForm() {
       rememberMe: z.boolean().optional(),
     }),
     onSubmit: async function (values: FieldValues): Promise<any> {
-      console.log("LoginForm submitted:", values);
-      await login(values.email, values.password);
+      await auth.login({
+        username: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe || false,
+      });
       navigate("/");
     },
     onError: (errors) => {
@@ -75,7 +80,7 @@ export function LoginForm() {
           />
         ) : null}
 
-        {/* <CheckboxRow form={form} rowLabel="Remember me on this device" name="rememberMe" labelClassName="text-sm font-medium" /> */}
+        <CheckboxRow form={form} rowLabel="Remember me on this device" name="rememberMe" labelClassName="text-sm font-medium" />
 
         <Button
           type="submit"

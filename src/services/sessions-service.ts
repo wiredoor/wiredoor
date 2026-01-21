@@ -1,11 +1,16 @@
-import { Service } from 'typedi';
+import { Inject, Service } from 'typedi';
 import { randomBytes, createHash } from 'crypto';
 import { Session } from '../database/models/session';
 import { SessionRepository } from '../repositories/session-repository';
+import { UserRepository } from '../repositories/user-repository';
+import { User } from '../database/models/user';
 
 @Service()
 export class SessionService {
-  constructor(private readonly sessionRepository: SessionRepository) {}
+  constructor(
+    @Inject() private readonly sessionRepository: SessionRepository,
+    @Inject() private readonly usersRepository: UserRepository,
+  ) {}
 
   createSid(): string {
     return randomBytes(32).toString('base64url');
@@ -43,25 +48,48 @@ export class SessionService {
     return { sid, session };
   }
 
-  async getValidSessionBySid(sid: string): Promise<Session | null> {
+  async getValidSessionBySid(
+    sid: string,
+  ): Promise<{ session: Partial<Session>; user: User } | null> {
     const sidHash = this.hashSid(sid);
 
-    const session = await this.sessionRepository.findOne({
-      where: { sidHash },
-    });
-    if (!session) return null;
+    const row = await this.sessionRepository
+      .createQueryBuilder('s')
+      .innerJoinAndSelect('s.user', 'u')
+      .where('s.sidHash = :sidHash', { sidHash })
+      .andWhere('s.revokedAt IS NULL')
+      .andWhere(`s.expiresAt > datetime('now')`)
+      .andWhere('u.active = 1')
+      .select([
+        's.id',
+        's.userId',
+        's.expiresAt',
+        's.revokedAt',
+        's.lastSeenAt',
+        'u.id',
+        'u.email',
+        'u.name',
+        'u.active',
+        'u.isAdmin',
+        'u.totpEnabled',
+        'u.mustChangePassword',
+      ])
+      .getOne();
 
-    if (session.revokedAt) {
-      await this.sessionRepository.delete({ id: session.id });
+    if (!row) return null;
+
+    if (row.revokedAt) {
+      await this.sessionRepository.delete({ id: row.id });
       return null;
     }
-    if (session.expiresAt.getTime() <= Date.now()) return null;
+    if (row.expiresAt.getTime() <= Date.now()) return null;
 
-    // sliding session: actualiza lastSeen
-    session.lastSeenAt = new Date();
-    await this.sessionRepository.save(session);
+    row.lastSeenAt = new Date();
+    await this.sessionRepository.save(row);
 
-    return session;
+    const { user, ...sessionData } = row;
+
+    return { session: sessionData, user: user };
   }
 
   async revokeSessionBySid(sid: string): Promise<void> {
