@@ -63,15 +63,15 @@ export function FormField<T extends FieldValues>({
     <>
       {title ? <FieldTitle>{title}</FieldTitle> : null}
 
-      <Inline justify='between' align='center'>
-        {label ? (
+      {label || helper ? (
+        <Inline justify='between' align='center'>
           <FieldLabel htmlFor={id}>
             {label}
             {required ? <span aria-hidden='true'> *</span> : null}
           </FieldLabel>
-        ) : null}
-        {helper ? helper : null}
-      </Inline>
+          {helper ? helper : null}
+        </Inline>
+      ) : null}
 
       {description ? <FieldDescription id={descriptionId}>{description}</FieldDescription> : null}
 

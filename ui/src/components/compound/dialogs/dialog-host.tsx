@@ -2,13 +2,10 @@ import * as React from 'react';
 import { dialogStore, type DialogSpec, type DialogSize } from './dialog-store';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-// shadcn dialog primitives (ajusta el import si tu path difiere)
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 import { Button } from '@/components/ui';
-
-// foundations (ajusta si tus paths difieren)
-import { Stack, Surface, Text } from '@/components/foundations';
+import { Stack, Text } from '@/components/foundations';
 
 // form
 import { useForm } from 'react-hook-form';
@@ -61,8 +58,8 @@ export function DialogHost() {
           }
         }}
       >
-        <Surface className='p-6'>
-          <Stack gap={4}>
+        <div className='p-6'>
+          <Stack gap={4} className='m-2'>
             <DialogHeader>
               <DialogTitle>{current.title}</DialogTitle>
               {current.description ? <DialogDescription>{current.description}</DialogDescription> : null}
@@ -78,7 +75,7 @@ export function DialogHost() {
               <CustomBody spec={current} busy={busy} />
             )}
           </Stack>
-        </Surface>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -110,7 +107,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
 
   return (
     <>
-      <div className='max-h-[65vh] overflow-auto pr-2'>
+      <div className='max-h-[65vh] overflow-auto p-2'>
         {spec.render({
           busy,
           setBusy: (b) => dialogStore.setBusy(b),
@@ -243,7 +240,7 @@ function FormBody({ spec }: { spec: Extract<DialogSpec, { type: 'form' }>; busy:
     <>
       <Stack gap={4}>
         {/* Body scroll area */}
-        <div className='max-h-[65vh] overflow-auto pr-2'>{spec.render({ form })}</div>
+        <div className='max-h-[65vh] overflow-auto p-2'>{spec.render({ form })}</div>
 
         {form.formState.errors && Object.keys(form.formState.errors).length > 0 ? (
           <Text variant='body-sm' className='text-destructive'>

@@ -159,8 +159,14 @@ export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
                 </Button>
 
                 {filesArray.length > 0 ? (
-                  <Button type='button' variant='ghost' onClick={clearAll} disabled={isDisabled} className='gap-2'>
-                    <X className='size-4 opacity-70' />
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    onClick={clearAll}
+                    disabled={isDisabled}
+                    className='gap-2'
+                    leadingIcon={<X className='size-4 opacity-70' />}
+                  >
                     Clear
                   </Button>
                 ) : null}
@@ -178,18 +184,16 @@ export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
                         <div className='text-muted-foreground text-xs'>{formatBytes(f.size)}</div>
                       </div>
 
-                      {multiple ? (
-                        <Button
-                          type='button'
-                          variant='ghost'
-                          size='icon'
-                          disabled={isDisabled}
-                          onClick={() => removeAt(idx)}
-                          aria-label={`Remove ${f.name}`}
-                        >
-                          <X className='size-4 opacity-70' />
-                        </Button>
-                      ) : null}
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='icon'
+                        disabled={isDisabled}
+                        onClick={() => (multiple ? removeAt(idx) : clearAll())}
+                        aria-label={`Remove ${f.name}`}
+                      >
+                        <X className='size-4 opacity-70' />
+                      </Button>
                     </div>
                   ))}
                 </div>

@@ -74,7 +74,7 @@ export function DataTableToolbar<TValues extends FieldValues>({
   const canClear = showClear && !(hideClearWhenPristine && isPristine);
 
   return (
-    <FormProvider {...form}>
+    <FormProvider {...form} handleSubmit={() => form.handleSubmit}>
       <Inline className={['px-4 py-3 border-b bg-muted/30 rounded-lg justify-between', className ?? ''].join(' ')}>
         <Inline className='items-center gap-2 flex-wrap'>
           {isRenderProp<ReturnType<typeof useForm<TValues>>>(children) ? children(form) : children}
