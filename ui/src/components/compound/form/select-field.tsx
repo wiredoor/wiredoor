@@ -1,9 +1,9 @@
-import * as React from "react";
-import { type FieldValues } from "react-hook-form";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui";
+import * as React from 'react';
+import { type FieldValues } from 'react-hook-form';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
 
-import { FormFieldProps } from "./types";
-import { FormField } from "./form-field";
+import { FormFieldProps } from './types';
+import { FormField } from './form-field';
 
 export type SelectOption<V extends string = string> = {
   value: V;
@@ -11,23 +11,23 @@ export type SelectOption<V extends string = string> = {
   disabled?: boolean;
 };
 
-export type SelectFieldProps<T extends FieldValues, V extends string = string> = Omit<FormFieldProps<T>, "children"> & {
+export type SelectFieldProps<T extends FieldValues, V extends string = string> = Omit<FormFieldProps<T>, 'children'> & {
   options: Array<SelectOption<V>>;
   placeholder?: string;
 
   parseValue?: (v: string) => any;
   formatValue?: (v: any) => string | undefined;
 
-  triggerProps?: Omit<React.ComponentProps<typeof SelectTrigger>, "id" | "disabled" | "aria-invalid" | "aria-describedby">;
+  triggerProps?: Omit<React.ComponentProps<typeof SelectTrigger>, 'id' | 'disabled' | 'aria-invalid' | 'aria-describedby'>;
 
-  contentProps?: Omit<React.ComponentProps<typeof SelectContent>, "children">;
+  contentProps?: Omit<React.ComponentProps<typeof SelectContent>, 'children'>;
 };
 
 export function SelectField<T extends FieldValues, V extends string = string>({
   options,
-  placeholder = "Select an option",
+  placeholder = 'Select an option',
   parseValue = (v) => v,
-  formatValue = (v) => (v == null || v === "" ? undefined : String(v)),
+  formatValue = (v) => (v == null || v === '' ? undefined : String(v)),
   triggerProps,
   contentProps,
   ...shell
@@ -41,14 +41,14 @@ export function SelectField<T extends FieldValues, V extends string = string>({
               {...triggerProps}
               id={a11y.id}
               disabled={a11y.disabled}
-              aria-invalid={a11y["aria-invalid"]}
-              aria-describedby={a11y["aria-describedby"]}
+              aria-invalid={a11y['aria-invalid']}
+              aria-describedby={a11y['aria-describedby']}
               onBlur={(e) => {
                 triggerProps?.onBlur?.(e as any);
                 field.onBlur();
               }}
               ref={field.ref as any}
-              className="w-full"
+              className='w-full'
             >
               <SelectValue placeholder={placeholder} />
             </SelectTrigger>

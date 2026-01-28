@@ -1,5 +1,5 @@
-import * as React from "react";
-import { icons } from "./registry";
+import * as React from 'react';
+import { icons } from './registry';
 
 export type IconRendererProps = {
   size?: number;
@@ -18,15 +18,15 @@ export type IconProps = React.HTMLAttributes<HTMLSpanElement> & {
   strokeWidth?: number;
 
   title?: string;
-  "aria-label"?: string;
+  'aria-label'?: string;
 
   decorative?: boolean;
 };
 
-export type IconName = keyof typeof import("./registry").icons;
+export type IconName = keyof typeof import('./registry').icons;
 
 export function Icon(props: IconProps) {
-  const { name, size = 18, strokeWidth = 2, className, title, decorative = true, "aria-label": ariaLabel, ...spanProps } = props;
+  const { name, size = 18, strokeWidth = 2, className, title, decorative = true, 'aria-label': ariaLabel, ...spanProps } = props;
 
   const Renderer = icons[name];
 
@@ -35,7 +35,7 @@ export function Icon(props: IconProps) {
   return (
     <span
       {...spanProps}
-      role={isAccessible ? "img" : undefined}
+      role={isAccessible ? 'img' : undefined}
       aria-label={isAccessible ? ariaLabel : undefined}
       aria-hidden={!isAccessible ? true : undefined}
     >

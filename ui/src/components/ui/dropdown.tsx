@@ -1,6 +1,6 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 import {
   DropdownMenu as Root,
@@ -15,22 +15,22 @@ import {
   DropdownMenuSubContent,
   DropdownMenuPortal,
   DropdownMenuShortcut,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
-export type DropdownVariant = "default" | "destructive";
+export type DropdownVariant = 'default' | 'destructive';
 
 export type DropdownNode =
   | {
-      type: "label";
+      type: 'label';
       label: React.ReactNode;
       className?: string;
     }
   | {
-      type: "separator";
+      type: 'separator';
       className?: string;
     }
   | {
-      type: "item";
+      type: 'item';
       label: React.ReactNode;
       variant?: DropdownVariant;
       disabled?: boolean;
@@ -41,13 +41,13 @@ export type DropdownNode =
       onAction?: () => void;
     }
   | {
-      type: "group";
+      type: 'group';
       label?: React.ReactNode;
       className?: string;
       children: DropdownNode[];
     }
   | {
-      type: "sub";
+      type: 'sub';
       label: React.ReactNode;
       className?: string;
       children: DropdownNode[];
@@ -68,20 +68,20 @@ export type DropdownProps = {
   items: DropdownNode[];
   classNames?: DropdownSlots;
   contentProps?: React.ComponentProps<typeof DropdownMenuContent>;
-  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
-  triggerSize?: React.ComponentProps<typeof Button>["size"];
+  triggerVariant?: React.ComponentProps<typeof Button>['variant'];
+  triggerSize?: React.ComponentProps<typeof Button>['size'];
 };
 
 function getVariantClass(variant?: DropdownVariant) {
-  if (variant === "destructive") {
-    return "text-destructive data-[highlighted]:bg-destructive/10";
+  if (variant === 'destructive') {
+    return 'text-destructive data-[highlighted]:bg-destructive/10';
   }
-  return "";
+  return '';
 }
 
-export function Dropdown({ trigger = "Open", items, classNames, contentProps, triggerVariant = "outline", triggerSize = "default" }: DropdownProps) {
+export function Dropdown({ trigger = 'Open', items, classNames, contentProps, triggerVariant = 'outline', triggerSize = 'default' }: DropdownProps) {
   const triggerNode =
-    typeof trigger === "string" ? (
+    typeof trigger === 'string' ? (
       <Button variant={triggerVariant} size={triggerSize}>
         {trigger}
       </Button>
@@ -93,7 +93,7 @@ export function Dropdown({ trigger = "Open", items, classNames, contentProps, tr
     <Root>
       <DropdownMenuTrigger asChild>{triggerNode}</DropdownMenuTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuContent align="start" sideOffset={8} {...contentProps} className={cn("min-w-56", classNames?.content, contentProps?.className)}>
+        <DropdownMenuContent align='start' sideOffset={8} {...contentProps} className={cn('min-w-56', classNames?.content, contentProps?.className)}>
           {renderNodes(items, classNames)}
         </DropdownMenuContent>
       </DropdownMenuPortal>
@@ -107,19 +107,19 @@ function renderNodes(nodes: DropdownNode[], slots?: DropdownSlots): React.ReactN
 
 function renderNode(node: DropdownNode, key: React.Key, slots?: DropdownSlots): React.ReactNode {
   switch (node.type) {
-    case "label":
+    case 'label':
       return (
         <DropdownMenuLabel key={key} className={cn(slots?.label, node.className)}>
           {node.label}
         </DropdownMenuLabel>
       );
 
-    case "separator":
+    case 'separator':
       return <DropdownMenuSeparator key={key} className={cn(slots?.separator, node.className)} />;
 
-    case "item": {
+    case 'item': {
       const vcls = getVariantClass(node.variant);
-      const inset: string = node.inset ? "pl-8" : "";
+      const inset: string = node.inset ? 'pl-8' : '';
       return (
         <ItemBase
           key={key}
@@ -136,21 +136,21 @@ function renderNode(node: DropdownNode, key: React.Key, slots?: DropdownSlots): 
       );
     }
 
-    case "group": {
+    case 'group': {
       const content = (
         <>
-          {node.label && <DropdownMenuLabel className={cn("pt-1", slots?.label)}>{node.label}</DropdownMenuLabel>}
+          {node.label && <DropdownMenuLabel className={cn('pt-1', slots?.label)}>{node.label}</DropdownMenuLabel>}
           {renderNodes(node.children, slots)}
         </>
       );
       return (
-        <DropdownMenuGroup key={key} className={cn("grid gap-0.5", slots?.group, node.className)}>
+        <DropdownMenuGroup key={key} className={cn('grid gap-0.5', slots?.group, node.className)}>
           {content}
         </DropdownMenuGroup>
       );
     }
 
-    case "sub":
+    case 'sub':
       return (
         <DropdownMenuSub key={key}>
           <DropdownMenuSubTrigger className={cn(slots?.subTrigger, node.className)}>{node.label}</DropdownMenuSubTrigger>

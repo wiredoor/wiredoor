@@ -1,19 +1,19 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { Stack } from "@/components/foundations";
-import { Link } from "@/components/foundations/link";
-import { Button } from "@/components/ui/button";
-import { PasswordField, TextField } from "@/components/compound/form";
-import { useForm } from "@/hooks/use-form";
-import { FieldValues } from "react-hook-form";
-import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-import { Alert } from "@/components/ui/alert";
+import { Stack } from '@/components/foundations';
+import { Link } from '@/components/foundations/link';
+import { Button } from '@/components/ui/button';
+import { PasswordField, TextField } from '@/components/compound/form';
+import { useForm } from '@/hooks/use-form';
+import { FieldValues } from 'react-hook-form';
+import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { Alert } from '@/components/ui/alert';
 
 export function SetupForm() {
   function forgotPassword(e: React.MouseEvent) {
     e.preventDefault();
-    alert("Forgot password clicked!");
+    alert('Forgot password clicked!');
   }
 
   const navigate = useNavigate();
@@ -23,39 +23,39 @@ export function SetupForm() {
     password: string;
     rememberMe?: boolean;
   }>({
-    mode: "onSubmit",
+    mode: 'onSubmit',
     schema: z.object({
-      email: z.email("Invalid email address"),
+      email: z.email('Invalid email address'),
       password: z
         .string()
-        .min(8, "Password must be at least 8 characters")
-        .regex(/[A-Z]/, "Password must contain an uppercase letter")
-        .regex(/[0-9]/, "Password must contain a number"),
+        .min(8, 'Password must be at least 8 characters')
+        .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+        .regex(/[0-9]/, 'Password must contain a number'),
       rememberMe: z.boolean().optional(),
     }),
     onSubmit: async function (values: FieldValues): Promise<any> {
-      console.log("LoginForm submitted:", values);
-      navigate("/");
+      console.log('LoginForm submitted:', values);
+      navigate('/');
     },
     onError: (errors) => {
-      console.log("LoginForm errors:", errors);
-      form.setError("root", { message: "Invalid credentials." });
+      console.log('LoginForm errors:', errors);
+      form.setError('root', { message: 'Invalid credentials.' });
     },
   });
 
   return (
     <form onSubmit={form.handleSubmit} noValidate>
       <Stack gap={8}>
-        <TextField form={form} label="Email" name="email" placeholder="you@example.com" autoFocus autoComplete="email" inputMode="email" />
+        <TextField form={form} label='Email' name='email' placeholder='you@example.com' autoFocus autoComplete='email' inputMode='email' />
 
         <PasswordField
           form={form}
-          label="Password"
-          name="password"
-          placeholder="••••••••••••"
-          autoComplete="current-password"
+          label='Password'
+          name='password'
+          placeholder='••••••••••••'
+          autoComplete='current-password'
           helper={
-            <Link className="font-semibold" underline={"none"} onClick={(e) => forgotPassword(e)}>
+            <Link className='font-semibold' underline={'none'} onClick={(e) => forgotPassword(e)}>
               Forgot password?
             </Link>
           }
@@ -63,11 +63,11 @@ export function SetupForm() {
 
         {form.formState.errors.root?.message ? (
           <Alert
-            title="Ops!"
+            title='Ops!'
             description={form.formState.errors.root?.message}
-            variant="destructive"
+            variant='destructive'
             dismissible={true}
-            onClose={() => form.clearErrors("root")}
+            onClose={() => form.clearErrors('root')}
             icon
           />
         ) : null}
@@ -75,9 +75,9 @@ export function SetupForm() {
         {/* <CheckboxRow form={form} rowLabel="Remember me on this device" name="rememberMe" labelClassName="text-sm font-medium" /> */}
 
         <Button
-          type="submit"
-          className="w-full"
-          loadingText="submitting..."
+          type='submit'
+          className='w-full'
+          loadingText='submitting...'
           isLoading={form.formState.isSubmitting}
           disabled={!form.formState.isValid}
         >

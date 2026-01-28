@@ -1,5 +1,5 @@
-import { useForm } from "@/hooks/use-form";
-import { ControllerRenderProps, FieldValues, Path } from "react-hook-form";
+import { useForm } from '@/hooks/use-form';
+import { ControllerRenderProps, FieldValues, Path } from 'react-hook-form';
 
 export type A11y = {
   id: string;
@@ -13,8 +13,8 @@ export type ControlA11y = {
   id: string;
   name?: string;
   disabled?: boolean;
-  "aria-invalid"?: boolean;
-  "aria-describedby"?: string;
+  'aria-invalid'?: boolean;
+  'aria-describedby'?: string;
 };
 
 export type FormFieldCtx<T extends FieldValues = FieldValues> = {
@@ -46,7 +46,7 @@ export type FormFieldProps<T extends FieldValues> = React.HTMLAttributes<HTMLDiv
 };
 
 export type RegisterRenderArgs<T extends FieldValues> = {
-  reg: ReturnType<FormFieldCtx<T>["form"]["register"]>;
+  reg: ReturnType<FormFieldCtx<T>['form']['register']>;
   a11y: ControlA11y;
 };
 

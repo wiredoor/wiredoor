@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import axios from "@/lib/axios";
+import { create } from 'zustand';
+import axios from '@/lib/axios';
 
 export interface ServerConfig {
   VPN_HOST: string;
@@ -20,7 +20,7 @@ type ConfigState = {
 };
 
 const EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour (ms)
-const STORAGE_KEY = "config";
+const STORAGE_KEY = 'config';
 
 /* ---------------- helpers ---------------- */
 
@@ -63,7 +63,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
     }
 
     try {
-      const { data } = await axios.get<ServerConfig>("/api/config");
+      const { data } = await axios.get<ServerConfig>('/api/config');
 
       const now = Date.now();
 
@@ -77,7 +77,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
         lastFetched: now,
       });
     } catch (error) {
-      console.error("Failed to load config:", error);
+      console.error('Failed to load config:', error);
     }
   },
 }));

@@ -1,5 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import * as React from "react";
+import * as React from 'react';
+import { Inline, Stack } from '@/components/foundations';
+
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
+
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export type Id = string | number;
 
@@ -20,15 +32,17 @@ export type DataTableFetcher<RowT> = (params: FetchParams) => Promise<FetchResul
 
 export type Unsubscribe = () => void;
 
+const pageSizeOptions = [10, 20, 30, 50, 100];
+
 /**
  * streaming updates / live data and exposes an emit function to push updates `emit(rows)`.
  */
 export type StreamEvent<RowT> =
-  | { type: "patch"; id: Id; patch: Partial<RowT> }
-  | { type: "upsert"; row: RowT }
-  | { type: "remove"; id: Id }
-  | { type: "batchPatch"; patches: Array<{ id: Id; patch: Partial<RowT> }> }
-  | { type: "replace"; rows: RowT[] };
+  | { type: 'patch'; id: Id; patch: Partial<RowT> }
+  | { type: 'upsert'; row: RowT }
+  | { type: 'remove'; id: Id }
+  | { type: 'batchPatch'; patches: Array<{ id: Id; patch: Partial<RowT> }> }
+  | { type: 'replace'; rows: RowT[] };
 
 export type DataTableSubscribe<RowT> = (
   ctx: FetchParams,
@@ -183,13 +197,13 @@ export function applyPatch<RowT extends object>(prev: RowT[], id: Id, patch: Par
 /*
  * Upsert a row into the array, preserving references when shallowly equal.
  */
-export function upsertRow<RowT extends object>(prev: RowT[], row: RowT, getRowId: (row: RowT) => Id, opts?: { position?: "start" | "end" }): RowT[] {
+export function upsertRow<RowT extends object>(prev: RowT[], row: RowT, getRowId: (row: RowT) => Id, opts?: { position?: 'start' | 'end' }): RowT[] {
   const id = getRowId(row);
   const idx = prev.findIndex((r) => getRowId(r) === id);
 
   // Insert
   if (idx === -1) {
-    if (opts?.position === "start") return [row, ...prev];
+    if (opts?.position === 'start') return [row, ...prev];
     return [...prev, row];
   }
 
@@ -231,6 +245,30 @@ function applyBatchPatch<RowT extends object>(prev: RowT[], patches: Array<{ id:
   return changed ? next : prev;
 }
 
+function getPaginationRange(current: number, total: number) {
+  const items: Array<number | 'ellipsis'> = [];
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) items.push(i);
+    return items;
+  }
+
+  items.push(1);
+
+  const left = Math.max(2, current - 1);
+  const right = Math.min(total - 1, current + 1);
+
+  if (left > 2) items.push('ellipsis');
+
+  for (let i = left; i <= right; i++) items.push(i);
+
+  if (right < total - 1) items.push('ellipsis');
+
+  items.push(total);
+
+  return items;
+}
+
 export const DataTable = React.forwardRef(function DataTableInner<RowT extends { id: Id }>(
   props: DataTableProps<RowT>,
   ref: React.ForwardedRef<DataTableRef<RowT>>,
@@ -249,9 +287,13 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
     onSelect,
     onAdd,
     onExpand,
-    tableContainerClassName = "w-full",
-    theadClassName = "text-xs uppercase text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20 border-t border-gray-100 dark:border-gray-700/60",
-    tbodyClassName = "text-sm divide-y divide-gray-100 dark:divide-gray-700/60 border-b border-gray-200 dark:border-gray-700/60",
+    tableContainerClassName = 'w-full',
+    theadClassName = [
+      'text-xs font-medium tracking-wide text-muted-foreground',
+      'bg-muted/20 border-y border-border',
+      '[&>tr>th]:py-3 [&>tr>th]:align-middle',
+    ].join(' '),
+    tbodyClassName = 'text-sm border-b border-border [&>tr]:border-b [&>tr]:border-border/60 last:[&>tr]:border-b-0',
     getRowId = defaultGetRowId,
   } = props;
 
@@ -296,23 +338,23 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
     return subscribe(ctx, {
       emit: (event) => {
-        if (event.type === "replace") {
+        if (event.type === 'replace') {
           setRows((prev) => mergeRowsPreserveRefs(prev, event.rows, getRowId));
           return;
         }
-        if (event.type === "patch") {
+        if (event.type === 'patch') {
           setRows((prev) => applyPatch(prev, event.id, event.patch, getRowId));
           return;
         }
-        if (event.type === "batchPatch") {
+        if (event.type === 'batchPatch') {
           setRows((prev) => applyBatchPatch(prev, event.patches, getRowId));
           return;
         }
-        if (event.type === "upsert") {
+        if (event.type === 'upsert') {
           setRows((prev) => upsertRow(prev, event.row, getRowId));
           return;
         }
-        if (event.type === "remove") {
+        if (event.type === 'remove') {
           setRows((prev) => prev.filter((r) => getRowId(r) !== event.id));
         }
       },
@@ -358,12 +400,12 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
   if (empty && rows.length === 0 && !loading) {
     return (
-      <div className="p-8 text-center">
-        <div className="text-lg font-medium">{empty.title}</div>
-        {empty.description ? <div className="text-sm text-muted-foreground">{empty.description}</div> : null}
+      <div className='p-8 text-center'>
+        <div className='text-lg font-medium'>{empty.title}</div>
+        {empty.description ? <div className='text-sm text-muted-foreground'>{empty.description}</div> : null}
         {empty.action ? (
-          <div className="mt-4">
-            <button className="inline-flex items-center rounded-md border px-3 py-2 text-sm" onClick={onAdd}>
+          <div className='mt-4'>
+            <button className='inline-flex items-center rounded-md border px-3 py-2 text-sm' onClick={onAdd}>
               {empty.action}
             </button>
           </div>
@@ -373,17 +415,17 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
   }
 
   return (
-    <div>
-      <div className={tableContainerClassName}>
-        <table className="table-auto w-full dark:text-gray-300">
+    <Stack justify='between' className='w-full'>
+      <div className={['w-full rounded-md border bg-card overflow-x-auto', tableContainerClassName].join(' ')}>
+        <table className='table-auto w-full dark:text-gray-300'>
           <thead className={theadClassName}>
             <tr>
               {showCheckbox ? (
-                <th className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-                  <span className="sr-only">Select all</span>
+                <th className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
+                  <span className='sr-only'>Select all</span>
                   <input
-                    className="form-checkbox"
-                    type="checkbox"
+                    className='form-checkbox'
+                    type='checkbox'
                     checked={rows.length > 0 && selected.length === rows.length}
                     onChange={(e) => checkAll(e.target.checked)}
                   />
@@ -391,15 +433,15 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
               ) : null}
 
               {expandable ? (
-                <th className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-                  <span className="sr-only">Expand</span>
+                <th className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
+                  <span className='sr-only'>Expand</span>
                 </th>
               ) : null}
 
               {columns.map((c) => (
                 <th
                   key={String(c.key)}
-                  className={c.headClassName ?? "text-left px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"}
+                  className={c.headClassName ?? 'text-left px-3 first:pl-5 last:pr-5 whitespace-nowrap align-middle'}
                   style={c.width ? { width: c.width } : undefined}
                 >
                   {c.label}
@@ -415,13 +457,22 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
               return (
                 <React.Fragment key={rowId}>
-                  <tr className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr
+                    data-selected={selected.includes(rowId) ? 'true' : 'false'}
+                    className={[
+                      'group transition-colors',
+                      'hover:bg-muted/40',
+                      'data-[selected=true]:bg-primary/5',
+                      'data-[selected=true]:hover:bg-primary/8',
+                      rowIndex % 2 === 1 ? 'bg-muted/10' : '',
+                    ].join(' ')}
+                  >
                     {showCheckbox ? (
-                      <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
-                        <span className="sr-only">Select</span>
+                      <td className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
+                        <span className='sr-only'>Select</span>
                         <input
-                          className="form-checkbox"
-                          type="checkbox"
+                          className='form-checkbox'
+                          type='checkbox'
                           checked={selected.includes(rowId)}
                           onChange={(e) => checkRow(rowId, e.target.checked)}
                         />
@@ -429,39 +480,42 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                     ) : null}
 
                     {expandable ? (
-                      <td className="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px">
+                      <td className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
                         <button
                           className={[
-                            "text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transform",
-                            isExpanded ? "rotate-180" : "",
-                          ].join(" ")}
+                            'text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transform',
+                            isExpanded ? 'rotate-180' : '',
+                          ].join(' ')}
                           aria-expanded={isExpanded}
                           onClick={(e) => {
                             e.preventDefault();
                             toggleExpand(row);
                           }}
                         >
-                          <span className="sr-only">Expand</span>
-                          <svg className="w-8 h-8 fill-current" viewBox="0 0 32 32">
-                            <path d="M16 20l-5.4-5.4 1.4-1.4 4 4 4-4 1.4 1.4z" />
+                          <span className='sr-only'>Expand</span>
+                          <svg className='w-8 h-8 fill-current' viewBox='0 0 32 32'>
+                            <path d='M16 20l-5.4-5.4 1.4-1.4 4 4 4-4 1.4 1.4z' />
                           </svg>
                         </button>
                       </td>
                     ) : null}
 
                     {columns.map((c) => {
-                      const value = (row as any)[c.key];
+                      const value = (row as any)[c.key as any];
                       return (
-                        <td key={`${rowId}:${String(c.key)}`} className={c.className ?? "px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap"}>
-                          {c.render ? c.render({ row, rowIndex, value }) : String(value ?? "")}
+                        <td
+                          key={`${rowId}:${String(c.key)}`}
+                          className={c.className ?? 'px-3 first:pl-5 last:pr-5 py-3 whitespace-nowrap align-middle'}
+                        >
+                          {c.render ? c.render({ row, rowIndex, value }) : String(value ?? '')}
                         </td>
                       );
                     })}
                   </tr>
 
                   {expandable && isExpanded ? (
-                    <tr role="region">
-                      <td colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0)} className="px-2 first:pl-5 last:pr-5 py-3">
+                    <tr role='region'>
+                      <td colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0)} className='px-2 first:pl-5 last:pr-5 py-3'>
                         {renderExpandedRow ? renderExpandedRow({ row, rowIndex }) : null}
                       </td>
                     </tr>
@@ -473,40 +527,102 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
         </table>
       </div>
 
-      {showPagination && totalPages > 1 ? (
-        <div className="mt-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <nav className="mb-4 sm:mb-0 sm:order-1" aria-label="Navigation">
-              <ul className="flex justify-center">
-                <li className="ml-3 first:ml-0">
-                  <button
-                    className="inline-flex items-center rounded-md border px-3 py-2 text-sm"
-                    disabled={page === 1 || loading}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    &lt;- Previous
-                  </button>
-                </li>
-                <li className="ml-3 first:ml-0">
-                  <button
-                    className="inline-flex items-center rounded-md border px-3 py-2 text-sm"
-                    disabled={page === totalPages || loading}
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  >
-                    Next -&gt;
-                  </button>
-                </li>
-              </ul>
-            </nav>
+      {showPagination && total > limit ? (
+        <div className='w-full px-3 py-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <Inline>
+            <Inline>
+              <span className='text-sm text-muted-foreground'>Items</span>
 
-            <div className="text-sm text-gray-500 text-center sm:text-left">
-              Showing <span className="font-medium text-gray-600 dark:text-gray-300">{(page - 1) * pageSize}</span> to{" "}
-              <span className="font-medium text-gray-600 dark:text-gray-300">{page * pageSize > total ? total : page * pageSize}</span> of{" "}
-              <span className="font-medium text-gray-600 dark:text-gray-300">{total}</span> results
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  const next = Number(v);
+                  if (Number.isNaN(next)) return;
+
+                  setPageSize(next);
+                  setPage(1);
+                }}
+                disabled={loading}
+              >
+                <SelectTrigger className='h-10 w-[110px]'>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align='start'>
+                  {pageSizeOptions.map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Inline>
+
+            <div className='text-sm text-muted-foreground whitespace-nowrap'>
+              Showing <span className='font-medium text-foreground'>{total === 0 ? 0 : (page - 1) * pageSize + 1}</span> to{' '}
+              <span className='font-medium text-foreground'>{Math.min(page * pageSize, total)}</span> of{' '}
+              <span className='font-medium text-foreground'>{total}</span>
             </div>
-          </div>
+          </Inline>
+
+          <Pagination className='justify-end'>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  aria-disabled={page === 1 || loading}
+                  className={page === 1 || loading ? 'pointer-events-none opacity-50' : ''}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page === 1 || loading) return;
+                    setPage((p) => Math.max(1, p - 1));
+                  }}
+                />
+              </PaginationItem>
+
+              {getPaginationRange(page, totalPages).map((item, idx) => {
+                if (item === 'ellipsis') {
+                  return (
+                    <PaginationItem key={`ellipsis-${idx}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+
+                const p = item;
+                const isActive = p === page;
+
+                return (
+                  <PaginationItem key={p}>
+                    <PaginationLink
+                      isActive={isActive}
+                      aria-disabled={loading}
+                      className={loading ? 'pointer-events-none opacity-50' : ''}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (loading) return;
+                        setPage(p);
+                      }}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+
+              <PaginationItem>
+                <PaginationNext
+                  aria-disabled={page === totalPages || loading}
+                  className={page === totalPages || loading ? 'pointer-events-none opacity-50' : ''}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (page === totalPages || loading) return;
+                    setPage((p) => Math.min(totalPages, p + 1));
+                  }}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       ) : null}
-    </div>
+    </Stack>
   );
 }) as <RowT extends { id: Id }>(p: DataTableProps<RowT> & { ref?: React.Ref<DataTableRef<RowT>> }) => React.ReactElement;

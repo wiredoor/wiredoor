@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient, QueryKey } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, QueryKey } from '@tanstack/react-query';
 
-import axios from "./axios";
+import axios from './axios';
 
 export type User = {
   id: number;
@@ -13,7 +13,7 @@ type MeResponse = { user: User; mustChangePassword?: boolean; requireOtp?: boole
 type LoginResponse = { user: User };
 type LogoutResponse = { ok: true };
 
-const authUserKey: QueryKey = ["auth", "user"];
+const authUserKey: QueryKey = ['auth', 'user'];
 
 export function useUserQuery() {
   return useQuery({
@@ -31,7 +31,7 @@ export function useUserQuery() {
 
 async function getUser(): Promise<MeResponse | null> {
   try {
-    const { data } = await axios.get<MeResponse>("/api/auth/web/me");
+    const { data } = await axios.get<MeResponse>('/api/auth/web/me');
     return data || null;
   } catch (err: any) {
     if (err.response?.status === 401) {
@@ -42,12 +42,12 @@ async function getUser(): Promise<MeResponse | null> {
 }
 
 async function loginWithEmailAndPassword(credentials: LoginInput): Promise<User> {
-  const { data } = await axios.post<LoginResponse>("/api/auth/web/login", credentials);
+  const { data } = await axios.post<LoginResponse>('/api/auth/web/login', credentials);
   return data.user;
 }
 
 async function postLogout(): Promise<void> {
-  await axios.post<LogoutResponse>("/api/auth/web/logout");
+  await axios.post<LogoutResponse>('/api/auth/web/logout');
 }
 
 export function useAuth() {

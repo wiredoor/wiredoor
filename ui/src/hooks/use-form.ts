@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useForm as rhfUseForm, UseFormProps, FieldValues } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from 'react';
+import { useForm as rhfUseForm, UseFormProps, FieldValues } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-interface FormConfig<T extends FieldValues> extends Omit<UseFormProps<T>, "resolver"> {
+interface FormConfig<T extends FieldValues> extends Omit<UseFormProps<T>, 'resolver'> {
   schema?: z.ZodType<T, any>;
   onSubmit: (values: T) => Promise<any>;
   onSuccess?: (data: any) => void;
@@ -11,7 +11,7 @@ interface FormConfig<T extends FieldValues> extends Omit<UseFormProps<T>, "resol
 }
 
 export function useForm<T extends FieldValues>(config: FormConfig<T>) {
-  const { schema, onSubmit, onSuccess, onError, defaultValues, mode = "onBlur", ...formProps } = config;
+  const { schema, onSubmit, onSuccess, onError, defaultValues, mode = 'onBlur', ...formProps } = config;
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = rhfUseForm<T>({
@@ -21,7 +21,7 @@ export function useForm<T extends FieldValues>(config: FormConfig<T>) {
     ...formProps,
   });
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleSubmit: ReturnType<typeof form.handleSubmit> = form.handleSubmit(async (values) => {
     setSubmitError(null);
 
     try {

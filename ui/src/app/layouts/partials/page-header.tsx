@@ -1,7 +1,7 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Stack, Inline, Text, Container, ContainerSize } from "@/components/foundations";
-import { Separator } from "@/components/ui/separator";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { Stack, Inline, Text, Container, ContainerSize } from '@/components/foundations';
+import { Separator } from '@/components/ui/separator';
 
 export type PageHeaderProps = {
   container?: ContainerSize;
@@ -21,32 +21,32 @@ export type PageHeaderProps = {
 
 export function PageHeader({ container, eyebrow, title, description, actions, tabs, stickyTabs = false, className }: PageHeaderProps) {
   const header = (
-    <Inline className="items-start justify-between gap-4">
-      <Stack className="gap-1 min-w-0">
-        {eyebrow ? <Text className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{eyebrow}</Text> : null}
-        <Text className="text-3xl font-semibold leading-tight">{title}</Text>
-        {description ? <Text className="text-sm text-muted-foreground max-w-2xl">{description}</Text> : null}
+    <Inline className='items-start justify-between gap-4'>
+      <Stack className='gap-1 min-w-0'>
+        {eyebrow ? <Text className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>{eyebrow}</Text> : null}
+        <Text className='text-3xl font-semibold leading-tight'>{title}</Text>
+        {description ? <Text className='text-sm text-muted-foreground max-w-2xl'>{description}</Text> : null}
       </Stack>
-      {actions ? <div className="shrink-0">{actions}</div> : null}
+      {actions ? <div className='shrink-0'>{actions}</div> : null}
     </Inline>
   );
 
   const tabsMenu = tabs ? (
     <div
       className={cn(
-        stickyTabs ? "sticky top-14 z-30" : "",
-        stickyTabs ? "bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60" : "",
+        stickyTabs ? 'sticky top-14 z-30' : '',
+        stickyTabs ? 'bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60' : '',
       )}
     >
-      <div className={cn(stickyTabs ? "pt-2" : "")}>{tabs}</div>
-      <div className="pt-3">
+      <div className={cn(stickyTabs ? 'pt-2' : '')}>{tabs}</div>
+      <div className='pt-3'>
         <Separator />
       </div>
     </div>
   ) : null;
 
   return (
-    <Stack className={cn("gap-4", className)}>
+    <Stack className={cn('gap-4', className)}>
       {container ? <Container size={container}>{header}</Container> : header}
 
       {tabs ? container ? <Container size={container}>{tabsMenu}</Container> : tabsMenu : <Separator />}

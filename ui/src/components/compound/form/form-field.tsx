@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Path, useController, type FieldValues } from "react-hook-form";
+import * as React from 'react';
+import { Path, useController, type FieldValues } from 'react-hook-form';
 
 import {
   Field,
@@ -12,20 +12,20 @@ import {
   FieldError,
   FieldSet,
   FieldLegend,
-} from "@/components/ui";
-import { Inline } from "@/components/foundations";
-import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from "./types";
+} from '@/components/ui';
+import { Inline } from '@/components/foundations';
+import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from './types';
 
 const Ctx = React.createContext<FormFieldCtx<any> | null>(null);
 
 export function useFormField<T extends FieldValues>() {
   const ctx = React.useContext(Ctx);
-  if (!ctx) throw new Error("FormField.* must be used within <FormField />");
+  if (!ctx) throw new Error('FormField.* must be used within <FormField />');
   return ctx as FormFieldCtx<T>;
 }
 
 function joinIds(ids: Array<string | undefined>) {
-  const s = ids.filter(Boolean).join(" ");
+  const s = ids.filter(Boolean).join(' ');
   return s.length ? s : undefined;
 }
 
@@ -63,11 +63,11 @@ export function FormField<T extends FieldValues>({
     <>
       {title ? <FieldTitle>{title}</FieldTitle> : null}
 
-      <Inline justify="between" align="center">
+      <Inline justify='between' align='center'>
         {label ? (
           <FieldLabel htmlFor={id}>
             {label}
-            {required ? <span aria-hidden="true"> *</span> : null}
+            {required ? <span aria-hidden='true'> *</span> : null}
           </FieldLabel>
         ) : null}
         {helper ? helper : null}
@@ -89,7 +89,7 @@ export function FormField<T extends FieldValues>({
     <Ctx.Provider value={ctxValue}>
       <FieldContent>
         <FieldGroup>{children}</FieldGroup>
-        {invalid ? <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? "Invalid value"}</FieldError> : null}
+        {invalid ? <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? 'Invalid value'}</FieldError> : null}
       </FieldContent>
     </Ctx.Provider>
   );
@@ -122,8 +122,8 @@ FormField.Register = function Register<T extends FieldValues>(props: { children:
     id: c.a11y.id,
     disabled: c.a11y.disabled,
     required: c.a11y.required,
-    "aria-invalid": c.a11y.invalid ? true : undefined,
-    "aria-describedby": c.a11y.describedBy,
+    'aria-invalid': c.a11y.invalid ? true : undefined,
+    'aria-describedby': c.a11y.describedBy,
   };
 
   return <>{props.children({ reg, a11y })}</>;
@@ -142,8 +142,8 @@ FormField.Control = function Control<T extends FieldValues>(props: { children: (
     id: c.a11y.id,
     disabled: c.a11y.disabled,
     required: c.a11y.required,
-    "aria-invalid": c.a11y.invalid ? true : undefined,
-    "aria-describedby": c.a11y.describedBy,
+    'aria-invalid': c.a11y.invalid ? true : undefined,
+    'aria-describedby': c.a11y.describedBy,
   };
 
   return <>{props.children({ field: field as any, a11y })}</>;

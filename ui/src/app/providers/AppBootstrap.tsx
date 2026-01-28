@@ -1,5 +1,5 @@
-import React from "react";
-import { useConfigStore } from "@/stores/config-store";
+import React from 'react';
+import { useConfigStore } from '@/stores/config-store';
 
 export function AppBootstrap() {
   const loadConfig = useConfigStore((s) => s.loadConfig);

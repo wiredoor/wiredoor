@@ -1,13 +1,13 @@
-import * as React from "react";
-import type { FieldValues } from "react-hook-form";
-import { X, Upload, File as FileIcon } from "lucide-react";
+import * as React from 'react';
+import type { FieldValues } from 'react-hook-form';
+import { X, Upload, File as FileIcon } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
-import { FormField } from "./form-field";
-import { Button } from "@/components/ui/button";
-import { FormFieldProps } from "./types";
+import { cn } from '@/lib/utils';
+import { FormField } from './form-field';
+import { Button } from '@/components/ui/button';
+import { FormFieldProps } from './types';
 
-type BaseProps<T extends FieldValues> = Omit<FormFieldProps<T>, "children"> & {
+type BaseProps<T extends FieldValues> = Omit<FormFieldProps<T>, 'children'> & {
   accept?: string;
   disabled?: boolean;
   helperText?: React.ReactNode;
@@ -42,8 +42,8 @@ export type UploadFieldProps<T extends FieldValues> =
     });
 
 function formatBytes(bytes: number) {
-  if (!Number.isFinite(bytes)) return "";
-  const units = ["B", "KB", "MB", "GB"];
+  if (!Number.isFinite(bytes)) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
   let v = bytes;
   let i = 0;
   while (v >= 1024 && i < units.length - 1) {
@@ -54,7 +54,7 @@ function formatBytes(bytes: number) {
 }
 
 export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
-  const { accept, triggerLabel = "Choose file", helperText, className, listClassName, touchOnSelect = true, ...shell } = props;
+  const { accept, triggerLabel = 'Choose file', helperText, className, listClassName, touchOnSelect = true, ...shell } = props;
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -89,7 +89,7 @@ export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
           };
 
           const clearNativeInput = () => {
-            if (inputRef.current) inputRef.current.value = "";
+            if (inputRef.current) inputRef.current.value = '';
           };
 
           const onPick = () => {
@@ -129,10 +129,10 @@ export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
           const filesArray = multiple ? (value as File[]) : value ? [value as File] : [];
 
           return (
-            <div className={cn("grid gap-2", className)}>
+            <div className={cn('grid gap-2', className)}>
               <input
                 ref={inputRef}
-                type="file"
+                type='file'
                 accept={accept}
                 multiple={multiple}
                 disabled={isDisabled}
@@ -140,54 +140,54 @@ export function UploadField<T extends FieldValues>(props: UploadFieldProps<T>) {
                 onChange={(e) => {
                   onFilesSelected(e.target.files);
                 }}
-                style={{ display: "none" }}
+                style={{ display: 'none' }}
               />
 
-              <div className="flex items-center gap-2">
+              <div className='flex items-center gap-2'>
                 <Button
-                  type="button"
-                  variant="outline"
+                  type='button'
+                  variant='outline'
                   onClick={onPick}
                   disabled={isDisabled}
                   id={a11y.id}
-                  aria-invalid={a11y["aria-invalid"]}
-                  aria-describedby={a11y["aria-describedby"]}
-                  className="gap-2"
-                  leadingIcon={<Upload className="size-4 opacity-70" />}
+                  aria-invalid={a11y['aria-invalid']}
+                  aria-describedby={a11y['aria-describedby']}
+                  className='gap-2'
+                  leadingIcon={<Upload className='size-4 opacity-70' />}
                 >
                   {triggerLabel}
                 </Button>
 
                 {filesArray.length > 0 ? (
-                  <Button type="button" variant="ghost" onClick={clearAll} disabled={isDisabled} className="gap-2">
-                    <X className="size-4 opacity-70" />
+                  <Button type='button' variant='ghost' onClick={clearAll} disabled={isDisabled} className='gap-2'>
+                    <X className='size-4 opacity-70' />
                     Clear
                   </Button>
                 ) : null}
 
-                <div className="ml-auto text-xs opacity-70">{helperText ?? (accept ? `Accepted: ${accept}` : null)}</div>
+                <div className='ml-auto text-xs opacity-70'>{helperText ?? (accept ? `Accepted: ${accept}` : null)}</div>
               </div>
 
               {filesArray.length > 0 ? (
-                <div className={cn("grid gap-2", listClassName)}>
+                <div className={cn('grid gap-2', listClassName)}>
                   {filesArray.map((f, idx) => (
-                    <div key={`${f.name}-${f.size}-${idx}`} className="bg-muted/40 border-border flex items-center gap-2 rounded-md border px-3 py-2">
-                      <FileIcon className="size-4 opacity-70" />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm">{f.name}</div>
-                        <div className="text-muted-foreground text-xs">{formatBytes(f.size)}</div>
+                    <div key={`${f.name}-${f.size}-${idx}`} className='bg-muted/40 border-border flex items-center gap-2 rounded-md border px-3 py-2'>
+                      <FileIcon className='size-4 opacity-70' />
+                      <div className='min-w-0 flex-1'>
+                        <div className='truncate text-sm'>{f.name}</div>
+                        <div className='text-muted-foreground text-xs'>{formatBytes(f.size)}</div>
                       </div>
 
                       {multiple ? (
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
+                          type='button'
+                          variant='ghost'
+                          size='icon'
                           disabled={isDisabled}
                           onClick={() => removeAt(idx)}
                           aria-label={`Remove ${f.name}`}
                         >
-                          <X className="size-4 opacity-70" />
+                          <X className='size-4 opacity-70' />
                         </Button>
                       ) : null}
                     </div>

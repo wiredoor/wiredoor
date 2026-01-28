@@ -1,1 +1,1 @@
-export type LayoutTypes = "auth" | "app" | "none";
+export type LayoutTypes = 'auth' | 'app' | 'none';

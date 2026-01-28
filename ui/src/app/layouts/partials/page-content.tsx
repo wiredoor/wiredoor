@@ -1,6 +1,6 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Container, Stack } from "@/components/foundations";
+import * as React from 'react';
+import { cn } from '@/lib/utils';
+import { Container, Stack } from '@/components/foundations';
 
 export function PageContent({
   constrain = false,
@@ -14,7 +14,7 @@ export function PageContent({
   className?: string;
 }) {
   const content = (
-    <Stack className={cn("gap-6 py-6 min-w-0", className)}>
+    <Stack className={cn('gap-6 py-6 min-w-0', className)}>
       {header}
       {children}
     </Stack>
@@ -22,7 +22,7 @@ export function PageContent({
 
   if (!constrain) return content;
   return (
-    <Container size="xl" className="min-w-0">
+    <Container size='xl' className='min-w-0'>
       {content}
     </Container>
   );

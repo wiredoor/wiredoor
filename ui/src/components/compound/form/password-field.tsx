@@ -1,11 +1,11 @@
-import { FieldValues } from "react-hook-form";
-import { PasswordInput } from "@/components/ui";
-import { FormField } from "./form-field";
-import { FormFieldProps } from "./types";
+import { FieldValues } from 'react-hook-form';
+import { PasswordInput } from '@/components/ui';
+import { FormField } from './form-field';
+import { FormFieldProps } from './types';
 
 export function PasswordField<T extends FieldValues>(
-  props: Omit<FormFieldProps<T>, "children"> &
-    Omit<React.ComponentProps<typeof PasswordInput>, "id" | "form" | "name" | "disabled" | "required" | "aria-invalid" | "aria-describedby">,
+  props: Omit<FormFieldProps<T>, 'children'> &
+    Omit<React.ComponentProps<typeof PasswordInput>, 'id' | 'form' | 'name' | 'disabled' | 'required' | 'aria-invalid' | 'aria-describedby'>,
 ) {
   const { form, name, ...rest } = props;
 

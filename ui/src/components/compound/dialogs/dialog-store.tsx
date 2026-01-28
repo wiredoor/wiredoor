@@ -1,8 +1,8 @@
-import * as React from "react";
+import * as React from 'react';
 
-export type DialogSize = "sm" | "md" | "lg" | "xl";
+export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
 
-export type DialogActionVariant = "default" | "secondary" | "ghost" | "destructive";
+export type DialogActionVariant = 'default' | 'secondary' | 'ghost' | 'destructive';
 
 export type DialogAction = {
   id?: string;
@@ -27,7 +27,7 @@ export type DialogAction = {
 };
 
 export type CustomSpec<TResult = any> = CommonSpec & {
-  type: "custom";
+  type: 'custom';
 
   /**
    * Render ANY content (info panels, code blocks, tables, etc.)
@@ -64,19 +64,19 @@ type CommonSpec = {
 };
 
 export type AlertSpec = CommonSpec & {
-  type: "alert";
+  type: 'alert';
   actionText?: string; // default: "OK"
 };
 
 export type ConfirmSpec = CommonSpec & {
-  type: "confirm";
+  type: 'confirm';
   confirmText?: string; // default: "Confirm"
   cancelText?: string; // default: "Cancel"
   destructive?: boolean;
 };
 
 export type FormSpec<TValues extends Record<string, any>> = CommonSpec & {
-  type: "form";
+  type: 'form';
   cancelText?: string; // default: "Cancel"
   submitText?: string; // default: "Submit"
 
@@ -149,7 +149,7 @@ export const dialogStore = {
   open<T = any>(spec: DialogSpec): Promise<T> {
     // If something is open, we dismiss it as "cancel" (safe default)
     if (state.current && pending) {
-      pending.resolve(spec.type === "confirm" ? false : undefined);
+      pending.resolve(spec.type === 'confirm' ? false : undefined);
       pending = null;
     }
 
@@ -173,7 +173,7 @@ export const dialogStore = {
     // - confirm: false
     // - alert/form: undefined
     if (pending) {
-      pending.resolve(spec.type === "confirm" ? false : undefined);
+      pending.resolve(spec.type === 'confirm' ? false : undefined);
       pending = null;
     }
 
@@ -196,8 +196,8 @@ export const dialogStore = {
     emit();
   },
 
-  custom<TResult = any>(spec: Omit<CustomSpec<TResult>, "type">) {
-    return dialogStore.open<TResult>({ type: "custom", ...spec } as any);
+  custom<TResult = any>(spec: Omit<CustomSpec<TResult>, 'type'>) {
+    return dialogStore.open<TResult>({ type: 'custom', ...spec } as any);
   },
 
   info(spec: {
@@ -220,24 +220,24 @@ export const dialogStore = {
       render: () => spec.content,
       actions: [
         {
-          label: spec.closeText ?? "Close",
-          variant: "default",
+          label: spec.closeText ?? 'Close',
+          variant: 'default',
           autoFocus: true,
         },
       ],
     });
   },
 
-  alert(spec: Omit<AlertSpec, "type">) {
-    return dialogStore.open<void>({ type: "alert", ...spec });
+  alert(spec: Omit<AlertSpec, 'type'>) {
+    return dialogStore.open<void>({ type: 'alert', ...spec });
   },
 
-  confirm(spec: Omit<ConfirmSpec, "type">) {
-    return dialogStore.open<boolean>({ type: "confirm", ...spec });
+  confirm(spec: Omit<ConfirmSpec, 'type'>) {
+    return dialogStore.open<boolean>({ type: 'confirm', ...spec });
   },
 
-  form<TValues extends Record<string, any>>(spec: Omit<FormSpec<TValues>, "type">) {
-    return dialogStore.open<void>({ type: "form", ...spec } as any);
+  form<TValues extends Record<string, any>>(spec: Omit<FormSpec<TValues>, 'type'>) {
+    return dialogStore.open<void>({ type: 'form', ...spec } as any);
   },
 };
 

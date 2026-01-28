@@ -1,14 +1,14 @@
-import * as React from "react";
-import type { FieldValues } from "react-hook-form";
-import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from 'react';
+import type { FieldValues } from 'react-hook-form';
+import { Check, ChevronsUpDown } from 'lucide-react';
 
-import { cn } from "@/lib/utils";
-import { FormField } from "./form-field";
+import { cn } from '@/lib/utils';
+import { FormField } from './form-field';
 
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { FormFieldProps } from "./types";
-import { FieldButton } from "./field-button";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { FormFieldProps } from './types';
+import { FieldButton } from './field-button';
 
 export type Option<V extends string = string> = {
   value: V;
@@ -16,7 +16,7 @@ export type Option<V extends string = string> = {
   disabled?: boolean;
 };
 
-export type ComboboxFieldProps<T extends FieldValues, V extends string = string> = Omit<FormFieldProps<T>, "children"> & {
+export type ComboboxFieldProps<T extends FieldValues, V extends string = string> = Omit<FormFieldProps<T>, 'children'> & {
   options: Array<Option<V>>;
 
   placeholder?: string;
@@ -37,20 +37,20 @@ export type ComboboxFieldProps<T extends FieldValues, V extends string = string>
   /**
    * If your form stores null/undefined instead of empty string, you can convert here.""
    */
-  serialize?: (v: V | "") => any;
-  parse?: (v: any) => V | "";
+  serialize?: (v: V | '') => any;
+  parse?: (v: any) => V | '';
 };
 
-function labelForValue<V extends string>(options: Array<Option<V>>, value: V | "") {
+function labelForValue<V extends string>(options: Array<Option<V>>, value: V | '') {
   const opt = options.find((o) => o.value === value);
   return opt?.label;
 }
 
 export function ComboboxField<T extends FieldValues, V extends string = string>({
   options,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
-  emptyText = "No results.",
+  placeholder = 'Select...',
+  searchPlaceholder = 'Search...',
+  emptyText = 'No results.',
   allowClear = true,
   triggerClassName,
   popoverClassName,
@@ -66,9 +66,9 @@ export function ComboboxField<T extends FieldValues, V extends string = string>(
         {({ field, a11y }) => {
           const raw = field.value;
 
-          const value: V | "" = parse ? parse(raw) : ((raw ?? "") as V | "");
+          const value: V | '' = parse ? parse(raw) : ((raw ?? '') as V | '');
 
-          const setValue = (v: V | "") => {
+          const setValue = (v: V | '') => {
             const out = serialize ? serialize(v) : v;
             field.onChange(out);
           };
@@ -80,21 +80,21 @@ export function ComboboxField<T extends FieldValues, V extends string = string>(
               <PopoverTrigger asChild>
                 <FieldButton
                   id={a11y.id}
-                  role="combobox"
+                  role='combobox'
                   aria-expanded={open}
                   disabled={a11y.disabled}
-                  aria-invalid={a11y["aria-invalid"]}
-                  aria-describedby={a11y["aria-describedby"]}
-                  className={cn("w-48 justify-between", triggerClassName)}
+                  aria-invalid={a11y['aria-invalid']}
+                  aria-describedby={a11y['aria-describedby']}
+                  className={cn('w-48 justify-between', triggerClassName)}
                 >
-                  <span className={cn(!selectedLabel ? "text-muted-foreground" : "")}>{selectedLabel ?? placeholder}</span>
-                  <ChevronsUpDown className="text-muted-foreground size-4 opacity-50" />
+                  <span className={cn(!selectedLabel ? 'text-muted-foreground' : '')}>{selectedLabel ?? placeholder}</span>
+                  <ChevronsUpDown className='text-muted-foreground size-4 opacity-50' />
                 </FieldButton>
               </PopoverTrigger>
 
-              <PopoverContent className={cn("w-48 p-0", popoverClassName)}>
+              <PopoverContent className={cn('w-48 p-0', popoverClassName)}>
                 <Command>
-                  <CommandInput placeholder={searchPlaceholder} className="h-9" />
+                  <CommandInput placeholder={searchPlaceholder} className='h-9' />
                   <CommandList>
                     <CommandEmpty>{emptyText}</CommandEmpty>
 
@@ -108,7 +108,7 @@ export function ComboboxField<T extends FieldValues, V extends string = string>(
                             value={opt.value}
                             disabled={opt.disabled}
                             onSelect={(currentValue) => {
-                              const next = allowClear && currentValue === value ? "" : (currentValue as V);
+                              const next = allowClear && currentValue === value ? '' : (currentValue as V);
 
                               setValue(next);
                               field.onBlur();
@@ -116,7 +116,7 @@ export function ComboboxField<T extends FieldValues, V extends string = string>(
                             }}
                           >
                             {opt.label}
-                            <Check className={cn("ml-auto", selected ? "opacity-100" : "opacity-0")} />
+                            <Check className={cn('ml-auto', selected ? 'opacity-100' : 'opacity-0')} />
                           </CommandItem>
                         );
                       })}

@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 export type StepId = string;
 
@@ -48,7 +48,7 @@ export function useSteps(opts: UseStepsOptions) {
 
   const current = steps[index];
   const prevIndex = prevIndexRef.current;
-  const direction: "forward" | "back" = index >= prevIndex ? "forward" : "back";
+  const direction: 'forward' | 'back' = index >= prevIndex ? 'forward' : 'back';
 
   React.useEffect(() => {
     prevIndexRef.current = index;
@@ -58,8 +58,8 @@ export function useSteps(opts: UseStepsOptions) {
     return {
       fromIndex: index,
       toIndex,
-      fromId: steps[index]?.id ?? "unknown",
-      toId: steps[toIndex]?.id ?? "unknown",
+      fromId: steps[index]?.id ?? 'unknown',
+      toId: steps[toIndex]?.id ?? 'unknown',
     };
   }
 

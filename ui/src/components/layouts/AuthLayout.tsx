@@ -1,11 +1,11 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
-import { Text, Stack, Inline, Container, Surface, BackgroundPreset, BackgroundLayer, ContainerSize } from "@/components/foundations";
+import { Text, Stack, Inline, Container, Surface, BackgroundPreset, BackgroundLayer, ContainerSize } from '@/components/foundations';
 
-export type AuthLayoutVariant = "centered" | "split";
-export type AuthLayoutCardSize = "sm" | "default" | "lg";
+export type AuthLayoutVariant = 'centered' | 'split';
+export type AuthLayoutCardSize = 'sm' | 'default' | 'lg';
 
 export type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement> & {
   /** Brand slot (logo) */
@@ -45,9 +45,9 @@ export type AuthLayoutProps = React.HTMLAttributes<HTMLDivElement> & {
 };
 
 const cardSizes: Record<AuthLayoutCardSize, string> = {
-  sm: "max-w-md",
-  default: "max-w-lg",
-  lg: "max-w-xl",
+  sm: 'max-w-md',
+  default: 'max-w-lg',
+  lg: 'max-w-xl',
 };
 
 export function AuthLayout({
@@ -64,24 +64,24 @@ export function AuthLayout({
   stableCard = false,
   cardMinHeight = 520,
   contentMaxHeight = 400,
-  variant = "centered",
-  cardSize = "sm",
-  background = "none",
-  containerSize = "lg",
+  variant = 'centered',
+  cardSize = 'sm',
+  background = 'none',
+  containerSize = 'lg',
   header,
   pageFooter,
   ...props
 }: AuthLayoutProps) {
   return (
-    <div className={cn("min-h-screen text-foreground flex flex-col animate-fade-in", className)} {...props}>
+    <div className={cn('min-h-screen text-foreground flex flex-col animate-fade-in', className)} {...props}>
       <BackgroundLayer background={background} />
 
-      {header ? <header className="shrink-0">{header}</header> : null}
+      {header ? <header className='shrink-0'>{header}</header> : null}
 
-      <main className="flex-1">
-        <Container className="py-5 md:py-10 lg:py-14" size={containerSize}>
-          {variant === "split" ? (
-            <div className="grid items-center gap-8 lg:grid-cols-2">
+      <main className='flex-1'>
+        <Container className='py-5 md:py-10 lg:py-14' size={containerSize}>
+          {variant === 'split' ? (
+            <div className='grid items-center gap-8 lg:grid-cols-2'>
               <AuthCard
                 brand={brand}
                 eyebrow={eyebrow}
@@ -98,16 +98,16 @@ export function AuthLayout({
                 {children}
               </AuthCard>
 
-              <div className="hidden lg:block">
+              <div className='hidden lg:block'>
                 {aside ? (
-                  <Surface elevation="sm" radius="lg" className="p-8">
+                  <Surface elevation='sm' radius='lg' className='p-8'>
                     {aside}
                   </Surface>
                 ) : null}
               </div>
             </div>
           ) : (
-            <div className="flex min-h-[70vh] items-center justify-center">
+            <div className='flex min-h-[70vh] items-center justify-center'>
               <AuthCard
                 brand={brand}
                 eyebrow={eyebrow}
@@ -158,15 +158,15 @@ function AuthCard({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className={cn("w-full", className)}>
-      <Surface elevation="sm" radius="lg" className="p-6 sm:p-8 md:p-9 lg:p-12" style={stableCard ? { minHeight: cardMinHeight } : {}}>
-        <Stack gap={6} className={stableCard ? "h-full" : undefined}>
+    <div className={cn('w-full', className)}>
+      <Surface elevation='sm' radius='lg' className='p-6 sm:p-8 md:p-9 lg:p-12' style={stableCard ? { minHeight: cardMinHeight } : {}}>
+        <Stack gap={6} className={stableCard ? 'h-full' : undefined}>
           <Stack gap={3}>
-            <Inline align="center" gap={3}>
-              {brand ? <div className="shrink-0">{brand}</div> : null}
-              <div className="min-w-0">
+            <Inline align='center' gap={3}>
+              {brand ? <div className='shrink-0'>{brand}</div> : null}
+              <div className='min-w-0'>
                 {eyebrow ? (
-                  <Text variant="caption" tone="muted">
+                  <Text variant='caption' tone='muted'>
                     {eyebrow}
                   </Text>
                 ) : null}
@@ -174,7 +174,7 @@ function AuthCard({
                 {titleSlot ? (
                   titleSlot
                 ) : (
-                  <Text as="h1" variant="h3">
+                  <Text as='h1' variant='h3'>
                     {title}
                   </Text>
                 )}
@@ -184,17 +184,17 @@ function AuthCard({
             {descriptionSlot ? (
               descriptionSlot
             ) : description ? (
-              <Text variant="body-sm" tone="muted">
+              <Text variant='body-sm' tone='muted'>
                 {description}
               </Text>
             ) : null}
           </Stack>
 
-          <div className={stableCard ? "overflow-auto" : undefined} style={stableCard ? { maxHeight: contentMaxHeight } : {}}>
+          <div className={stableCard ? 'overflow-auto' : undefined} style={stableCard ? { maxHeight: contentMaxHeight } : {}}>
             {children}
           </div>
 
-          {footer ? <div className="border-t border-border/40 pt-4">{footer}</div> : null}
+          {footer ? <div className='border-t border-border/40 pt-4'>{footer}</div> : null}
         </Stack>
       </Surface>
     </div>

@@ -1,19 +1,19 @@
-import * as React from "react";
-import type { FieldValues } from "react-hook-form";
+import * as React from 'react';
+import type { FieldValues } from 'react-hook-form';
 
-import { FormField } from "./form-field";
+import { FormField } from './form-field';
 
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui";
-import { FormFieldProps } from "./types";
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from '@/components/ui';
+import { FormFieldProps } from './types';
 
-export type OtpFieldProps<T extends FieldValues> = Omit<FormFieldProps<T>, "children"> & {
+export type OtpFieldProps<T extends FieldValues> = Omit<FormFieldProps<T>, 'children'> & {
   length?: number;
 
   separators?: number[];
 
   otpProps?: Omit<
     React.ComponentProps<typeof InputOTP>,
-    "value" | "onChange" | "maxLength" | "disabled" | "aria-invalid" | "aria-describedby" | "id" | "render"
+    'value' | 'onChange' | 'maxLength' | 'disabled' | 'aria-invalid' | 'aria-describedby' | 'id' | 'render'
   >;
 
   slotClassName?: string;
@@ -34,7 +34,7 @@ export function OtpField<T extends FieldValues>({
     <FormField<T> {...shell}>
       <FormField.Control<T>>
         {({ field, a11y }) => {
-          const value = String(field.value ?? "");
+          const value = String(field.value ?? '');
 
           const handleChange = (next: string) => {
             field.onChange(next);
@@ -50,8 +50,8 @@ export function OtpField<T extends FieldValues>({
               onChange={handleChange}
               maxLength={length}
               disabled={a11y.disabled}
-              aria-invalid={a11y["aria-invalid"]}
-              aria-describedby={a11y["aria-describedby"]}
+              aria-invalid={a11y['aria-invalid']}
+              aria-describedby={a11y['aria-describedby']}
               onBlur={() => field.onBlur()}
               containerClassName={containerClassName ?? (otpProps as any)?.containerClassName}
             >

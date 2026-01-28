@@ -1,5 +1,5 @@
-import axios, { InternalAxiosRequestConfig } from "axios";
-import { toast } from "@/components/compound/toast";
+import axios, { InternalAxiosRequestConfig } from 'axios';
+import { toast } from '@/components/compound/toast';
 
 // const agent = new https.Agent({
 //   rejectUnauthorized: false,
@@ -8,7 +8,7 @@ import { toast } from "@/components/compound/toast";
 axios.interceptors.request.use(
   (requestConfig: InternalAxiosRequestConfig) => {
     if (requestConfig.headers) {
-      requestConfig.headers.Accept = "application/json";
+      requestConfig.headers.Accept = 'application/json';
     }
 
     requestConfig.withCredentials = true;
@@ -33,7 +33,7 @@ axios.interceptors.response.use(
 
     if (status === 400) {
       console.log(error.response);
-      toast.destructive("Error", { description: error.response.data?.message || "Unknown Server Error" });
+      toast.destructive('Error', { description: error.response.data?.message || 'Unknown Server Error' });
     }
 
     if ([401, 403, 429].includes(status)) {

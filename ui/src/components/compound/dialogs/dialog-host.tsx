@@ -1,23 +1,23 @@
-import * as React from "react";
-import { dialogStore, type DialogSpec, type DialogSize } from "./dialog-store";
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from 'react';
+import { dialogStore, type DialogSpec, type DialogSize } from './dialog-store';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 // shadcn dialog primitives (ajusta el import si tu path difiere)
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import { Button } from "@/components/ui";
+import { Button } from '@/components/ui';
 
 // foundations (ajusta si tus paths difieren)
-import { Stack, Surface, Text } from "@/components/foundations";
+import { Stack, Surface, Text } from '@/components/foundations';
 
 // form
-import { useForm } from "react-hook-form";
+import { useForm } from 'react-hook-form';
 
 const sizeToClass: Record<DialogSize, string> = {
-  sm: "sm:max-w-md",
-  md: "sm:max-w-lg",
-  lg: "sm:max-w-2xl",
-  xl: "sm:max-w-4xl",
+  sm: 'sm:max-w-md',
+  md: 'sm:max-w-lg',
+  lg: 'sm:max-w-2xl',
+  xl: 'sm:max-w-4xl',
 };
 
 export function DialogHost() {
@@ -45,7 +45,7 @@ export function DialogHost() {
       }}
     >
       <DialogContent
-        className={[sizeToClass[current.size ?? "md"], "p-0 overflow-hidden"].join(" ")}
+        className={[sizeToClass[current.size ?? 'md'], 'p-0 overflow-hidden'].join(' ')}
         // prevent Radix from auto focusing odd things if you want; optional
         // onOpenAutoFocus={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => {
@@ -61,18 +61,18 @@ export function DialogHost() {
           }
         }}
       >
-        <Surface className="p-6">
+        <Surface className='p-6'>
           <Stack gap={4}>
             <DialogHeader>
               <DialogTitle>{current.title}</DialogTitle>
               {current.description ? <DialogDescription>{current.description}</DialogDescription> : null}
             </DialogHeader>
 
-            {current.type === "alert" ? (
+            {current.type === 'alert' ? (
               <AlertBody spec={current} busy={busy} />
-            ) : current.type === "confirm" ? (
+            ) : current.type === 'confirm' ? (
               <ConfirmBody spec={current} busy={busy} />
-            ) : current.type === "form" ? (
+            ) : current.type === 'form' ? (
               <FormBody spec={current} busy={busy} />
             ) : (
               <CustomBody spec={current} busy={busy} />
@@ -86,7 +86,7 @@ export function DialogHost() {
 
 function defaultCloseOnOverlay(spec: DialogSpec) {
   // safer default
-  if (spec.type === "alert") return true;
+  if (spec.type === 'alert') return true;
   return false;
 }
 
@@ -102,7 +102,7 @@ function canDismiss(spec: DialogSpec, busy: boolean) {
 
 /* -------------------------- CustomBody -------------------------- */
 
-function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom" }>; busy: boolean }) {
+function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom' }>; busy: boolean }) {
   const actions = spec.actions ?? [];
 
   const hasActions = actions.length > 0;
@@ -110,7 +110,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom"
 
   return (
     <>
-      <div className="max-h-[65vh] overflow-auto pr-2">
+      <div className='max-h-[65vh] overflow-auto pr-2'>
         {spec.render({
           busy,
           setBusy: (b) => dialogStore.setBusy(b),
@@ -119,7 +119,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom"
         })}
       </div>
 
-      <DialogFooter className="pt-2">
+      <DialogFooter className='pt-2'>
         {hasActions ? (
           <>
             {actions.map((a, idx) => {
@@ -129,7 +129,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom"
               return (
                 <Button
                   key={a.id ?? `${idx}`}
-                  variant={(a.variant as any) ?? "default"}
+                  variant={(a.variant as any) ?? 'default'}
                   disabled={disabled}
                   autoFocus={autoFocus}
                   onClick={async () => {
@@ -161,7 +161,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom"
         ) : null}
 
         {showDefaultClose ? (
-          <Button variant="default" onClick={() => dialogStore.resolve()}>
+          <Button variant='default' onClick={() => dialogStore.resolve()}>
             Close
           </Button>
         ) : null}
@@ -172,11 +172,11 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "custom"
 
 /* -------------------------- Alert -------------------------- */
 
-function AlertBody({ spec }: { spec: Extract<DialogSpec, { type: "alert" }>; busy: boolean }) {
+function AlertBody({ spec }: { spec: Extract<DialogSpec, { type: 'alert' }>; busy: boolean }) {
   return (
     <>
-      <DialogFooter className="pt-2">
-        <Button onClick={() => dialogStore.resolve()}>{spec.actionText ?? "OK"}</Button>
+      <DialogFooter className='pt-2'>
+        <Button onClick={() => dialogStore.resolve()}>{spec.actionText ?? 'OK'}</Button>
       </DialogFooter>
     </>
   );
@@ -184,16 +184,16 @@ function AlertBody({ spec }: { spec: Extract<DialogSpec, { type: "alert" }>; bus
 
 /* ------------------------- Confirm ------------------------- */
 
-function ConfirmBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "confirm" }>; busy: boolean }) {
+function ConfirmBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'confirm' }>; busy: boolean }) {
   return (
     <>
-      <DialogFooter className="pt-2">
-        <Button variant="ghost" disabled={busy} onClick={() => dialogStore.dismiss()}>
-          {spec.cancelText ?? "Cancel"}
+      <DialogFooter className='pt-2'>
+        <Button variant='ghost' disabled={busy} onClick={() => dialogStore.dismiss()}>
+          {spec.cancelText ?? 'Cancel'}
         </Button>
 
-        <Button variant={spec.destructive ? "destructive" : "default"} disabled={busy} onClick={() => dialogStore.resolve(true)}>
-          {spec.confirmText ?? "Confirm"}
+        <Button variant={spec.destructive ? 'destructive' : 'default'} disabled={busy} onClick={() => dialogStore.resolve(true)}>
+          {spec.confirmText ?? 'Confirm'}
         </Button>
       </DialogFooter>
     </>
@@ -202,12 +202,12 @@ function ConfirmBody({ spec, busy }: { spec: Extract<DialogSpec, { type: "confir
 
 /* -------------------------- Form --------------------------- */
 
-function FormBody({ spec }: { spec: Extract<DialogSpec, { type: "form" }>; busy: boolean }) {
+function FormBody({ spec }: { spec: Extract<DialogSpec, { type: 'form' }>; busy: boolean }) {
   // Build RHF config
   const form = useForm({
     defaultValues: spec.defaultValues,
     ...(spec.schema && zodResolver ? { resolver: zodResolver(spec.schema) } : {}),
-    mode: "onSubmit",
+    mode: 'onSubmit',
   });
 
   const isDirty = form.formState.isDirty;
@@ -224,10 +224,10 @@ function FormBody({ spec }: { spec: Extract<DialogSpec, { type: "form" }>; busy:
     const shouldGuard = spec.confirmCloseIfDirty ?? true;
     if (shouldGuard && isDirty) {
       const ok = await dialogStore.confirm({
-        title: "Discard changes?",
-        description: "You have unsaved changes. If you close now, they will be lost.",
-        confirmText: "Discard",
-        cancelText: "Keep editing",
+        title: 'Discard changes?',
+        description: 'You have unsaved changes. If you close now, they will be lost.',
+        confirmText: 'Discard',
+        cancelText: 'Keep editing',
         destructive: true,
         closeOnOverlayClick: false,
         closeOnEsc: true,
@@ -243,22 +243,22 @@ function FormBody({ spec }: { spec: Extract<DialogSpec, { type: "form" }>; busy:
     <>
       <Stack gap={4}>
         {/* Body scroll area */}
-        <div className="max-h-[65vh] overflow-auto pr-2">{spec.render({ form })}</div>
+        <div className='max-h-[65vh] overflow-auto pr-2'>{spec.render({ form })}</div>
 
         {form.formState.errors && Object.keys(form.formState.errors).length > 0 ? (
-          <Text variant="body-sm" className="text-destructive">
+          <Text variant='body-sm' className='text-destructive'>
             Please fix the highlighted fields.
           </Text>
         ) : null}
       </Stack>
 
-      <DialogFooter className="pt-2">
-        <Button variant="ghost" type="button" disabled={isSubmitting} onClick={requestClose}>
-          {spec.cancelText ?? "Cancel"}
+      <DialogFooter className='pt-2'>
+        <Button variant='ghost' type='button' disabled={isSubmitting} onClick={requestClose}>
+          {spec.cancelText ?? 'Cancel'}
         </Button>
 
         <Button
-          type="button"
+          type='button'
           disabled={isSubmitting}
           onClick={form.handleSubmit(async (values) => {
             try {
@@ -270,7 +270,7 @@ function FormBody({ spec }: { spec: Extract<DialogSpec, { type: "form" }>; busy:
             }
           })}
         >
-          {spec.submitText ?? "Submit"}
+          {spec.submitText ?? 'Submit'}
         </Button>
       </DialogFooter>
     </>

@@ -1,13 +1,13 @@
-import * as React from "react";
-import { X, Info, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import { AlertCard, AlertTitle, AlertDescription } from "./alert-card";
+import * as React from 'react';
+import { X, Info, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import { AlertCard, AlertTitle, AlertDescription } from './alert-card';
 
-import { cn } from "@/lib/utils";
-import { Inline, Stack } from "@/components/foundations";
+import { cn } from '@/lib/utils';
+import { Inline, Stack } from '@/components/foundations';
 
-type BaseVariant = "default" | "info" | "success" | "warning" | "destructive";
+type BaseVariant = 'default' | 'info' | 'success' | 'warning' | 'destructive';
 
-export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   variant?: BaseVariant;
   icon?: boolean | React.ReactNode;
   title?: React.ReactNode;
@@ -17,7 +17,7 @@ export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "
   open?: boolean;
   onClose?: () => void;
   autoClose?: number;
-  role?: "status" | "alert";
+  role?: 'status' | 'alert';
 }
 
 const VariantIcon: Record<BaseVariant, React.ComponentType<{ className?: string }>> = {
@@ -28,13 +28,13 @@ const VariantIcon: Record<BaseVariant, React.ComponentType<{ className?: string 
   destructive: XCircle,
 };
 
-function defaultRole(variant: BaseVariant): "status" | "alert" {
-  return variant === "warning" || variant === "destructive" ? "alert" : "status";
+function defaultRole(variant: BaseVariant): 'status' | 'alert' {
+  return variant === 'warning' || variant === 'destructive' ? 'alert' : 'status';
 }
 
 export function Alert({
   className,
-  variant = "default",
+  variant = 'default',
   icon = true,
   title,
   description,
@@ -73,38 +73,38 @@ export function Alert({
     <AlertCard
       variant={variant}
       tone={
-        variant === "info"
-          ? "blue"
-          : variant === "success"
-            ? "green"
-            : variant === "warning"
-              ? "amber"
-              : variant === "destructive"
-                ? "red"
-                : "neutral"
+        variant === 'info'
+          ? 'blue'
+          : variant === 'success'
+            ? 'green'
+            : variant === 'warning'
+              ? 'amber'
+              : variant === 'destructive'
+                ? 'red'
+                : 'neutral'
       }
       role={role ?? defaultRole(variant)}
-      aria-live={role ? (role === "alert" ? "assertive" : "polite") : defaultRole(variant) === "alert" ? "assertive" : "polite"}
-      className={cn("relative", className)}
+      aria-live={role ? (role === 'alert' ? 'assertive' : 'polite') : defaultRole(variant) === 'alert' ? 'assertive' : 'polite'}
+      className={cn('relative', className)}
       {...props}
     >
-      <Inline align="start" gap={1}>
-        {icon && typeof icon === "boolean" ? <IconCmp aria-hidden className="mt-0.5 size-4" /> : icon}
+      <Inline align='start' gap={1}>
+        {icon && typeof icon === 'boolean' ? <IconCmp aria-hidden className='mt-0.5 size-4' /> : icon}
         <Inline>
-          <Stack gap={1} className="w-full">
-            <Inline justify="between" align="start" className="w-full">
+          <Stack gap={1} className='w-full'>
+            <Inline justify='between' align='start' className='w-full'>
               {title && <AlertTitle>{title}</AlertTitle>}
               {(actions || dismissible) && (
-                <div className="absolute right-2 top-2 flex items-center gap-1">
+                <div className='absolute right-2 top-2 flex items-center gap-1'>
                   {actions}
                   {dismissible && (
                     <button
-                      type="button"
-                      aria-label="Dismiss"
-                      className="inline-flex items-center justify-center size-6 rounded-md hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      type='button'
+                      aria-label='Dismiss'
+                      className='inline-flex items-center justify-center size-6 rounded-md hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
                       onClick={handleClose}
                     >
-                      <X className="size-4" />
+                      <X className='size-4' />
                     </button>
                   )}
                 </div>

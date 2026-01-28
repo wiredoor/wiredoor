@@ -1,6 +1,6 @@
-import { toast as sonnerToast } from "sonner";
+import { toast as sonnerToast } from 'sonner';
 
-export type ToastTone = "default" | "success" | "info" | "warning" | "destructive" | "loading";
+export type ToastTone = 'default' | 'success' | 'info' | 'warning' | 'destructive' | 'loading';
 
 export type ToastAction = {
   label: string;

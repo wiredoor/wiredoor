@@ -1,2 +1,2 @@
-export * from "./icon";
-export * from "./registry";
+export * from './icon';
+export * from './registry';
