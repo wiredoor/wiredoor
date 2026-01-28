@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/pagination';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { LoaderOverlay } from '@/components/compound/loader/loader-overlay';
 
 export type Id = string | number;
 
@@ -525,6 +526,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
             })}
           </tbody>
         </table>
+        {<LoaderOverlay loading={loading} />}
       </div>
 
       {showPagination && total > limit ? (
