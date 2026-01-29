@@ -113,6 +113,14 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
             lazy: () => import('@/app/pages/remotes/remotes-page').then(convert(queryClient)),
           },
           {
+            path: 'nodes/new',
+            lazy: () => import('@/app/pages/remotes/form-page').then(convert(queryClient)),
+          },
+          {
+            path: 'nodes/edit/:id',
+            lazy: () => import('@/app/pages/remotes/form-page').then(convert(queryClient)),
+          },
+          {
             path: 'settings',
             lazy: () => import('@/app/pages/settings/settings-page').then(convert(queryClient)),
           },

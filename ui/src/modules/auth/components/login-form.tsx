@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { CheckboxRow, PasswordField, TextField } from '@/components/compound/form';
 import { useForm } from '@/hooks/use-form';
 import { FieldValues } from 'react-hook-form';
-import { z } from 'zod';
+import Joi from 'joi';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@/components/ui/alert';
-import { useAuth } from '../../../lib/auth';
+import { useAuth } from '@/lib/auth';
 import { openForgotPasswordDialog } from './forgot-password-dialog';
+import { useShake } from '@/hooks/use-shake';
 
 export function LoginForm() {
   const auth = useAuth();
@@ -22,20 +23,26 @@ export function LoginForm() {
 
   const navigate = useNavigate();
 
+  const { shake, triggerShake } = useShake();
+
   const form = useForm<{
     email: string;
     password: string;
     rememberMe?: boolean;
   }>({
     mode: 'onSubmit',
-    schema: z.object({
-      email: z.email('Invalid email address'),
-      password: z
-        .string()
-        .min(8, 'Password must be at least 8 characters')
-        .regex(/[A-Z]/, 'Password must contain an uppercase letter')
-        .regex(/[0-9]/, 'Password must contain a number'),
-      rememberMe: z.boolean().optional(),
+    schema: Joi.object({
+      email: Joi.string()
+        .email({ tlds: { allow: false } })
+        .required()
+        .label('Email'),
+      password: Joi.string()
+        .min(8)
+        .pattern(new RegExp('(?=.*[A-Z])'), 'uppercase letter')
+        .pattern(new RegExp('(?=.*[0-9])'), 'number')
+        .required()
+        .label('Password'),
+      rememberMe: Joi.boolean().optional(),
     }),
     onSubmit: async function (values: FieldValues): Promise<any> {
       await auth.login({
@@ -48,6 +55,7 @@ export function LoginForm() {
     onError: (errors) => {
       console.log('LoginForm errors:', errors);
       form.setError('root', { message: 'Invalid credentials.' });
+      triggerShake();
     },
   });
 
@@ -69,6 +77,12 @@ export function LoginForm() {
           }
         />
 
+        <CheckboxRow form={form} rowLabel='Remember me on this device' name='rememberMe' labelClassName='text-sm font-medium' />
+
+        <Button type='submit' className='w-full' shake={shake} loadingText='submitting...' isLoading={form.formState.isSubmitting}>
+          Continue
+        </Button>
+
         {form.formState.errors.root?.message ? (
           <Alert
             title='Ops!'
@@ -79,18 +93,6 @@ export function LoginForm() {
             icon
           />
         ) : null}
-
-        <CheckboxRow form={form} rowLabel='Remember me on this device' name='rememberMe' labelClassName='text-sm font-medium' />
-
-        <Button
-          type='submit'
-          className='w-full'
-          loadingText='submitting...'
-          isLoading={form.formState.isSubmitting}
-          disabled={!form.formState.isValid}
-        >
-          Continue
-        </Button>
       </Stack>
     </form>
   );

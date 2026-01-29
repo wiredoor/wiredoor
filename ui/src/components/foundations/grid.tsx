@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '@/lib/utils';
 
 type Breakpoint = 'base' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 type Responsive<T> = Partial<Record<Breakpoint, T>>;

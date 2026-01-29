@@ -11,7 +11,7 @@ export function NumberField<T extends FieldValues>(
     parseAs?: 'number' | 'string';
   } & Omit<
       React.ComponentProps<typeof import('@/components/ui').Input>,
-      'id' | 'name' | 'disabled' | 'required' | 'aria-invalid' | 'aria-describedby' | 'value' | 'defaultValue' | 'onChange'
+      'id' | 'name' | 'disabled' | 'required' | 'aria-invalid' | 'aria-describedby' | 'value' | 'defaultValue' | 'onChange' | 'form'
     >,
 ) {
   const { min, max, step, parseAs = 'number', ...shell } = props;

@@ -3,6 +3,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Loader2 as Loader, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Icon } from '@/components/foundations';
 
 const buttonVariants = cva(
   [
@@ -155,7 +156,7 @@ type BaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
     rounded?: boolean;
     isLoading?: boolean;
     loadingText?: string;
-    leadingIcon?: React.ReactNode;
+    leadingIcon?: React.ReactNode | string;
     trailingIcon?: React.ReactNode;
     fullWidth?: boolean;
 
@@ -237,7 +238,9 @@ function Button({
       onClick={handleClick}
       {...props}
     >
-      {!isLoading && leadingIcon ? <span className='-ml-0.5 inline-flex'>{leadingIcon}</span> : null}
+      {!isLoading && leadingIcon ? (
+        <span className='-ml-0.5 inline-flex'>{typeof leadingIcon === 'string' ? <Icon name={leadingIcon as any} /> : leadingIcon}</span>
+      ) : null}
 
       {isLoading ? <Loader className='h-4 w-4 animate-spin' aria-hidden='true' /> : null}
 
@@ -251,7 +254,7 @@ function Button({
             cta === 'arrow' ? 'transition-transform duration-150 ease-out group-hover:translate-x-0.5' : undefined,
           )}
         >
-          {trailingIcon ?? arrowIcon ?? <ArrowRight aria-hidden='true' />}
+          {(typeof trailingIcon === 'string' ? <Icon name={trailingIcon as any} /> : trailingIcon) ?? arrowIcon ?? <ArrowRight aria-hidden='true' />}
         </span>
       ) : null}
 

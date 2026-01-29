@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useForm as rhfUseForm, UseFormProps, FieldValues } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { joiResolver } from '@hookform/resolvers/joi';
+import type Joi from 'joi';
 
 interface FormConfig<T extends FieldValues> extends Omit<UseFormProps<T>, 'resolver'> {
-  schema?: z.ZodType<T, any>;
+  schema?: Joi.ObjectSchema<T>;
   onSubmit: (values: T) => Promise<any>;
   onSuccess?: (data: any) => void;
   onError?: (error: any) => void;
@@ -15,7 +15,15 @@ export function useForm<T extends FieldValues>(config: FormConfig<T>) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = rhfUseForm<T>({
-    resolver: schema ? zodResolver(schema) : undefined,
+    resolver: schema
+      ? joiResolver(schema, {
+          abortEarly: false,
+          messages: {
+            'string.empty': '{#label} is required',
+            'any.required': '{#label} is required',
+          },
+        })
+      : undefined,
     defaultValues,
     mode,
     ...formProps,
