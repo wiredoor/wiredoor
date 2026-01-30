@@ -23,12 +23,13 @@ export const nodeValidator = Joi.object<NodeForm>({
   name: Joi.string().required().label('Name'),
   dns: Joi.string().allow('', null).optional().label('DNS'),
   keepalive: Joi.number().optional(),
-  mtu: Joi.number().optional(),
+  mtu: Joi.number().integer().min(1280).max(1440).optional(),
   address: Joi.string()
+    .ip({ version: 'ipv4', cidr: 'forbidden' })
     .when('id', {
-      is: undefined,
-      then: Joi.string().allow('').ip({ version: 'ipv4', cidr: 'forbidden' }).optional(),
-      otherwise: Joi.string().ip({ version: 'ipv4', cidr: 'forbidden' }).required(),
+      is: Joi.exist(),
+      then: Joi.required(),
+      otherwise: Joi.optional().allow('', null),
     })
     .label('IP Address'),
   allowInternet: Joi.boolean().optional(),

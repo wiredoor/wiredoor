@@ -171,10 +171,11 @@ export const createNodeValidator: ObjectSchema<CreateNodeType> = Joi.object({
   allowInternet: Joi.boolean().optional(),
   isGateway: Joi.boolean().optional(),
   advanced: Joi.boolean().optional(),
+  mtu: Joi.number().integer().min(1280).max(1440).optional(),
   gatewayNetworks: Joi.when('isGateway', {
     is: true,
     then: gatewayNetworksValidator,
-    otherwise: Joi.valid(null).optional(),
+    otherwise: Joi.array().max(0).allow(null).optional(),
   }),
   // interface: Joi.string().optional(),
   // enabled: Joi.boolean().optional(),
