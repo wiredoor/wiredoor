@@ -55,22 +55,22 @@ function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?:
   const label = dir === 'rx' ? 'Rx' : 'Tx';
   const arrowIcon = dir === 'rx' ? 'arrowDown' : 'arrowUp';
 
-  const toneClass = has ? (dir === 'rx' ? 'text-emerald-600 dark:text-emerald-500' : 'text-sky-600 dark:text-sky-500') : 'text-muted-foreground';
+  const toneClass = has && pulse ? (dir === 'rx' ? 'text-emerald-600 dark:text-emerald-500' : 'text-sky-600 dark:text-sky-500') : 'text-muted-foreground';
 
   return (
-    <Inline className={`items-center gap-2 ${toneClass}`}>
+    <Inline className={`items-center gap-2`}>
       <span className='inline-flex h-5 w-5 items-center justify-center rounded-md bg-muted/40'>
-        <Icon name={arrowIcon} className='h-4 w-4' />
+        <Icon name={arrowIcon} className={`h-4 w-4 ${toneClass}`} />
       </span>
 
-      <span className='text-xs font-medium'>{label}</span>
+      <span className='text-xs font-medium text-muted-foreground'>{label}</span>
 
       <span className='text-sm tabular-nums text-foreground'>{has ? formatBytes(value) : '-'}</span>
     </Inline>
   );
 }
 
-export function TrafficCell({ rx, tx }: { rx?: number; tx?: number }) {
+export function TrafficCell({ id, rx, tx }: { id: number; rx?: number; tx?: number }) {
   const hasAny = (!!rx && rx > 0) || (!!tx && tx > 0);
 
   return (
@@ -153,7 +153,7 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
     label: 'Traffic',
     key: 'transferRx',
     className: 'text-right tabular-nums w-28 pr-10',
-    render: ({ row }) => <TrafficCell rx={row.transferRx} tx={row.transferTx} />,
+    render: ({ row }) => <TrafficCell id={row.id} rx={row.transferRx} tx={row.transferTx} />,
   },
 ];
 
