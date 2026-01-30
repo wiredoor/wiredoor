@@ -27,7 +27,7 @@ export type RemoteRow = {
   transferRx: number;
   transferTx: number;
   alerts?: Array<{
-    tone: "warning" | "destructive" | "info";
+    tone: 'warning' | 'destructive' | 'info';
     label: string; // "Update required", "Credentials expiring", etc.
     description?: string; // tooltip / expanded
     actionLabel?: string; // "Update", "Rotate", etc.
@@ -37,13 +37,13 @@ export type RemoteRow = {
 function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?: number }) {
   const has = !!value && value > 0;
 
-  const prevRef = React.useRef<{ value: number }>(value);
+  const prevRef = React.useRef<number>(undefined);
   const [pulse, setPulse] = React.useState(false);
 
   React.useEffect(() => {
     const prev = prevRef.current;
 
-    if (value && value > prev) {
+    if (value && prev && value > prev) {
       setPulse(true);
       const t = setTimeout(() => setPulse(false), 650);
       return () => clearTimeout(t);
@@ -55,7 +55,8 @@ function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?:
   const label = dir === 'rx' ? 'Rx' : 'Tx';
   const arrowIcon = dir === 'rx' ? 'arrowDown' : 'arrowUp';
 
-  const toneClass = has && pulse ? (dir === 'rx' ? 'text-emerald-600 dark:text-emerald-500' : 'text-sky-600 dark:text-sky-500') : 'text-muted-foreground';
+  const toneClass =
+    has && pulse ? (dir === 'rx' ? 'text-emerald-600 dark:text-emerald-500' : 'text-sky-600 dark:text-sky-500') : 'text-muted-foreground';
 
   return (
     <Inline className={`items-center gap-2`}>
@@ -75,8 +76,8 @@ export function TrafficCell({ id, rx, tx }: { id: number; rx?: number; tx?: numb
 
   return (
     <Stack gap={1} className={hasAny ? '' : 'text-muted-foreground'}>
-      <TrafficLine dir='rx' value={rx} />
-      <TrafficLine dir='tx' value={tx} />
+      <TrafficLine id={id} dir='rx' value={rx} />
+      <TrafficLine id={id} dir='tx' value={tx} />
     </Stack>
   );
 }
@@ -153,7 +154,7 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
     label: 'Traffic',
     key: 'transferRx',
     className: 'text-right tabular-nums w-28 pr-10',
-    render: ({ row }) => <TrafficCell id={row.id} rx={row.transferRx} tx={row.transferTx} />,
+    render: ({ row }) => <TrafficCell id={row.id as number} rx={row.transferRx} tx={row.transferTx} />,
   },
 ];
 
