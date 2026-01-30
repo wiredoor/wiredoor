@@ -15,6 +15,7 @@ import {
 } from '@/components/ui';
 import { Inline } from '@/components/foundations';
 import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from './types';
+import { useFormContext } from './form';
 
 const Ctx = React.createContext<FormFieldCtx<any> | null>(null);
 
@@ -59,6 +60,8 @@ export function FormField<T extends FieldValues>({
   const invalid = Boolean(invalidProp || error);
   const describedBy = joinIds([descriptionId, errorId]);
 
+  const formCtx = useFormContext();
+
   const Header = (
     <>
       {title ? <FieldTitle>{title}</FieldTitle> : null}
@@ -95,7 +98,16 @@ export function FormField<T extends FieldValues>({
   );
 
   return (
-    <div className={className} {...props}>
+    <div
+      className={className}
+      data-field-key={name}
+      onFocusCapture={() => formCtx.setFocused({ key: name })}
+      onBlurCapture={(e) => {
+        const next = e.relatedTarget as HTMLElement | null;
+        if (!next || !e.currentTarget.contains(next)) formCtx.clearFocused();
+      }}
+      {...props}
+    >
       <Field>
         {asFieldSet ? (
           <FieldSet>

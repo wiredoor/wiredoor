@@ -20,16 +20,37 @@ type Filters = {
 export type RemoteRow = {
   id: Id;
   status: 'online' | 'offline';
+  enabled: boolean;
   name: string;
   isGateway: boolean;
   latestHandshakeTimestamp: number;
   transferRx: number;
   transferTx: number;
-  enabled: boolean;
+  alerts?: Array<{
+    tone: "warning" | "destructive" | "info";
+    label: string; // "Update required", "Credentials expiring", etc.
+    description?: string; // tooltip / expanded
+    actionLabel?: string; // "Update", "Rotate", etc.
+  }>;
 };
 
-function TrafficLine({ dir, value }: { dir: 'rx' | 'tx'; value?: number }) {
+function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?: number }) {
   const has = !!value && value > 0;
+
+  const prevRef = React.useRef<{ value: number }>(value);
+  const [pulse, setPulse] = React.useState(false);
+
+  React.useEffect(() => {
+    const prev = prevRef.current;
+
+    if (value && value > prev) {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 650);
+      return () => clearTimeout(t);
+    }
+
+    prevRef.current = value;
+  }, [id, dir, value]);
 
   const label = dir === 'rx' ? 'Rx' : 'Tx';
   const arrowIcon = dir === 'rx' ? 'arrowDown' : 'arrowUp';
@@ -128,16 +149,6 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
       </div>
     ),
   },
-  // {
-  //   label: 'Type',
-  //   key: 'isGateway',
-  //   render: ({ row }) => (row.isGateway ? <StatusBadge status='info'>Gateway</StatusBadge> : <StatusBadge status='success'>Node</StatusBadge>),
-  // },
-  // {
-  //   label: 'Latest Handshake',
-  //   key: 'latestHandshakeTimestamp',
-  //   render: ({ value }) => (value ? new Date(value).toLocaleTimeString() : '-'),
-  // },
   {
     label: 'Traffic',
     key: 'transferRx',

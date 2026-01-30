@@ -39,7 +39,7 @@ export const openForgotPasswordDialog = createDialog<ForgotPasswordArgs, ForgotP
           delay={650}
           className='w-full'
           entries={[
-            { command: 'cd', flags: ['/path/to/wiredoor'], copy: false, typing: true },
+            { command: 'cd', flags: ['/path/to/wiredoor-install-dir'], copy: false, typing: true },
             {
               command: 'docker compose exec wiredoor',
               flags: ['wd-admin', 'change-password', '--user', args.username || 'admin@example.com'],

@@ -31,6 +31,7 @@ export function useForm<T extends FieldValues>(config: FormConfig<T>) {
 
   const handleSubmit: ReturnType<typeof form.handleSubmit> = form.handleSubmit(async (values) => {
     setSubmitError(null);
+    console.log('useForm submitting values:', values);
 
     try {
       const result = await onSubmit(values);
