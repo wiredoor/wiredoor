@@ -108,6 +108,7 @@ export type DataTableProps<RowT extends { id: Id }> = {
   tableContainerClassName?: string;
   theadClassName?: string;
   tbodyClassName?: string;
+  rowClassName?: (row: RowT, rowIndex: number) => string;
 
   /**
    * If you want to control how to get the id (in case it's not `id`)
@@ -295,6 +296,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
       '[&>tr>th]:py-3 [&>tr>th]:align-middle',
     ].join(' '),
     tbodyClassName = 'text-sm border-b border-border [&>tr]:border-b [&>tr]:border-border/60 last:[&>tr]:border-b-0',
+    rowClassName,
     getRowId = defaultGetRowId,
   } = props;
 
@@ -466,6 +468,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                       'data-[selected=true]:bg-primary/5',
                       'data-[selected=true]:hover:bg-primary/8',
                       rowIndex % 2 === 1 ? 'bg-muted/10' : '',
+                      rowClassName ? rowClassName(row, rowIndex) : '',
                     ].join(' ')}
                   >
                     {showCheckbox ? (

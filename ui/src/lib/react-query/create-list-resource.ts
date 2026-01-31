@@ -8,13 +8,19 @@ export type ListResponse<T> = {
   page: number;
 };
 
-export function createListResource<TParams extends Record<string, any>, TData>(cfg: {
+function stableStringify(value: any): string {
+  return JSON.stringify(value, Object.keys(value).sort());
+}
+
+export function createListResource<TParams extends Record<string, any>, TItem>(cfg: {
   resourceKey: string;
   normalize: (params?: TParams) => Record<string, any>;
-  fetcher: (params?: TParams) => Promise<ListResponse<TData>>;
+  fetcher: (params?: TParams) => Promise<ListResponse<TItem>>;
+
   buildSseUrl?: (normalizedParams: Record<string, any>) => string;
-  parseSSE?: (evt: MessageEvent) => TData[];
-  applySSE?: (prev: ListResponse<TData> | undefined, rows: TData[], normalizedParams: Record<string, any>) => ListResponse<TData>;
+  parseSSE?: (evt: MessageEvent) => TItem[];
+
+  applySSE?: (prev: ListResponse<TItem> | undefined, rows: TItem[], normalizedParams: Record<string, any>) => ListResponse<TItem>;
 }) {
   const key = (params?: TParams) => [cfg.resourceKey, cfg.normalize(params)] as const;
 
@@ -29,33 +35,34 @@ export function createListResource<TParams extends Record<string, any>, TData>(c
 
   const useList = (params?: TParams) => useQuery(queryOptionsFor(params));
 
-  const useListSSE = (params?: TParams, enabled = true) => {
+  const useListSSE = (params?: TParams, enabled = true, opts?: { onApplied?: (next: ListResponse<TItem>) => void }) => {
     if (!cfg.buildSseUrl || !cfg.parseSSE) return null;
 
     const normalized = cfg.normalize(params);
+    const sseKey = `${cfg.resourceKey}-sse-${stableStringify(normalized)}`;
 
-    return useSSEQuerySnapshot<ListResponse<TData>>({
+    return useSSEQuerySnapshot<ListResponse<TItem>, TItem[]>({
       enabled,
-      key: `${cfg.resourceKey}-sse-${JSON.stringify(normalized)}`,
+      key: sseKey,
       queryKey: key(normalized as TParams),
       url: () => cfg.buildSseUrl!(normalized),
-      parse: (evt) => {
-        return cfg.parseSSE!(evt) as any;
-      },
-      apply: (prev, incoming): ListResponse<TData> => {
-        const rows = incoming;
-        const prevData = prev as ListResponse<TData> | undefined;
 
-        const fallbackApply: NonNullable<typeof cfg.applySSE> = (p, r, n) => ({
-          data: r as TData[],
-          page: (p?.page ?? n.page ?? 1) as number,
-          limit: (p?.limit ?? n.limit ?? 10) as number,
+      parse: (evt) => cfg.parseSSE!(evt),
+
+      apply: (prev, rows) => {
+        const fallbackApply = (p: ListResponse<TItem> | undefined, r: TItem[], n: Record<string, any>) => ({
+          data: r,
+          page: (p?.page ?? (n.page as number) ?? 1) as number,
+          limit: (p?.limit ?? (n.limit as number) ?? 10) as number,
           total: (p?.total ?? r.length) as number,
         });
 
-        const applyFn = cfg.applySSE ?? fallbackApply;
-        return applyFn(prevData, rows as any, normalized);
+        const next = (cfg.applySSE ?? fallbackApply)(prev, rows, normalized);
+
+        return next;
       },
+
+      onApplied: opts?.onApplied,
     });
   };
 

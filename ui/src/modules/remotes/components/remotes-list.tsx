@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { type ColumnDef, type Id, DataTableRef } from '@/components/compound/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,10 @@ import { Icon, Inline, Stack, Surface } from '@/components/foundations';
 import { StatusBadge, StatusDot } from '@/components/compound/badges';
 
 import { QueryDataTable } from '@/modules/shared/components/query-data-table';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, getLatestHS } from '@/lib/format';
 import { DataTableToolbar } from '@/modules/shared/components/data-table-toolbar';
 import { SelectField, TextField } from '@/components/compound/form';
+import { enableNode } from '../api/update-node';
 
 type Filters = {
   search: string;
@@ -83,7 +85,8 @@ export function TrafficCell({ id, rx, tx }: { id: number; rx?: number; tx?: numb
 }
 
 // ---------------- Dropdown actions ----------------
-function ActionsDropdown({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: boolean; onOpenChange: (open: boolean) => void }) {
+  const navigate = useNavigate();
   return (
     <div className='flex justify-end'>
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
@@ -96,6 +99,7 @@ function ActionsDropdown({ open, onOpenChange }: { open: boolean; onOpenChange: 
         <DropdownMenuContent className='w-56' align='end'>
           <DropdownMenuItem
             onSelect={() => {
+              navigate(`/nodes/edit/${row.id}`);
               onOpenChange(false);
             }}
           >
@@ -104,10 +108,11 @@ function ActionsDropdown({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
           <DropdownMenuItem
             onSelect={() => {
+              enableNode(row.id as number, row.enabled ? 'disable' : 'enable');
               onOpenChange(false);
             }}
           >
-            Disable
+            {row.enabled ? 'Disable' : 'Enable'}
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -130,7 +135,13 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
     key: 'status',
     width: '60px',
     render: ({ row }) => (
-      <StatusDot size='xs' motion={row.status === 'online' ? 'ping' : 'blink'} tone={row.status === 'online' ? 'success' : 'destructive'} />
+      <Inline justify='center' align='center'>
+        {!row.enabled ? (
+          <Icon name='link-off' className='h-4 w-4 text-muted-foreground' />
+        ) : (
+          <StatusDot size='sm' motion={row.status === 'online' ? 'ping' : 'blink'} tone={row.status === 'online' ? 'success' : 'destructive'} />
+        )}
+      </Inline>
     ),
   },
   {
@@ -140,12 +151,12 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
       <div className='min-w-0'>
         <div className='flex items-center gap-2'>
           <span className='font-medium truncate hover:underline cursor-pointer underline-offset-4'>{row.name}</span>
+
           {row.isGateway ? <StatusBadge status='info'>Gateway</StatusBadge> : <StatusBadge status='success'>Node</StatusBadge>}
         </div>
 
         <div className='text-xs text-muted-foreground truncate'>
-          ID {String(row.id).slice(0, 8)} • Last handshake{' '}
-          {row.latestHandshakeTimestamp ? new Date(row.latestHandshakeTimestamp).toLocaleString() : '—'}
+          Last handshake: {row.latestHandshakeTimestamp ? getLatestHS(row.latestHandshakeTimestamp) : '-'}
         </div>
       </div>
     ),
@@ -153,7 +164,7 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
   {
     label: 'Traffic',
     key: 'transferRx',
-    className: 'text-right tabular-nums w-28 pr-10',
+    className: 'text-right tabular-nums w-42 pr-10',
     render: ({ row }) => <TrafficCell id={row.id as number} rx={row.transferRx} tx={row.transferTx} />,
   },
 ];
@@ -169,6 +180,7 @@ export type RemotesTableProps = {
 export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTableProps) {
   const tableRef = React.useRef<DataTableRef<RemoteRow>>(null);
   const [openByRow, setOpenByRow] = React.useState<Record<string, boolean>>({});
+  const [expandedRow, setExpandedRow] = React.useState<RemoteRow | null>(null);
 
   const [filters, setFilters] = React.useState<Filters>({ search: '', status: '', type: '' });
 
@@ -182,7 +194,7 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
         render: ({ row }) => {
           const k = String(row.id);
           const open = !!openByRow[k];
-          return <ActionsDropdown open={open} onOpenChange={(v) => setOpenByRow((p) => ({ ...p, [k]: v }))} />;
+          return <ActionsDropdown row={row} open={open} onOpenChange={(v) => setOpenByRow((p) => ({ ...p, [k]: v }))} />;
         },
       },
     ],
@@ -245,11 +257,22 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
           dataStream={'/api/nodes/stream'}
           showPagination
           onAdd={onAdd}
+          expandable
           empty={{
             title: 'No nodes yet',
             description: 'Create your first node to start exposing services from private networks.',
             action: 'Create node',
           }}
+          onExpand={(row) => setExpandedRow(row)}
+          rowClassName={(row) => (!row.enabled ? 'opacity-60' : '')}
+          renderExpandedRow={({ row }) => (
+            <div className='rounded-md border p-3'>
+              <div className='text-sm font-medium'>{row.name}</div>
+              <div className='text-xs text-muted-foreground'>
+                enabled: {String(row.enabled)} • gateway: {String(row.isGateway)}
+              </div>
+            </div>
+          )}
         />
       </div>
     </Surface>

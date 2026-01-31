@@ -158,7 +158,17 @@ export const QueryDataTable = React.forwardRef(function QueryDataTableInner<RowT
     return stableStringify(normalized);
   }, [resource, ctx]);
 
-  resource.useListSSE(ctx, sseEnabled);
+  resource.useListSSE(ctx as any, sseEnabled, {
+    onApplied: (next) => {
+      subHandlersRef.current?.emit({
+        type: 'batchPatch',
+        patches: next.data.map((row) => ({
+          id: row.id as number,
+          patch: row,
+        })),
+      });
+    },
+  });
 
   const subscribe = React.useCallback(
     (nextCtx: FetchParams, handlers: { emit: (event: StreamEvent<RowT>) => void; error?: (err: unknown) => void }): Unsubscribe => {

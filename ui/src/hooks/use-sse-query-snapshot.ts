@@ -1,13 +1,20 @@
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { useEventSource } from '@/hooks/use-event-source';
 
-export function useSSEQuerySnapshot<TSnapshot>(opts: {
+export function useSSEQuerySnapshot<TSnapshot, TData>(opts: {
   enabled: boolean;
   key: string;
   url: () => string;
   queryKey: QueryKey;
-  parse: (evt: MessageEvent) => TSnapshot;
-  apply?: (prev: TSnapshot | undefined, next: TSnapshot) => TSnapshot;
+
+  parse: (evt: MessageEvent) => TData;
+
+  apply?: (prev: TSnapshot | undefined, next: TData) => TSnapshot;
+
+  onApplied?: (next: TSnapshot) => void;
+
+  onDataParsed?: (data: TData) => void;
+
   eventName?: string;
 }) {
   const qc = useQueryClient();
@@ -18,10 +25,17 @@ export function useSSEQuerySnapshot<TSnapshot>(opts: {
     url: opts.url,
     eventName: opts.eventName,
     onData: (evt) => {
-      const next = opts.parse(evt);
+      const parsed = opts.parse(evt);
+      opts.onDataParsed?.(parsed);
+
       qc.setQueryData(opts.queryKey, (prev: unknown) => {
         const prevTyped = prev as TSnapshot | undefined;
-        return opts.apply ? opts.apply(prevTyped, next) : next;
+
+        const nextSnapshot = opts.apply ? opts.apply(prevTyped, parsed) : (parsed as unknown as TSnapshot);
+
+        opts.onApplied?.(nextSnapshot);
+
+        return nextSnapshot;
       });
     },
   });

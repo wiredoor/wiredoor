@@ -20,7 +20,7 @@ export function formatBytes(v: number, decimals = 2): string {
   if (v === 0) return '0 Bytes';
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(v) / Math.log(k));
 
   return parseFloat((v / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
