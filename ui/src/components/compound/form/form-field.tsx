@@ -15,7 +15,6 @@ import {
 } from '@/components/ui';
 import { Inline } from '@/components/foundations';
 import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from './types';
-import { useFormContext } from './form';
 
 const Ctx = React.createContext<FormFieldCtx<any> | null>(null);
 
@@ -60,8 +59,6 @@ export function FormField<T extends FieldValues>({
   const invalid = Boolean(invalidProp || error);
   const describedBy = joinIds([descriptionId, errorId]);
 
-  const formCtx = useFormContext();
-
   const Header = (
     <>
       {title ? <FieldTitle>{title}</FieldTitle> : null}
@@ -70,13 +67,16 @@ export function FormField<T extends FieldValues>({
         <Inline justify='between' align='center'>
           <FieldLabel htmlFor={id}>
             {label}
-            {required ? <span aria-hidden='true'> *</span> : null}
+            {required ? (
+              <span aria-hidden='true' className='text-destructive'>
+                {' '}
+                *
+              </span>
+            ) : null}
           </FieldLabel>
           {helper ? helper : null}
         </Inline>
       ) : null}
-
-      {description ? <FieldDescription id={descriptionId}>{description}</FieldDescription> : null}
 
       {separator ? <FieldSeparator /> : null}
     </>
@@ -92,22 +92,17 @@ export function FormField<T extends FieldValues>({
     <Ctx.Provider value={ctxValue}>
       <FieldContent>
         <FieldGroup>{children}</FieldGroup>
-        {invalid ? <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? 'Invalid value'}</FieldError> : null}
+        {invalid ? (
+          <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? 'Invalid value'}</FieldError>
+        ) : description ? (
+          <FieldDescription id={descriptionId}>{description}</FieldDescription>
+        ) : null}
       </FieldContent>
     </Ctx.Provider>
   );
 
   return (
-    <div
-      className={className}
-      data-field-key={name}
-      onFocusCapture={() => formCtx.setFocused({ key: name })}
-      onBlurCapture={(e) => {
-        const next = e.relatedTarget as HTMLElement | null;
-        if (!next || !e.currentTarget.contains(next)) formCtx.clearFocused();
-      }}
-      {...props}
-    >
+    <div className={className} {...props}>
       <Field>
         {asFieldSet ? (
           <FieldSet>
@@ -158,7 +153,7 @@ FormField.Control = function Control<T extends FieldValues>(props: { children: (
     'aria-describedby': c.a11y.describedBy,
   };
 
-  return <>{props.children({ field: field as any, a11y })}</>;
+  return <>{props.children({ field, a11y })}</>;
 };
 
 export type FormFieldRadioOption<V extends string = string> = {
