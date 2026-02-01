@@ -94,7 +94,7 @@ export function ComboboxField<T extends FieldValues, V extends string = string>(
 
               <PopoverContent className={cn('w-48 p-0', popoverClassName)}>
                 <Command>
-                  <CommandInput placeholder={searchPlaceholder} className='h-9' />
+                  <CommandInput placeholder={searchPlaceholder} className='h-10' />
                   <CommandList>
                     <CommandEmpty>{emptyText}</CommandEmpty>
 

@@ -120,7 +120,7 @@ export function MultiSelectField<T extends FieldValues, V extends string = strin
 
               <PopoverContent className={cn('w-[240px] p-0', popoverClassName)}>
                 <Command>
-                  <CommandInput placeholder={searchPlaceholder} className='h-9' />
+                  <CommandInput placeholder={searchPlaceholder} className='h-10' />
                   <CommandList>
                     <CommandEmpty>{emptyText}</CommandEmpty>
 
