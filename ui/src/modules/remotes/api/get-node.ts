@@ -2,7 +2,7 @@ import { createItemResource } from '@/lib/react-query/create-item-resource';
 import { NodeForm } from '../validators/node-validator';
 
 export const nodeById = createItemResource<{ id: number }, Node>({
-  resourceKey: 'node',
+  resourceKey: '/api/nodes/:id',
   normalize: (p) => ({ id: p.id }),
   enabledWhen: (p) => Number.isFinite(p.id) && p.id > 0,
   fetcher: async ({ id }) => {

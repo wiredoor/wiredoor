@@ -160,13 +160,7 @@ export const QueryDataTable = React.forwardRef(function QueryDataTableInner<RowT
 
   resource.useListSSE(ctx as any, sseEnabled, {
     onApplied: (next) => {
-      subHandlersRef.current?.emit({
-        type: 'batchPatch',
-        patches: next.data.map((row) => ({
-          id: row.id as number,
-          patch: row,
-        })),
-      });
+      subHandlersRef.current?.emit({ type: 'replace', rows: next.data });
     },
   });
 
@@ -175,7 +169,6 @@ export const QueryDataTable = React.forwardRef(function QueryDataTableInner<RowT
       subHandlersRef.current = handlers;
       setCtx(nextCtx);
       return () => {
-        // si quieres ser estricto, solo limpia si coincide
         if (subHandlersRef.current === handlers) subHandlersRef.current = null;
       };
     },
@@ -185,7 +178,6 @@ export const QueryDataTable = React.forwardRef(function QueryDataTableInner<RowT
   const fetcher = React.useCallback(
     async (p: FetchParams): Promise<FetchResult<RowT>> => {
       const data = await qc.ensureQueryData(resource.queryOptionsFor(p));
-      // data es ListResponse<RowT> con shape compatible
       return data as FetchResult<RowT>;
     },
     [qc, resource],

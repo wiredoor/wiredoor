@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Inline, Stack } from '@/components/foundations';
+import { Icon, Inline, Stack } from '@/components/foundations';
 
 import {
   Pagination,
@@ -485,22 +485,19 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
                     {expandable ? (
                       <td className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
-                        <button
-                          className={[
-                            'text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 transform',
-                            isExpanded ? 'rotate-180' : '',
-                          ].join(' ')}
-                          aria-expanded={isExpanded}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleExpand(row);
-                          }}
-                        >
-                          <span className='sr-only'>Expand</span>
-                          <svg className='w-8 h-8 fill-current' viewBox='0 0 32 32'>
-                            <path d='M16 20l-5.4-5.4 1.4-1.4 4 4 4-4 1.4 1.4z' />
-                          </svg>
-                        </button>
+                        <Inline justify='center' align='center'>
+                          <button
+                            className='text-muted-foreground hover:text-foreground focus:outline-none rounded-sm p-1'
+                            aria-expanded={isExpanded}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleExpand(row);
+                            }}
+                          >
+                            <span className='sr-only'>Expand</span>
+                            <Icon name={isExpanded ? 'chevron-down' : 'chevron-right'} className='h-4 w-4' />
+                          </button>
+                        </Inline>
                       </td>
                     ) : null}
 

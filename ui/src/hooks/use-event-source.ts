@@ -43,6 +43,7 @@ export function useEventSource({
   eventName,
 }: UseEventSourceOptions): UseEventSourceReturn {
   const esRef = React.useRef<EventSource | null>(null);
+  const abortCtrlRef = React.useRef<AbortController | null>(null);
 
   const urlRef = useLatestRef(url);
   const onOpenRef = useLatestRef(onOpen);
@@ -57,6 +58,10 @@ export function useEventSource({
   const getEventSource = React.useCallback(() => esRef.current, []);
 
   const close = React.useCallback(() => {
+    if (abortCtrlRef.current) {
+      abortCtrlRef.current.abort();
+      abortCtrlRef.current = null;
+    }
     if (esRef.current) {
       esRef.current.close();
       esRef.current = null;
@@ -79,6 +84,9 @@ export function useEventSource({
     const es = new EventSource(resolved, { withCredentials });
     esRef.current = es;
 
+    const ac = new AbortController();
+    abortCtrlRef.current = ac;
+
     es.onopen = () => {
       setState('open');
       onOpenRef.current?.();
@@ -95,6 +103,7 @@ export function useEventSource({
 
     const handler = (evt: MessageEvent) => {
       // lastEventId existe en algunos browsers / servers
+      if (abortCtrlRef.current?.signal.aborted) return;
       const anyEvt = evt as any;
       if (anyEvt?.lastEventId) setLastEventId(anyEvt.lastEventId);
       onDataRef.current?.(evt);

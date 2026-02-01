@@ -1,4 +1,4 @@
-import { UseMutationOptions, DefaultOptions } from '@tanstack/react-query';
+import { UseMutationOptions, DefaultOptions, QueryClient } from '@tanstack/react-query';
 
 export const queryConfig = {
   queries: {
@@ -18,3 +18,9 @@ export type MutationConfig<MutationFnType extends (...args: any) => Promise<any>
   Error,
   Parameters<MutationFnType>[0]
 >;
+
+export async function invalidateResourceFamily(qc: QueryClient, resourceKey: string, exact = false) {
+  await qc.invalidateQueries({ queryKey: [resourceKey], exact });
+
+  await qc.refetchQueries({ queryKey: [resourceKey], exact, type: 'active' });
+}

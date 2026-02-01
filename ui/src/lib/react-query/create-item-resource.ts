@@ -53,7 +53,7 @@ export function createItemResource<TParams extends Record<string, any>, TData>(c
 
     const applyFn = cfg.applySSE ?? fallbackApply;
 
-    return useSSEQuerySnapshot<TData>({
+    return useSSEQuerySnapshot<TData, TData>({
       enabled: baseEnabled && enabled,
       key: `${cfg.resourceKey}-sse-${JSON.stringify(normalized)}`,
       queryKey: key(params),

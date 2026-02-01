@@ -5,13 +5,15 @@ import { type ColumnDef, type Id, DataTableRef } from '@/components/compound/tab
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Icon, Inline, Stack, Surface } from '@/components/foundations';
-import { StatusBadge, StatusDot } from '@/components/compound/badges';
+import { StatusBadge } from '@/components/compound/badges';
 
 import { QueryDataTable } from '@/modules/shared/components/query-data-table';
 import { formatBytes, getLatestHS } from '@/lib/format';
 import { DataTableToolbar } from '@/modules/shared/components/data-table-toolbar';
 import { SelectField, TextField } from '@/components/compound/form';
 import { enableNode } from '../api/update-node';
+import { NodeDetailsCard } from './node-details-card';
+import { ConnectionIndicator } from './connection-indicator';
 
 type Filters = {
   search: string;
@@ -134,15 +136,7 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
     label: '',
     key: 'status',
     width: '60px',
-    render: ({ row }) => (
-      <Inline justify='center' align='center'>
-        {!row.enabled ? (
-          <Icon name='link-off' className='h-4 w-4 text-muted-foreground' />
-        ) : (
-          <StatusDot size='sm' motion={row.status === 'online' ? 'ping' : 'blink'} tone={row.status === 'online' ? 'success' : 'destructive'} />
-        )}
-      </Inline>
-    ),
+    render: ({ row }) => <ConnectionIndicator row={row} />,
   },
   {
     label: 'Name',
@@ -265,14 +259,7 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
           }}
           onExpand={(row) => setExpandedRow(row)}
           rowClassName={(row) => (!row.enabled ? 'opacity-60' : '')}
-          renderExpandedRow={({ row }) => (
-            <div className='rounded-md border p-3'>
-              <div className='text-sm font-medium'>{row.name}</div>
-              <div className='text-xs text-muted-foreground'>
-                enabled: {String(row.enabled)} • gateway: {String(row.isGateway)}
-              </div>
-            </div>
-          )}
+          renderExpandedRow={({ row }) => <NodeDetailsCard row={row} />}
         />
       </div>
     </Surface>
