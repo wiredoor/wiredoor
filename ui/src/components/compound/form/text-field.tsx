@@ -12,7 +12,7 @@ type TextFieldProps<T extends FieldValues> = Omit<FormFieldProps<T>, 'children'>
   trailing?: Adornment;
   leadingInteractive?: boolean;
   trailingInteractive?: boolean;
-} & Omit<React.ComponentProps<typeof InputGroupInput>, 'id' | 'name' | 'disabled' | 'required' | 'aria-invalid' | 'aria-describedby'>;
+} & Omit<React.ComponentProps<typeof InputGroupInput>, 'id' | 'name' | 'disabled' | 'required' | 'aria-invalid' | 'aria-describedby' | 'form'>;
 
 function renderAdornment(node: Adornment) {
   return typeof node === 'string' ? <span className='text-xs text-muted-foreground'>{node}</span> : node;

@@ -291,11 +291,10 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
     onExpand,
     tableContainerClassName = 'w-full',
     theadClassName = [
-      'text-xs font-medium tracking-wide text-muted-foreground',
-      'bg-muted/20 border-y border-border',
-      '[&>tr>th]:py-3 [&>tr>th]:align-middle',
+      'text-left text-xs font-medium uppercase tracking-wider text-muted-foreground/80',
+      '[&>tr>th]:py-3 [&>tr>th]:px-4 [&>tr>th]:align-middle',
     ].join(' '),
-    tbodyClassName = 'text-sm border-b border-border [&>tr]:border-b [&>tr]:border-border/60 last:[&>tr]:border-b-0',
+    tbodyClassName = 'bg-background divide-y divide-border divide-border/60',
     rowClassName,
     getRowId = defaultGetRowId,
   } = props;
@@ -422,7 +421,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
       <div className={['w-full rounded-md border bg-card overflow-x-auto', tableContainerClassName].join(' ')}>
         <table className='table-auto w-full dark:text-gray-300'>
           <thead className={theadClassName}>
-            <tr>
+            <tr className='bg-muted/30 border-b border-border'>
               {showCheckbox ? (
                 <th className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
                   <span className='sr-only'>Select all</span>
@@ -464,15 +463,15 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                     data-selected={selected.includes(rowId) ? 'true' : 'false'}
                     className={[
                       'group transition-colors',
-                      'hover:bg-muted/40',
+                      'hover:bg-muted/30',
                       'data-[selected=true]:bg-primary/5',
                       'data-[selected=true]:hover:bg-primary/8',
-                      rowIndex % 2 === 1 ? 'bg-muted/10' : '',
+                      // rowIndex % 2 === 1 ? 'bg-muted/10' : '',
                       rowClassName ? rowClassName(row, rowIndex) : '',
                     ].join(' ')}
                   >
                     {showCheckbox ? (
-                      <td className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
+                      <td className='px-4 py-4 whitespace-nowrap w-px'>
                         <span className='sr-only'>Select</span>
                         <input
                           className='form-checkbox'
@@ -484,7 +483,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                     ) : null}
 
                     {expandable ? (
-                      <td className='px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px'>
+                      <td className='px-4 py-4 whitespace-nowrap w-px'>
                         <Inline justify='center' align='center'>
                           <button
                             className='text-muted-foreground hover:text-foreground focus:outline-none rounded-sm p-1'
@@ -516,7 +515,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
                   {expandable && isExpanded ? (
                     <tr role='region'>
-                      <td colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0)} className='px-2 first:pl-5 last:pr-5 py-3'>
+                      <td colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0)} className='px-4 py-6 bg-muted/20'>
                         {renderExpandedRow ? renderExpandedRow({ row, rowIndex }) : null}
                       </td>
                     </tr>

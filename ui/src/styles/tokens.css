@@ -4,37 +4,38 @@
 
   /* ====== Surfaces ====== */
   --background: hsl(0 0% 100%);
-  --foreground: hsl(229 85% 5%);
+  --foreground: hsl(0, 0%, 4%);
 
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(229 85% 5%);
+  --card-foreground: hsl(0, 0%, 4%);
 
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(229 85% 5%);
+  --popover-foreground: hsl(0, 0%, 4%);
 
   /* ====== Brand / roles ====== */
   --primary: hsl(221, 83%, 53%);
-  --primary-foreground: hsl(210 40% 98%);
+  --primary-foreground: hsl(0, 0%, 100%);
 
-  --secondary: hsl(210 40% 96%);
-  --secondary-foreground: hsl(223 48% 11%);
+  --secondary: hsl(220, 19%, 94%);
+  --secondary-foreground: hsl(244, 81%, 4%);
 
-  --accent: hsl(210 40% 96%);
-  --accent-foreground: hsl(223 48% 11%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(244, 81%, 4%);
 
   /* ====== Neutral helpers ====== */
-  --muted: hsl(210 40% 96%);
-  --muted-foreground: hsl(215 18% 47%);
+  --muted: hsl(240, 12%, 93%);
+  --muted-foreground: hsl(240, 7%, 48%);
 
-  --border: hsl(214 32% 91%);
+  --border: hsla(0, 0%, 0%, 0.1);
   --input: hsl(214 32% 91%);
   --ring: hsl(221, 70%, 60%);
+  --link: hsl(221, 83%, 53%);
 
   /* ====== Semantic states ====== */
-  --success: hsl(142 76% 36%);
+  --success: hsl(142, 76%, 36%);
   --success-foreground: hsl(0 0% 98%);
 
-  --warning: hsl(38 92% 50%);
+  --warning: hsl(38, 92%, 50%);
   --warning-foreground: hsl(20 15% 10%);
 
   --info: hsl(198 93% 60%);
@@ -77,6 +78,8 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
 
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
 
   /* Component sizing (muy útil para Buttons/Inputs) */
   --control-height-sm: 2rem;   /* 32px */
@@ -96,30 +99,31 @@
 }
 
 .dark {
-  --background: hsl(240, 14%, 7%);
-  --foreground: hsl(210 40% 98%);
+  --background: hsl(0, 0%, 4%);
+  --foreground: hsl(0, 0%, 98%);
 
-  --card: hsl(240, 10%, 11%);
-  --card-foreground: hsl(210 40% 98%);
+  --card: hsl(0, 0%, 4%);
+  --card-foreground: hsl(0, 0%, 98%);
 
-  --popover: hsl(223 48% 11%);
-  --popover-foreground: hsl(210 40% 98%);
+  --popover: hsl(0, 0%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
 
-  --primary: hsl(224, 76%, 48%);
-  --primary-foreground: hsl(210 40% 98%);
+  --primary: hsl(221, 83%, 53%);
+  --primary-foreground: hsl(0, 0%, 100%);
 
-  --secondary: hsl(223 48% 11%);
-  --secondary-foreground: hsl(210 40% 98%);
+  --secondary: hsl(0, 0%, 15%);
+  --secondary-foreground: hsl(0, 0%, 98%);
 
-  --muted: hsl(223 35% 14%);
-  --muted-foreground: hsl(215 20% 65%);
+  --muted: hsl(0, 0%, 15%);
+  --muted-foreground: hsl(0, 0%, 63%);
 
-  --accent: hsl(223 35% 14%);
-  --accent-foreground: hsl(210 40% 98%);
+  --accent: hsl(0, 0%, 15%);
+  --accent-foreground: hsl(0, 0%, 98%);
 
-  --border: hsl(223 30% 18%);
+  --border: hsl(0, 0%, 15%);
   --input: hsl(223 30% 18%);
   --ring: hsl(221, 70%, 60%);
+  --link: hsl(0, 0%, 98%);
 
   --success: hsl(142 71% 45%);
   --success-foreground: hsl(0 0% 98%);
@@ -133,11 +137,11 @@
   --destructive: hsl(0 62.8% 30.6%);
   --destructive-foreground: hsl(0 0% 98%);
 
-  --sidebar: hsl(240, 20%, 5%);
+  --sidebar: hsl(0, 0%, 9%);
   --sidebar-foreground: hsl(0, 0%, 98%);
   --sidebar-primary: hsl(225, 84%, 49%);
   --sidebar-primary-foreground: hsl(0, 0%, 98%);
-  --sidebar-accent: hsl(0, 0%, 27%);
+  --sidebar-accent: hsl(0, 0%, 15%);
   --sidebar-accent-foreground: hsl(0, 0%, 98%);
   --sidebar-border: hsl(0, 0%, 27%);
   --sidebar-ring: hsl(0, 0%, 43%);

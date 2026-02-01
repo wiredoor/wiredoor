@@ -15,9 +15,9 @@ const linkVariants = cva(
   {
     variants: {
       variant: {
-        default: cn('text-primary hover:text-foreground/80', 'dark:text-primary dark:hover:text-foreground/80'),
+        default: cn('text-link hover:text-link/80', 'dark:text-link dark:hover:text-link/80'),
 
-        muted: cn('text-muted-foreground hover:text-foreground', 'dark:hover:text-foreground'),
+        muted: cn('text-muted-foreground hover:text-muted-foreground/80', 'dark:hover:text-muted-foreground/80'),
 
         subtle: cn('text-foreground/70 hover:text-foreground', 'dark:text-foreground/65 dark:hover:text-foreground'),
 
