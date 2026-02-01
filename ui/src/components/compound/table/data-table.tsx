@@ -529,10 +529,10 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
       </div>
 
       {showPagination && total > limit ? (
-        <div className='w-full px-3 py-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-          <Inline>
-            <Inline>
-              <span className='text-sm text-muted-foreground'>Items</span>
+        <div className='w-full px-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <Inline gap={4}>
+            <Inline gap={1}>
+              <span className='text-sm text-muted-foreground'>Show:</span>
 
               <Select
                 value={String(pageSize)}
@@ -545,7 +545,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                 }}
                 disabled={loading}
               >
-                <SelectTrigger className='h-10 w-[110px]'>
+                <SelectTrigger className='w-20' size='sm'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align='start'>
@@ -557,11 +557,10 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                 </SelectContent>
               </Select>
             </Inline>
-
             <div className='text-sm text-muted-foreground whitespace-nowrap'>
               Showing <span className='font-medium text-foreground'>{total === 0 ? 0 : (page - 1) * pageSize + 1}</span> to{' '}
               <span className='font-medium text-foreground'>{Math.min(page * pageSize, total)}</span> of{' '}
-              <span className='font-medium text-foreground'>{total}</span>
+              <span className='font-medium text-foreground'>{total}</span> items
             </div>
           </Inline>
 
