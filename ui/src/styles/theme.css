@@ -2,6 +2,8 @@
   /* Font mapping */
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-weight-normal: var(--font-weight-normal);
+  --font-weight-medium: var(--font-weight-medium);
   /* Radius mapping */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

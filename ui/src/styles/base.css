@@ -1,6 +1,3 @@
-
-@import "tw-animate-css";
-
 @custom-variant dark (&:is(.dark *));
 
 @layer base {
@@ -10,6 +7,49 @@
 
   html {
     @apply overflow-x-hidden;
+    font-size: var(--font-size);
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
   }
 
   body {
@@ -18,6 +58,7 @@
     text-rendering: geometricPrecision;
     @apply font-sans;
     @apply bg-background text-foreground;
+    line-height: 1.5;
   }
 
   code,
@@ -44,6 +85,7 @@
     select,
     textarea {
       font-size: 16px !important;
+      line-height: 1.25
     }
   }
 }
