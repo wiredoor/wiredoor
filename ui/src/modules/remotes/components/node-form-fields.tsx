@@ -56,6 +56,7 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
 
   const isAdvanced = useWatch({ control: form.control, name: 'advanced' });
   const isGateway = useWatch({ control: form.control, name: 'isGateway' });
+  const allowInternet = useWatch({ control: form.control, name: 'allowInternet' });
 
   const networks = useFieldArray({
     control: form.control,
@@ -103,14 +104,14 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
             </PanelSection>
 
             <SettingsRow
-              title='Gateway mode'
+              title='Enable gateway mode'
               description='Route private subnets through this node.'
               open={isGateway}
               control={
                 <SwitchField
                   form={form}
                   name='isGateway'
-                  label={<span className='sr-only'>Enable network gateway mode</span>}
+                  label={<span className='sr-only'>Enable gateway mode</span>}
                   className='flex-row-reverse justify-between'
                 />
               }
@@ -169,39 +170,69 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
             </SettingsRow>
 
             <SettingsRow
-              title='Internet routing'
-              description='Send all node internet traffic through Wiredoor (full-tunnel).'
+              title='Route all internet traffic through Wiredoor'
+              description='Send all node internet traffic through Wiredoor.'
               control={
                 <SwitchField
                   form={form}
                   name='allowInternet'
-                  label={<span className='sr-only'>Remote Node Internet Connectivity</span>}
+                  label={<span className='sr-only'>Route all internet traffic through Wiredoor</span>}
                   className='flex-row-reverse justify-between'
                 />
               }
-            />
+            >
+              {allowInternet && (
+                <div className='flex gap-3 p-3 bg-warning/10 border border-warning/30 rounded-md mt-3'>
+                  <Icon name='warning' className='w-4 h-4 text-warning flex-shrink-0 mt-0.5' />
+                  <div className='text-xs text-muted-foreground'>
+                    <strong className='text-foreground font-medium'>Not recommended for production environments.</strong>
+                    <br />
+                    Routing all internet traffic through Wiredoor may introduce latency and impact performance. Only enable this if your use case
+                    requires it.
+                  </div>
+                </div>
+              )}
+            </SettingsRow>
 
             {/* Advanced */}
             <SettingsRow
-              title='Advanced'
-              description='Optional networking parameters.'
+              title='Advanced settings'
+              description='Optional networking parameters for expert configurations.'
               open={isAdvanced}
               control={
                 <SwitchField
                   form={form}
                   name='advanced'
-                  label={<span className='sr-only'>Advanced</span>}
+                  label={<span className='sr-only'>Advanced settings</span>}
                   className='flex-row-reverse justify-between'
                 />
               }
             >
               <Stack gap={4}>
-                <TextField form={form} name='dns' label='DNS' placeholder='1.1.1.1' description='DNS server used while connected.' />
+                <TextField
+                  form={form}
+                  name='dns'
+                  label='DNS'
+                  placeholder='8.8.8.8, 8.8.4.4'
+                  description='Comma-separated list of DNS servers used while connected.'
+                />
 
                 <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <NumberField form={form} name='mtu' label='MTU' placeholder='1420' description='Only change if required.' />
+                  <NumberField
+                    form={form}
+                    name='mtu'
+                    label='MTU (Maximum Transmission Unit)'
+                    placeholder='1420'
+                    description='The maximum packet size for this connection. Default is 1420 bytes.'
+                  />
 
-                  <NumberField form={form} name='keepalive' label='Persistent Keepalive' placeholder='25' description='Seconds. Use 0 to disable.' />
+                  <NumberField
+                    form={form}
+                    name='keepalive'
+                    label='Persistent Keepalive'
+                    placeholder='25'
+                    description='Interval in seconds for sending keep-alive packets. Default is 25 seconds. Set to 0 to disable.'
+                  />
                 </div>
               </Stack>
             </SettingsRow>
