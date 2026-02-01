@@ -1,12 +1,12 @@
-import * as React from "react";
-import { X, Info, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import { AlertCard, AlertTitle, AlertDescription } from "./alert-card";
+import * as React from 'react';
+import { X, Info, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
+import { AlertCard, AlertTitle, AlertDescription } from './alert-card';
 
-import { cn } from "@ui/lib/utils";
+import { cn } from '@/lib/utils';
 
-type BaseVariant = "default" | "info" | "success" | "warning" | "destructive";
+type BaseVariant = 'default' | 'info' | 'success' | 'warning' | 'destructive';
 
-export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   variant?: BaseVariant;
   icon?: boolean | React.ReactNode;
   title?: React.ReactNode;
@@ -16,7 +16,7 @@ export interface AlertProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "
   open?: boolean;
   onClose?: () => void;
   autoClose?: number;
-  role?: "status" | "alert";
+  role?: 'status' | 'alert';
 }
 
 const VariantIcon: Record<BaseVariant, React.ComponentType<{ className?: string }>> = {
@@ -27,13 +27,13 @@ const VariantIcon: Record<BaseVariant, React.ComponentType<{ className?: string 
   destructive: XCircle,
 };
 
-function defaultRole(variant: BaseVariant): "status" | "alert" {
-  return variant === "warning" || variant === "destructive" ? "alert" : "status";
+function defaultRole(variant: BaseVariant): 'status' | 'alert' {
+  return variant === 'warning' || variant === 'destructive' ? 'alert' : 'status';
 }
 
 export function Alert({
   className,
-  variant = "default",
+  variant = 'default',
   icon = true,
   title,
   description,
@@ -68,28 +68,28 @@ export function Alert({
 
   const IconCmp = VariantIcon[variant];
 
-  let iconClassName = "text-card-foreground/70";
-  let tone = "neutral";
+  let iconClassName = 'text-card-foreground/70';
+  let tone = 'neutral';
 
   switch (variant) {
-    case "info":
-      iconClassName = "text-info";
-      tone = "blue";
+    case 'info':
+      iconClassName = 'text-info';
+      tone = 'blue';
       break;
-    case "success":
-      iconClassName = "text-success";
-      tone = "green";
+    case 'success':
+      iconClassName = 'text-success';
+      tone = 'green';
       break;
-    case "warning":
-      iconClassName = "text-warning";
-      tone = "orange";
+    case 'warning':
+      iconClassName = 'text-warning';
+      tone = 'orange';
       break;
-    case "destructive":
-      iconClassName = "text-destructive";
-      tone = "red";
+    case 'destructive':
+      iconClassName = 'text-destructive';
+      tone = 'red';
       break;
     default:
-      tone = "neutral";
+      tone = 'neutral';
       break;
   }
 
@@ -98,29 +98,29 @@ export function Alert({
       variant={variant}
       tone={tone as any}
       role={role ?? defaultRole(variant)}
-      aria-live={role ? (role === "alert" ? "assertive" : "polite") : defaultRole(variant) === "alert" ? "assertive" : "polite"}
-      className={cn("relative", className)}
+      aria-live={role ? (role === 'alert' ? 'assertive' : 'polite') : defaultRole(variant) === 'alert' ? 'assertive' : 'polite'}
+      className={cn('relative', className)}
       {...props}
     >
-      {icon && typeof icon === "boolean" ? <IconCmp aria-hidden className={`${iconClassName} w-4 h-4 mt-0.5`} /> : icon}
+      {icon && typeof icon === 'boolean' ? <IconCmp aria-hidden className={`${iconClassName} w-4 h-4 mt-0.5`} /> : icon}
 
-      <div className="col-start-2 grid gap-1">
+      <div className='col-start-2 grid gap-1'>
         {title && <AlertTitle>{title}</AlertTitle>}
         {description && <AlertDescription>{description}</AlertDescription>}
         {children}
       </div>
 
       {(actions || dismissible) && (
-        <div className="absolute right-2 top-2 flex items-center gap-1">
+        <div className='absolute right-2 top-2 flex items-center gap-1'>
           {actions}
           {dismissible && (
             <button
-              type="button"
-              aria-label="Dismiss"
-              className="inline-flex items-center justify-center size-6 rounded-md hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              type='button'
+              aria-label='Dismiss'
+              className='inline-flex items-center justify-center size-6 rounded-md hover:bg-foreground/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               onClick={handleClose}
             >
-              <X className="size-4" />
+              <X className='size-4' />
             </button>
           )}
         </div>
