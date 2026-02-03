@@ -47,8 +47,8 @@ export type CustomSpec<TResult = any> = CommonSpec & {
 
 type CommonSpec = {
   id?: string;
-  title: string;
-  description?: string;
+  title: string | React.ReactNode;
+  description?: string | React.ReactNode;
   size?: DialogSize;
 
   /**
@@ -61,6 +61,7 @@ type CommonSpec = {
    * If true, user can't dismiss via overlay/esc while busy (e.g. form submit).
    */
   preventCloseWhileBusy?: boolean;
+  dialogFooter?: React.ReactNode;
 };
 
 export type AlertSpec = CommonSpec & {

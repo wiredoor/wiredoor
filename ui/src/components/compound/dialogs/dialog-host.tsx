@@ -17,6 +17,8 @@ const sizeToClass: Record<DialogSize, string> = {
   xl: 'sm:max-w-4xl',
 };
 
+const dialogFooterClass = 'border-t border-border p-6 bg-muted/20';
+
 export function DialogHost() {
   const [, force] = React.useReducer((x) => x + 1, 0);
 
@@ -58,24 +60,22 @@ export function DialogHost() {
           }
         }}
       >
-        <div className='p-6'>
-          <Stack gap={4} className='m-2'>
-            <DialogHeader>
-              <DialogTitle>{current.title}</DialogTitle>
-              {current.description ? <DialogDescription>{current.description}</DialogDescription> : null}
-            </DialogHeader>
+        <Stack gap={4}>
+          <DialogHeader className='p-6 border-b border-border'>
+            <DialogTitle>{current.title}</DialogTitle>
+            {current.description ? <DialogDescription>{current.description}</DialogDescription> : null}
+          </DialogHeader>
 
-            {current.type === 'alert' ? (
-              <AlertBody spec={current} busy={busy} />
-            ) : current.type === 'confirm' ? (
-              <ConfirmBody spec={current} busy={busy} />
-            ) : current.type === 'form' ? (
-              <FormBody spec={current} busy={busy} />
-            ) : (
-              <CustomBody spec={current} busy={busy} />
-            )}
-          </Stack>
-        </div>
+          {current.type === 'alert' ? (
+            <AlertBody spec={current} busy={busy} />
+          ) : current.type === 'confirm' ? (
+            <ConfirmBody spec={current} busy={busy} />
+          ) : current.type === 'form' ? (
+            <FormBody spec={current} busy={busy} />
+          ) : (
+            <CustomBody spec={current} busy={busy} />
+          )}
+        </Stack>
       </DialogContent>
     </Dialog>
   );
@@ -103,7 +103,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
   const actions = spec.actions ?? [];
 
   const hasActions = actions.length > 0;
-  const showDefaultClose = spec.defaultCloseAction ?? !hasActions;
+  const showDefaultClose = spec.defaultCloseAction ?? (!hasActions && !spec.dialogFooter);
 
   return (
     <>
@@ -116,7 +116,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
         })}
       </div>
 
-      <DialogFooter className='pt-2'>
+      <DialogFooter className={dialogFooterClass}>
         {hasActions ? (
           <>
             {actions.map((a, idx) => {
@@ -155,7 +155,9 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
               );
             })}
           </>
-        ) : null}
+        ) : (
+          spec.dialogFooter
+        )}
 
         {showDefaultClose ? (
           <Button variant='default' onClick={() => dialogStore.resolve()}>
