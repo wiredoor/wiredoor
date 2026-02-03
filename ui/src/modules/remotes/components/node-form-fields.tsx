@@ -39,7 +39,7 @@ function SettingsRow({
         <div className='shrink-0'>{control}</div>
       </div>
 
-      {open && children ? <div className='mt-4 rounded-lg border bg-muted/30 p-4'>{children}</div> : null}
+      {open && children ? children : null}
     </div>
   );
 }
@@ -116,62 +116,65 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
                 />
               }
             >
-              <Stack gap={3}>
-                <Inline justify='between' align='center'>
-                  <div className='text-xs text-muted-foreground'>
-                    Add subnets reachable behind this node. Use CIDR (e.g. 10.0.0.0/24). Max 4 interfaces.
-                  </div>
-                  <div className='text-xs text-muted-foreground'>{networks.fields.length}/4</div>
-                </Inline>
+              <div className='mt-4 rounded-lg border bg-muted/30 p-4'>
+                <Stack gap={3}>
+                  <Inline justify='between' align='center'>
+                    <div className='text-xs text-muted-foreground'>
+                      Add subnets reachable behind this node. Use CIDR (e.g. 10.0.0.0/24). Max 4 interfaces.
+                    </div>
+                    <div className='text-xs text-muted-foreground'>{networks.fields.length}/4</div>
+                  </Inline>
 
-                <FormField form={form} name='gatewayNetworks'>
-                  <Stack gap={2}>
-                    {networks.fields.map((field, index) => (
-                      <Inline key={field.id} gap={3} align='start'>
-                        <TextField
-                          form={form}
-                          className='w-28'
-                          name={`gatewayNetworks.${index}.interface`}
-                          label={index === 0 ? 'Interface' : undefined}
-                          placeholder={`eth${index}`}
-                        />
-
-                        <div className='flex-1 w-full'>
+                  <FormField form={form} name='gatewayNetworks'>
+                    <Stack gap={2}>
+                      {networks.fields.map((field, index) => (
+                        <Inline key={field.id} gap={3} align='start'>
                           <TextField
                             form={form}
-                            name={`gatewayNetworks.${index}.subnet`}
-                            label={index === 0 ? 'Subnet (CIDR)' : undefined}
-                            placeholder='192.168.1.0/24'
+                            className='w-28'
+                            name={`gatewayNetworks.${index}.interface`}
+                            label={index === 0 ? 'Interface' : undefined}
+                            placeholder={`eth${index}`}
                           />
-                        </div>
 
-                        <Button
-                          type='button'
-                          variant='ghost'
-                          size='icon-sm'
-                          disabled={networks.fields.length === 1}
-                          onClick={() => networks.remove(index)}
-                          aria-label='Remove interface'
-                          className={index === 0 ? 'mt-8' : 'mt-0.5'}
-                        >
-                          <Icon name='close' className='text-muted-foreground hover:text-destructive' />
-                        </Button>
-                      </Inline>
-                    ))}
-                  </Stack>
-                </FormField>
+                          <div className='flex-1 w-full'>
+                            <TextField
+                              form={form}
+                              name={`gatewayNetworks.${index}.subnet`}
+                              label={index === 0 ? 'Subnet (CIDR)' : undefined}
+                              placeholder='192.168.1.0/24'
+                            />
+                          </div>
 
-                <Inline justify='end'>
-                  <Button type='button' variant='outline' size='sm' leadingIcon='plus' disabled={networks.fields.length >= 4} onClick={addNetwork}>
-                    Add interface
-                  </Button>
-                </Inline>
-              </Stack>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='icon-sm'
+                            disabled={networks.fields.length === 1}
+                            onClick={() => networks.remove(index)}
+                            aria-label='Remove interface'
+                            className={index === 0 ? 'mt-8' : 'mt-0.5'}
+                          >
+                            <Icon name='close' className='text-muted-foreground hover:text-destructive' />
+                          </Button>
+                        </Inline>
+                      ))}
+                    </Stack>
+                  </FormField>
+
+                  <Inline justify='end'>
+                    <Button type='button' variant='outline' size='sm' leadingIcon='plus' disabled={networks.fields.length >= 4} onClick={addNetwork}>
+                      Add interface
+                    </Button>
+                  </Inline>
+                </Stack>
+              </div>
             </SettingsRow>
 
             <SettingsRow
               title='Route all internet traffic through Wiredoor'
               description='Send all node internet traffic through Wiredoor.'
+              open={allowInternet}
               control={
                 <SwitchField
                   form={form}
@@ -208,33 +211,35 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
                 />
               }
             >
-              <Stack gap={4}>
-                <TextField
-                  form={form}
-                  name='dns'
-                  label='DNS'
-                  placeholder='8.8.8.8, 8.8.4.4'
-                  description='Comma-separated list of DNS servers used while connected.'
-                />
-
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <NumberField
+              <div className='mt-4 rounded-lg border bg-muted/30 p-4'>
+                <Stack gap={4}>
+                  <TextField
                     form={form}
-                    name='mtu'
-                    label='MTU (Maximum Transmission Unit)'
-                    placeholder='1420'
-                    description='The maximum packet size for this connection. Default is 1420 bytes.'
+                    name='dns'
+                    label='DNS'
+                    placeholder='8.8.8.8, 8.8.4.4'
+                    description='Comma-separated list of DNS servers used while connected.'
                   />
 
-                  <NumberField
-                    form={form}
-                    name='keepalive'
-                    label='Persistent Keepalive'
-                    placeholder='25'
-                    description='Interval in seconds for sending keep-alive packets. Default is 25 seconds. Set to 0 to disable.'
-                  />
-                </div>
-              </Stack>
+                  <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
+                    <NumberField
+                      form={form}
+                      name='mtu'
+                      label='MTU (Maximum Transmission Unit)'
+                      placeholder='1420'
+                      description='The maximum packet size for this connection. Default is 1420 bytes.'
+                    />
+
+                    <NumberField
+                      form={form}
+                      name='keepalive'
+                      label='Persistent Keepalive'
+                      placeholder='25'
+                      description='Interval in seconds for sending keep-alive packets. Default is 25 seconds. Set to 0 to disable.'
+                    />
+                  </div>
+                </Stack>
+              </div>
             </SettingsRow>
           </div>
 

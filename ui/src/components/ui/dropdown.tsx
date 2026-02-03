@@ -70,16 +70,29 @@ export type DropdownProps = {
   contentProps?: React.ComponentProps<typeof DropdownMenuContent>;
   triggerVariant?: React.ComponentProps<typeof Button>['variant'];
   triggerSize?: React.ComponentProps<typeof Button>['size'];
+  align?: React.ComponentProps<typeof DropdownMenuContent>['align'];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 function getVariantClass(variant?: DropdownVariant) {
   if (variant === 'destructive') {
-    return 'text-destructive data-[highlighted]:bg-destructive/10';
+    return 'text-destructive hover:text-destructive data-[highlighted]:text-destructive data-[highlighted]:bg-destructive/10';
   }
   return '';
 }
 
-export function Dropdown({ trigger = 'Open', items, classNames, contentProps, triggerVariant = 'outline', triggerSize = 'default' }: DropdownProps) {
+export function Dropdown({
+  open,
+  onOpenChange,
+  trigger = 'Open',
+  items,
+  classNames,
+  contentProps,
+  align = 'start',
+  triggerVariant = 'outline',
+  triggerSize = 'default',
+}: DropdownProps) {
   const triggerNode =
     typeof trigger === 'string' ? (
       <Button variant={triggerVariant} size={triggerSize}>
@@ -90,10 +103,10 @@ export function Dropdown({ trigger = 'Open', items, classNames, contentProps, tr
     );
 
   return (
-    <Root>
+    <Root open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>{triggerNode}</DropdownMenuTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuContent align='start' sideOffset={8} {...contentProps} className={cn('min-w-56', classNames?.content, contentProps?.className)}>
+        <DropdownMenuContent align={align} sideOffset={8} {...contentProps} className={cn('min-w-56', classNames?.content, contentProps?.className)}>
           {renderNodes(items, classNames)}
         </DropdownMenuContent>
       </DropdownMenuPortal>

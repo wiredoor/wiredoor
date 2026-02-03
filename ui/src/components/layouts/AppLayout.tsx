@@ -51,14 +51,7 @@ export function AppLayout({
             >
               {headerSlot ? headerSlot : null}
 
-              <main
-                className={cn(
-                  'min-w-0 flex-1',
-                  mainScrollable ? 'overflow-auto' : '',
-                  // nice spacing
-                  'py-6',
-                )}
-              >
+              <main className={cn('min-w-0 flex-1', mainScrollable ? 'overflow-auto' : '')}>
                 {constrainContent ? (
                   <Container size='xl' className='min-w-0'>
                     {children}
@@ -77,14 +70,7 @@ export function AppLayout({
         <div className='flex min-h-dvh w-full'>
           {headerSlot ? headerSlot : null}
 
-          <main
-            className={cn(
-              'min-w-0 flex-1',
-              mainScrollable ? 'overflow-auto' : '',
-              // nice spacing
-              'py-6',
-            )}
-          >
+          <main className={cn('min-w-0 flex-1', mainScrollable ? 'overflow-auto' : '')}>
             {constrainContent ? <Container className='min-w-0'>{children}</Container> : <div className='px-3 md:px-6'>{children}</div>}
           </main>
 

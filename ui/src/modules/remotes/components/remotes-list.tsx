@@ -3,17 +3,21 @@ import { useNavigate } from 'react-router-dom';
 
 import { type ColumnDef, type Id, DataTableRef } from '@/components/compound/table/data-table';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Icon, Inline, Stack, Surface } from '@/components/foundations';
+import { Icon, Inline, Stack, Text } from '@/components/foundations';
 import { StatusBadge } from '@/components/compound/badges';
 
 import { QueryDataTable } from '@/modules/shared/components/query-data-table';
 import { formatBytes, getLatestHS } from '@/lib/format';
-import { DataTableToolbar } from '@/modules/shared/components/data-table-toolbar';
-import { SelectField, TextField } from '@/components/compound/form';
 import { enableNode } from '../api/update-node';
-import { NodeDetailsCard } from './node-details-card';
 import { ConnectionIndicator } from './connection-indicator';
+import { NodeInfo } from './node-info';
+import { Dropdown } from '@/components/ui/dropdown';
+import { cn } from '@/lib/utils';
+import { useDialog } from '@/components/compound/dialogs';
+import { deleteNode } from '../api/delete-node';
+import { toast } from '../../../components/compound/toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { invalidateResourceFamily } from '../../../lib/react-query';
 
 type Filters = {
   search: string;
@@ -56,7 +60,7 @@ function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?:
     prevRef.current = value;
   }, [id, dir, value]);
 
-  const label = dir === 'rx' ? 'Rx' : 'Tx';
+  const label = dir === 'rx' ? 'RX:' : 'TX:';
   const arrowIcon = dir === 'rx' ? 'arrowDown' : 'arrowUp';
 
   const toneClass =
@@ -64,13 +68,11 @@ function TrafficLine({ id, dir, value }: { id: number; dir: 'rx' | 'tx'; value?:
 
   return (
     <Inline className={`items-center gap-2`}>
-      <span className='inline-flex h-5 w-5 items-center justify-center rounded-md bg-muted/40'>
-        <Icon name={arrowIcon} className={`h-4 w-4 ${toneClass}`} />
-      </span>
+      <Icon name={arrowIcon} className={`h-3 w-3 ${toneClass}`} strokeWidth={2} />
 
       <span className='text-xs font-medium text-muted-foreground'>{label}</span>
 
-      <span className='text-sm tabular-nums text-foreground'>{has ? formatBytes(value) : '-'}</span>
+      <span className='text-xs font-mono text-foreground'>{has ? formatBytes(value) : '-'}</span>
     </Inline>
   );
 }
@@ -89,43 +91,92 @@ export function TrafficCell({ id, rx, tx }: { id: number; rx?: number; tx?: numb
 // ---------------- Dropdown actions ----------------
 function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: boolean; onOpenChange: (open: boolean) => void }) {
   const navigate = useNavigate();
+  const dialog = useDialog();
+  const qc = useQueryClient();
   return (
     <div className='flex justify-end'>
-      <DropdownMenu open={open} onOpenChange={onOpenChange}>
-        <DropdownMenuTrigger asChild>
-          <Button variant='ghost' size='icon-sm' className='rounded-full'>
+      <Dropdown
+        align='end'
+        open={open}
+        onOpenChange={onOpenChange}
+        trigger={
+          <Button variant='ghost' size='icon-sm' className='rounded-md'>
             <Icon name='more' />
           </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent className='w-56' align='end'>
-          <DropdownMenuItem
-            onSelect={() => {
+        }
+        contentProps={{
+          className: 'min-w-40 mt-2',
+        }}
+        items={[
+          {
+            label: 'Edit',
+            type: 'item',
+            onAction: () => {
               navigate(`/nodes/edit/${row.id}`);
-              onOpenChange(false);
-            }}
-          >
-            Edit
-          </DropdownMenuItem>
+            },
+          },
+          {
+            label: row.enabled ? 'Disable' : 'Enable',
+            type: 'item',
+            onAction: async () => {
+              const title = row.enabled ? 'Disable node?' : 'Enable node?';
+              const description = row.enabled
+                ? 'Disabling the node will stop all connections and exposed services. Are you sure you want to disable this node?'
+                : 'Enabling the node will allow connections if the node is properly configured. Are you sure you want to enable this node?';
 
-          <DropdownMenuItem
-            onSelect={() => {
-              enableNode(row.id as number, row.enabled ? 'disable' : 'enable');
-              onOpenChange(false);
-            }}
-          >
-            {row.enabled ? 'Disable' : 'Enable'}
-          </DropdownMenuItem>
+              const ok = await dialog.confirm({
+                title: title,
+                description: description,
+                destructive: row.enabled ? true : false,
+                confirmText: row.enabled ? 'Disable' : 'Enable',
+                cancelText: 'Cancel',
+                closeOnOverlayClick: false,
+                closeOnEsc: true,
+                size: 'sm',
+              });
 
-          <DropdownMenuItem
-            onSelect={() => {
-              onOpenChange(false);
-            }}
-          >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+              if (ok) {
+                await enableNode(row.id as number, row.enabled ? 'disable' : 'enable');
+                invalidateResourceFamily(qc, '/api/nodes/');
+                return;
+              }
+            },
+          },
+          {
+            type: 'separator',
+          },
+          {
+            label: 'Delete',
+            type: 'item',
+            variant: 'destructive',
+            onAction: async () => {
+              const ok = await dialog.confirm({
+                title: `Delete node?`,
+                description: `This action cannot be undone. All data associated with the node will be permanently deleted. Are you sure you want to delete the node ${row.name}?`,
+                destructive: true,
+                confirmText: 'Delete',
+                cancelText: 'Cancel',
+                closeOnOverlayClick: false,
+                closeOnEsc: true,
+                size: 'sm',
+              });
+
+              if (ok) {
+                try {
+                  await deleteNode(row.id as number);
+                  await invalidateResourceFamily(qc, '/api/nodes/');
+                  toast.success(`Node ${row.name} deleted successfully`, { duration: 2500 });
+                } catch (err: any) {
+                  dialog.alert({
+                    title: 'Error deleting node',
+                    description: err?.message || 'An unexpected error occurred while deleting the node.',
+                  });
+                }
+              }
+            },
+          },
+        ]}
+      />
     </div>
   );
 }
@@ -135,7 +186,7 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
   {
     label: '',
     key: 'status',
-    width: '60px',
+    width: '40px',
     render: ({ row }) => <ConnectionIndicator row={row} />,
   },
   {
@@ -144,12 +195,14 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
     render: ({ row }) => (
       <div className='min-w-0'>
         <div className='flex items-center gap-2'>
-          <span className='font-medium truncate hover:underline cursor-pointer underline-offset-4'>{row.name}</span>
+          <Text variant='body-sm' as='span' className='font-medium truncate text-foreground'>
+            {row.name}
+          </Text>
 
           {row.isGateway ? <StatusBadge status='info'>Gateway</StatusBadge> : <StatusBadge status='success'>Node</StatusBadge>}
         </div>
 
-        <div className='text-xs text-muted-foreground truncate'>
+        <div className='mt-1 text-xs text-muted-foreground truncate'>
           Last handshake: {row.latestHandshakeTimestamp ? getLatestHS(row.latestHandshakeTimestamp) : '-'}
         </div>
       </div>
@@ -196,72 +249,25 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
   );
 
   return (
-    <Surface className='p-3 md:p-4 space-y-2' elevation='sm' radius='xl'>
-      <DataTableToolbar<Filters>
-        defaultValues={{ search: '', status: '', type: '' }}
-        debounceMs={350}
-        onFiltersChange={setFilters}
-        actions={
-          <Button variant='outline' size='sm'>
-            Columns
-          </Button>
-        }
-      >
-        {(form) => (
-          <>
-            <TextField form={form} name='search' placeholder='Search...' className='w-48' />
-            <SelectField
-              form={form}
-              name='status'
-              placeholder='Status'
-              className='w-32'
-              options={[
-                { label: 'All', value: 'all' },
-                { label: 'Online', value: 'online' },
-                { label: 'Offline', value: 'offline' },
-                { label: 'Iddle', value: 'iddle' },
-              ]}
-            />
-            <SelectField
-              form={form}
-              name='type'
-              className='w-32'
-              placeholder='Type'
-              options={[
-                { label: 'All', value: 'all' },
-                { label: 'Node', value: 'node' },
-                { label: 'Gateway', value: 'gateway' },
-              ]}
-            />
-          </>
-        )}
-      </DataTableToolbar>
-
-      <div className='bg-card'>
-        <div className='px-4 py-2 text-sm text-muted-foreground'>
-          <span className='font-medium text-foreground'>1</span> node • <span className='font-medium text-foreground'>1</span> online • 0 offline
-        </div>
-        <QueryDataTable<RemoteRow>
-          ref={tableRef}
-          columns={columns}
-          filters={filters}
-          limit={limit}
-          live={live}
-          endpoint={'/api/nodes'}
-          dataStream={'/api/nodes/stream'}
-          showPagination
-          onAdd={onAdd}
-          expandable
-          empty={{
-            title: 'No nodes yet',
-            description: 'Create your first node to start exposing services from private networks.',
-            action: 'Create node',
-          }}
-          onExpand={(row) => setExpandedRow(row)}
-          rowClassName={(row) => (!row.enabled ? 'opacity-60' : '')}
-          renderExpandedRow={({ row }) => <NodeDetailsCard row={row} />}
-        />
-      </div>
-    </Surface>
+    <QueryDataTable<RemoteRow>
+      ref={tableRef}
+      columns={columns}
+      filters={filters}
+      limit={limit}
+      live={live}
+      endpoint={'/api/nodes'}
+      dataStream={'/api/nodes/stream'}
+      showPagination
+      onAdd={onAdd}
+      expandable
+      empty={{
+        title: 'No nodes yet',
+        description: 'Create your first node to start exposing services from private networks.',
+        action: 'Create node',
+      }}
+      onExpand={(row) => setExpandedRow(row)}
+      rowClassName={(row) => cn(!row.enabled ? 'opacity-60' : '', openByRow[String(row.id)] ? 'bg-muted/30' : '')}
+      renderExpandedRow={({ row }) => <NodeInfo row={row} />}
+    />
   );
 }

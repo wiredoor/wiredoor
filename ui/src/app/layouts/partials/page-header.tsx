@@ -24,8 +24,14 @@ export function PageHeader({ container, eyebrow, title, description, actions, ta
     <Inline className='items-start justify-between gap-4'>
       <Stack className='gap-1 min-w-0'>
         {eyebrow ? <Text className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>{eyebrow}</Text> : null}
-        <Text className='text-3xl font-semibold leading-tight'>{title}</Text>
-        {description ? <Text className='text-sm text-muted-foreground max-w-2xl'>{description}</Text> : null}
+        <Text as='h1' variant='h3'>
+          {title}
+        </Text>
+        {description ? (
+          <Text variant='body-sm' as='p' className='mt-1 text-muted-foreground max-w-2xl'>
+            {description}
+          </Text>
+        ) : null}
       </Stack>
       {actions ? <div className='shrink-0'>{actions}</div> : null}
     </Inline>
