@@ -58,6 +58,8 @@ import {
   ArrowRight,
   ArrowLeft,
   RefreshCcw,
+  Search,
+  Funnel,
 } from 'lucide-react';
 import { IconRenderer, IconRendererProps } from './icon';
 
@@ -191,6 +193,7 @@ export const icons = {
   expose: lucide(HardDriveUpload),
   external: lucide(ExternalLink),
   forward: lucide(ArrowRightFromLine),
+  funnel: lucide(Funnel),
   gateway: lucide(Router),
   globe: lucide(Globe),
   heart: lucide(Heart),
@@ -206,6 +209,7 @@ export const icons = {
   network: lucide(Network),
   plus: lucide(Plus),
   refresh: lucide(RefreshCcw),
+  search: lucide(Search),
   server: lucide(Server),
   settings: lucide(Settings),
   shield: lucide(Shield),

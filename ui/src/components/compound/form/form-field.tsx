@@ -46,7 +46,6 @@ export function FormField<T extends FieldValues>({
   legend,
   separator = false,
   children,
-  ...props
 }: FormFieldProps<T>) {
   const { error } = form.getFieldState(name, form.formState);
 
@@ -102,7 +101,7 @@ export function FormField<T extends FieldValues>({
   );
 
   return (
-    <div className={className} {...props}>
+    <div className={className}>
       <Field>
         {asFieldSet ? (
           <FieldSet>

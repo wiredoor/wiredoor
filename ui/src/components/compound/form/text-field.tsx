@@ -33,7 +33,7 @@ export function TextField<T extends FieldValues>(props: TextFieldProps<T>) {
   } = props;
 
   return (
-    <FormField<T> form={form} name={name} {...rest}>
+    <FormField<T> form={form} name={name} className={className} {...rest}>
       <FormField.Register<T>>
         {({ reg, a11y }) => (
           <InputGroup>
