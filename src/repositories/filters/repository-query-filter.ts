@@ -34,7 +34,7 @@ export abstract class RepositoryQueryFilter<T> {
     return [];
   }
 
-  public apply(filters: FilterQueryDto): Promise<T | T[] | PagedData<T>> {
+  public async apply(filters: FilterQueryDto): Promise<T | T[] | PagedData<T>> {
     this.filters = filters;
     this.initBuilder();
 
@@ -44,7 +44,7 @@ export abstract class RepositoryQueryFilter<T> {
 
     for (const [method, arg] of Object.entries(this.filters)) {
       if (typeof this[method] === 'function') {
-        this.builder = this[method](arg);
+        this.builder = await this[method](arg);
       }
     }
 

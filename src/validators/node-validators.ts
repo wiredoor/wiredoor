@@ -133,7 +133,11 @@ export const nodeFilterValidator: ObjectSchema<NodeFilterQueryParams> =
     orderBy: Joi.string()
       .pattern(/,(asc|desc)$/)
       .optional(),
-    type: Joi.string().valid('nodes', 'gateways').optional(),
+    type: Joi.string().valid('', 'nodes', 'gateways').optional(),
+    status: Joi.string()
+      .valid('', 'online', 'offline', 'enabled', 'disabled')
+      .optional(),
+    search: Joi.string().optional(),
   });
 
 export const createNodeValidator: ObjectSchema<CreateNodeType> = Joi.object({

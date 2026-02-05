@@ -120,6 +120,17 @@ export default class WGCli {
     }
   }
 
+  static async getRecentConnections(
+    lastSeconds: number = 180,
+    cfg = 'wg0',
+  ): Promise<RuntimeInfo[]> {
+    const allClients = await this.dumpRunTimeInfo(cfg);
+
+    return allClients.filter(
+      (client) => Date.now() / 1000 - client.latestHandshake < lastSeconds,
+    );
+  }
+
   static parseRuntimeDump(result: string): RuntimeInfo[] {
     return result
       .trim()
