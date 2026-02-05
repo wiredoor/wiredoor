@@ -30,7 +30,7 @@ export function SelectField<T extends FieldValues, V extends string = string>({
   placeholder = 'Select an option',
   icon,
   parseValue = (v) => (v == null || v === '' || v === '__none' ? undefined : v),
-  formatValue = (v) => (v == null || v === '' || v === '__none' ? undefined : String(v)),
+  formatValue = (v) => (v == null || v === '' ? '__none' : String(v)),
   triggerProps,
   contentProps,
   ...shell
