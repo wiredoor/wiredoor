@@ -193,17 +193,19 @@ describe('TCP Services Service', () => {
         [
           `/etc/nginx/stream.d/n${node.id}s${tcpService3.id}_stream.conf`,
           expect.stringContaining(
-            `server ${node.address}:${tcpService3.backendPort}`,
+            `set $n${node.id}s${tcpService3.id}_stream ${node.address}`,
           ),
         ],
         [
           `/etc/nginx/stream.d/n${gateway.id}s${tcpService4.id}_stream.conf`,
-          expect.stringContaining(`resolver ${gateway.address}`),
+          expect.stringMatching(new RegExp(`resolver\\s+${gateway.address}`)),
         ],
         [
           `/etc/nginx/stream.d/n${gateway.id}s${tcpService5.id}_stream.conf`,
-          expect.stringContaining(
-            `server ${tcpService5.backendHost}:${tcpService5.backendPort}`,
+          expect.stringMatching(
+            new RegExp(
+              `proxy_pass\\s+\\$n${gateway.id}s${tcpService5.id}_stream:${tcpService5.backendPort}`
+            ),
           ),
         ],
       ]);
@@ -429,7 +431,7 @@ describe('TCP Services Service', () => {
       expect(mockSaveToFile).toHaveBeenCalledWith(
         `/etc/nginx/stream.d/n${node.id}s${result.id}_stream.conf`,
         expect.stringContaining(
-          `server ${node.address}:${created.backendPort}`,
+          `set $n${node.id}s${result.id}_stream ${node.address}`,
         ),
       );
 
