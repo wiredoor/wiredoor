@@ -30,17 +30,33 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Dev Image
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} --target development -f docker/Dockerfile .
+      - name: Prepare Image Name
+        run: |
+          IMAGE_PATH="ghcr.io/${{ github.repository }}"
+          echo "IMAGE_NAME=$(echo $IMAGE_PATH | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Push image
-        run: docker push ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:build-${{ github.sha }}
+          target: development
+          file: docker/Dockerfile
 
   lint:
     name: Lint Dev Image
@@ -48,12 +64,20 @@ jobs:
     needs: build-dev
 
     steps:
-      - name: Log in to GHCR
-        run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Image Name
+        run: |
+          echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Run Lint
         run: |
-          docker run --rm ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} npm run lint
+          docker run --rm ${{ env.IMAGE_NAME }}:build-${{ github.sha }} npm run lint
 
   test:
     name: Run Tests in Dev Image
@@ -62,11 +86,15 @@ jobs:
 
     steps:
       - name: Log in to GHCR
-        run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Prepare Image Name
+        run: |
+          echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Run Tests
         run: |
-          docker run --rm ghcr.io/${{ github.repository_owner }}/wiredoor:build-${{ github.sha }} npm run test
+          docker run --rm ${{ env.IMAGE_NAME }}:build-${{ github.sha }} npm run test
 
   cleanup-dev-image:
     name: Cleanup dev image
@@ -78,21 +106,30 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gh jq ca-certificates
+
       - name: Delete build-${{ github.sha }} image
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
           TAG: build-${{ github.sha }}
         run: |
           echo "Looking for package version with tag $TAG..."
+          
+          # Try as organization first, then as user
+          IMAGE_ID=$(gh api -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/$REPO/versions \
+            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id" 2>/dev/null || \
+            gh api -H "Accept: application/vnd.github+json" /users/$OWNER/packages/container/$REPO/versions \
+            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id" 2>/dev/null)
 
-          IMAGE_ID=$(gh api -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions \
-            | jq -r ".[] | select(.metadata.container.tags[]? == \"$TAG\") | .id")
-
-          echo "Image ID: ${IMAGE_ID}"
-
-          gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/wiredoor/versions/$IMAGE_ID \
-            || echo "No matching version found or failed to delete."
+          if [ -n "$IMAGE_ID" ] && [ "$IMAGE_ID" != "null" ]; then
+            echo "Image ID: ${IMAGE_ID}"
+            gh api -X DELETE -H "Accept: application/vnd.github+json" /orgs/$OWNER/packages/container/$REPO/versions/$IMAGE_ID \
+              || gh api -X DELETE -H "Accept: application/vnd.github+json" /users/$OWNER/packages/container/$REPO/versions/$IMAGE_ID \
+              || echo "Failed to delete image version."
+          else
+            echo "No matching version found."
+          fi
 
   build-prod:
     name: Build Prod Image
@@ -105,52 +142,44 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.WIREDOOR_DOCKER_HUB_TOKEN }}" | docker login docker.io -u ${{ secrets.WIREDOOR_DOCKER_HUB_USERNAME }} --password-stdin
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && 'wiredoor/wiredoor' || '' }}
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable={{ is_default_branch }}
+            type=raw,value=dev,enable=${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
+            type=sha,prefix=dev-,enable=${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
 
-      - name: Determine tags
-        id: tags
-        run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "TAGS=latest" >> $GITHUB_OUTPUT
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            TAG_NAME="${GITHUB_REF#refs/tags/}"
-            echo "TAGS=${TAG_NAME}" >> $GITHUB_OUTPUT
-          else
-            echo "TAGS=dev,dev-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build and Push Image with All Tags
-        run: |
-          IFS=',' read -ra TAGS <<< "${{ steps.tags.outputs.TAGS }}"
-          TAG_ARGS=""
-
-          for tag in "${TAGS[@]}"; do
-            TAG_ARGS="$TAG_ARGS -t ghcr.io/${{ github.repository_owner }}/wiredoor:$tag"
-
-            if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_REF}" == refs/tags/* ]]; then
-              TAG_ARGS="$TAG_ARGS -t wiredoor/wiredoor:$tag"
-            fi
-          done
-
-          echo $TAG_ARGS
-
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --target=production \
-            --provenance=mode=max \
-            --sbom=true \
-            -f docker/Dockerfile \
-            $TAG_ARGS \
-            --push \
-            .
+      - name: Build and Push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile
+          target: production
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          provenance: mode=max
+          sbom: true
 
   scan-image:
     name: Scan Prod Image with Trivy
@@ -160,8 +189,16 @@ jobs:
     # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' || startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Log in to GHCR
-        run: echo "${{ secrets.WIREDOOR_GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Image Name
+        run: |
+          echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Determine tag
         id: tag
@@ -178,7 +215,7 @@ jobs:
       - name: Install Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/wiredoor:${{ steps.tag.outputs.TAG }}
+          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.TAG }}
           format: table
           exit-code: 0
           ignore-unfixed: true
