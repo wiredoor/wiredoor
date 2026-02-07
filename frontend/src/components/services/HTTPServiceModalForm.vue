@@ -240,6 +240,72 @@ const authAvailable = computed(() => {
           </FormField>
         </div>
         <div>
+          <FormField
+            field="allowedDomains"
+            label="Allowed Domains"
+            description="Specify domains that should be allowed access. Domains will be resolved to IPs dynamically."
+            :errors="errors"
+          >
+            <div v-if="formData.allowedDomains">
+              <div
+                v-for="(domain, key) in formData.allowedDomains"
+                :key="`allowed-domain-` + key"
+                class="flex mt-2 relative"
+              >
+                <div class="w-full">
+                  <InputField
+                    v-model="formData.allowedDomains[key]"
+                    field="allowedDomains"
+                    action="close"
+                    placeholder="Enter a domain"
+                    @action="() => formData.allowedDomains?.splice(key, 1)"
+                  />
+                </div>
+              </div>
+            </div>
+            <Button
+              class="mt-2"
+              @click.prevent="
+                formData.allowedDomains ? formData.allowedDomains.push('') : (formData.allowedDomains = [''])
+              "
+              >Add</Button
+            >
+          </FormField>
+        </div>
+        <div>
+          <FormField
+            field="blockedDomains"
+            label="Blocked Domains"
+            description="Specify domains that should be denied access. Domains will be resolved to IPs dynamically."
+            :errors="errors"
+          >
+            <div v-if="formData.blockedDomains">
+              <div
+                v-for="(domain, key) in formData.blockedDomains"
+                :key="`blocked-domain-` + key"
+                class="flex mt-2 relative"
+              >
+                <div class="w-full">
+                  <InputField
+                    v-model="formData.blockedDomains[key]"
+                    field="blockedDomains"
+                    action="close"
+                    placeholder="Enter a domain"
+                    @action="() => formData.blockedDomains?.splice(key, 1)"
+                  />
+                </div>
+              </div>
+            </div>
+            <Button
+              class="mt-2"
+              @click.prevent="
+                formData.blockedDomains ? formData.blockedDomains.push('') : (formData.blockedDomains = [''])
+              "
+              >Add</Button
+            >
+          </FormField>
+        </div>
+        <div>
           <CheckboxField
             v-model="formData.requireAuth"
             class="mt-2 mb-6"

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { PropType } from 'vue'
 import ToolTip from '../ToolTip.vue'
 
 const props = defineProps({
