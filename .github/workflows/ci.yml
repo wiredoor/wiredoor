@@ -37,6 +37,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -65,6 +66,7 @@ jobs:
 
     steps:
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -85,8 +87,13 @@ jobs:
     needs: build-dev
 
     steps:
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Prepare Image Name
         run: |
@@ -149,11 +156,19 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' && secrets.WIREDOOR_DOCKER_HUB_TOKEN != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.WIREDOOR_DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.WIREDOOR_DOCKER_HUB_TOKEN }}
 
       - name: Extract Docker metadata
         id: meta
@@ -161,7 +176,7 @@ jobs:
         with:
           images: |
             ghcr.io/${{ github.repository }}
-            ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && 'wiredoor/wiredoor' || '' }}
+            ${{ (secrets.WIREDOOR_DOCKER_HUB_TOKEN != '' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))) && 'docker.io/wiredoor/wiredoor' || '' }}
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{ is_default_branch }}
@@ -186,10 +201,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-prod
 
-    # if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development' || startsWith(github.ref, 'refs/tags/')
-
     steps:
       - name: Login to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -198,7 +212,8 @@ jobs:
 
       - name: Prepare Image Name
         run: |
-          echo "IMAGE_NAME=$(echo ghcr.io/${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          IMAGE_PATH="ghcr.io/${{ github.repository }}"
+          echo "IMAGE_NAME=$(echo $IMAGE_PATH | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Determine tag
         id: tag
