@@ -12,8 +12,6 @@ export interface HttpService {
   backendProto?: string
   allowedIps?: string[]
   blockedIps?: string[]
-  allowedDomains?: string[]
-  blockedDomains?: string[]
   node?: Node
   publicAccess?: string
 }
@@ -28,8 +26,6 @@ export interface HttpServiceForm {
   backendProto?: string
   allowedIps?: string[]
   blockedIps?: string[]
-  allowedDomains?: string[]
-  blockedDomains?: string[]
   requireAuth?: boolean
   skipAuthRoutes?: string
 }
@@ -126,14 +122,6 @@ export const httpServiceValidator: ObjectSchema<HttpServiceForm> = Joi.object({
     .optional(),
   blockedIps: Joi.array()
     .items(Joi.string().ip({ cidr: 'optional' }).optional())
-    .allow(null)
-    .optional(),
-  allowedDomains: Joi.array()
-    .items(Joi.string().domain().optional())
-    .allow(null)
-    .optional(),
-  blockedDomains: Joi.array()
-    .items(Joi.string().domain().optional())
     .allow(null)
     .optional(),
   requireAuth: Joi.boolean().when('domain', {

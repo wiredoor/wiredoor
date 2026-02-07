@@ -33,21 +33,9 @@ const { isOpen, closeDialog, service } = useServiceInfo()
         <span v-else class="text-gray-500">No restrictions</span>
       </div>
 
-      <div v-if="service.allowedDomains" class="flex justify-between items-center my-5">
-        <strong>Allowed Domains:</strong>
-        <span v-if="service.allowedDomains.length > 0">{{ service.allowedDomains.join(", ") }}</span>
-        <span v-else class="text-gray-500">No restrictions</span>
-      </div>
-
       <div v-if="service.blockedIps" class="flex justify-between items-center my-5">
         <strong>Blocked IPs:</strong>
         <span v-if="service.blockedIps.length > 0">{{ service.blockedIps.join(", ") }}</span>
-        <span v-else class="text-gray-500">None</span>
-      </div>
-
-      <div v-if="service.blockedDomains" class="flex justify-between items-center my-5">
-        <strong>Blocked Domains:</strong>
-        <span v-if="service.blockedDomains.length > 0">{{ service.blockedDomains.join(", ") }}</span>
         <span v-else class="text-gray-500">None</span>
       </div>
     </article>
