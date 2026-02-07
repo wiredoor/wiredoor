@@ -164,7 +164,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Login to Docker Hub
-        if: github.event_name != 'pull_request' && secrets.WIREDOOR_DOCKER_HUB_TOKEN != ''
+        if: github.event_name != 'pull_request' && env.DOCKER_HUB_TOKEN != ''
+        env:
+          DOCKER_HUB_TOKEN: ${{ secrets.WIREDOOR_DOCKER_HUB_TOKEN }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.WIREDOOR_DOCKER_HUB_USERNAME }}
@@ -172,11 +174,13 @@ jobs:
 
       - name: Extract Docker metadata
         id: meta
+        env:
+          DOCKER_HUB_TOKEN: ${{ secrets.WIREDOOR_DOCKER_HUB_TOKEN }}
         uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository }}
-            ${{ (secrets.WIREDOOR_DOCKER_HUB_TOKEN != '' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))) && 'docker.io/wiredoor/wiredoor' || '' }}
+            ${{ (env.DOCKER_HUB_TOKEN != '' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))) && 'docker.io/wiredoor/wiredoor' || '' }}
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{ is_default_branch }}
