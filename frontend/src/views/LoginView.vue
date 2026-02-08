@@ -3,19 +3,20 @@
     <div
       class="w-full max-w-sm p-6 bg-white dark:bg-gray-800 rounded-md shadow-md mx-auto px-4 py-8"
     >
-      <div class="w-full flex items-center justify-center h-16 px-4 sm:px-6 lg:px-8">
+      <div class="w-full flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
         <!-- Logo -->
         <router-link class="flex items-center" to="/">
-          <SvgIcon name="wiredoor" height="32" widht="32" class="pl-2 mr-4" />
-          <h1 class="text-2xl font-medium text-blue-900">Wiredoor</h1>
+          <SvgIcon name="wiredoor" height="32" width="32" class="pl-2 mr-4" />
+          <h1 class="text-2xl font-medium text-blue-900 dark:text-blue-400">Wiredoor</h1>
         </router-link>
+        <ThemeToggle />
       </div>
       <Alert v-if="invalid" class="w-full" type="error" :message="invalidMessage" closable @close="() => { invalid = false }" />
       <!-- Form -->
       <form class="mt-4 space-y-6" action="#" method="POST" @submit.prevent="signIn">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1" for="username">Username</label>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-300" for="username">Username</label>
             <input
               v-model="form.username"
               id="username"
@@ -24,11 +25,11 @@
               autocomplete="username"
               autofocus
               required
-              class="form-input w-full"
+              class="form-input w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
             />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1" for="password">Password</label>
+            <label class="block text-sm font-medium mb-1 dark:text-gray-300" for="password">Password</label>
             <input
               v-model="form.password"
               id="password"
@@ -36,7 +37,7 @@
               type="password"
               autocomplete="current-password"
               required
-              class="form-input w-full"
+              class="form-input w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
             />
           </div>
         </div>
@@ -79,6 +80,7 @@
 <script setup lang="ts">
 import AuthLayout from '@/components/layouts/AuthLayout.vue'
 import SvgIcon from '@/components/SvgIcon'
+import ThemeToggle from '@/components/partials/ThemeToggle.vue'
 import Alert from '@/components/ui/Alert.vue'
 import { useAuthStore } from '@/stores/auth'
 import { ref } from 'vue'

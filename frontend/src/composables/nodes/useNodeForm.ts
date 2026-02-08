@@ -47,7 +47,7 @@ export function useNodeForm() {
         } else {
           toast('Node updated successfully!', 'success')
         }
-        // eslint-disable-next-line no-extra-boolean-cast
+         
         if (!!callback) {
           callback(form, id)
         }

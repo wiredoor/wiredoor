@@ -20,22 +20,10 @@ export class NginxTcpService extends NginxService {
 
     const streamConf = new NginxConf();
 
-    if (
-      service.node.isGateway &&
-      service.backendHost &&
-      !IP_CIDR.isValidIP(service.backendHost)
-    ) {
-      streamConf.addBlock('resolver', `${service.node.address} valid=30s`);
-    }
-
     const serverAddress =
       (service.node.isGateway || service.node.isLocal) && service.backendHost
         ? service.backendHost
         : service.node.address;
-
-    streamConf.addUpstreams(service.identifier, [
-      `${serverAddress}:${service.backendPort}`,
-    ]);
 
     const serverConf = new NginxServerConf();
 
@@ -58,9 +46,15 @@ export class NginxTcpService extends NginxService {
       .setAccessLog(
         ServerUtils.getLogFilePath(
           service.domain || '_',
-          `${service.identifier}_stream.log`,
+          `${service.identifier}.log`,
         ),
         'stream_logs',
+      )
+      .setErrorLog(
+        ServerUtils.getLogFilePath(
+          service.domain || '_',
+          `${service.identifier}_error.log`,
+        ),
       );
 
     if (service.ssl) {
@@ -83,7 +77,20 @@ export class NginxTcpService extends NginxService {
       }
     }
 
-    serverConf.setStreamProxy(service.identifier);
+    if (
+      service.node.isGateway &&
+      service.backendHost &&
+      !IP_CIDR.isValidIP(service.backendHost)
+    ) {
+      serverConf.addBlock('resolver', `${service.node.address} valid=30s`);
+      serverConf.addBlock('resolver_timeout', '3s');
+    }
+
+    serverConf.addBlock(`set $${service.identifier}`, serverAddress);
+    serverConf.addBlock(
+      'proxy_pass',
+      `$${service.identifier}:${service.backendPort}`,
+    );
 
     streamConf.addServer(serverConf);
 
