@@ -19,7 +19,7 @@
 <script setup lang="ts">
 const model = defineModel<string | number | boolean>()
 
-const props = defineProps<{
+defineProps<{
   options: { label: string; value: string | number | boolean }[]
 }>()
 </script>

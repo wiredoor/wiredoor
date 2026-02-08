@@ -37,7 +37,7 @@ export function useDomainForm() {
         } else {
           toast('Domain updated successfully!', 'success')
         }
-        // eslint-disable-next-line no-extra-boolean-cast
+         
         if (!!callback) {
           callback(form, id)
         }
