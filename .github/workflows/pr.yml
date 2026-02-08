@@ -1,0 +1,71 @@
+name: Pull Request CI Workflow
+
+on:
+  pull_request:
+    branches: [main, development]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build_lint_test:
+    name: Build + Lint + Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure Docker build cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.event.pull_request.head.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build dev image
+        run: |
+          docker buildx build \
+            --target development \
+            -f docker/Dockerfile \
+            -t wiredoor:pr-dev \
+            --load \
+            --cache-from type=local,src=/tmp/.buildx-cache \
+            --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            .
+
+      - name: Move build cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Lint
+        run: docker run --rm wiredoor:pr-dev npm run lint
+
+      - name: Tests
+        run: docker run --rm wiredoor:pr-dev npm run test
+
+      - name: Build prod image
+        run: |
+          docker buildx build \
+            --target production \
+            -f docker/Dockerfile \
+            -t wiredoor:pr-prod \
+            --load \
+            .
+
+      - name: Trivy scan prod image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: wiredoor:pr-prod
+          format: table
+          exit-code: 0
+          ignore-unfixed: true
