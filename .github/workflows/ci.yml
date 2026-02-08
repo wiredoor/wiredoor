@@ -41,7 +41,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.WIREDOOR_GHCR_TOKEN != '' && secrets.WIREDOOR_GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Prepare Image Name (lowercase)
         run: |
@@ -65,7 +65,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.WIREDOOR_GHCR_TOKEN != '' && secrets.WIREDOOR_GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Prepare Image Name (lowercase)
         run: |
@@ -87,7 +87,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.WIREDOOR_GHCR_TOKEN != '' && secrets.WIREDOOR_GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Prepare Image Name (lowercase)
         run: |
@@ -174,7 +174,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.WIREDOOR_GHCR_TOKEN != '' && secrets.WIREDOOR_GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
         if: ${{ steps.img.outputs.PUBLISH_DH == 'true' }}
@@ -222,7 +222,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.WIREDOOR_GHCR_TOKEN != '' && secrets.WIREDOOR_GHCR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Prepare GHCR image name (lowercase)
         run: |
