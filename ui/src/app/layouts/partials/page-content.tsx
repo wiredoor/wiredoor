@@ -14,7 +14,7 @@ export function PageContent({
   className?: string;
 }) {
   const content = (
-    <Stack className={cn('gap-6 py-6 min-w-0', className)}>
+    <Stack gap={4} className={cn('py-6 min-w-0', className)}>
       {header}
       {children}
     </Stack>

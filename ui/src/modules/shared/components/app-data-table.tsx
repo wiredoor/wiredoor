@@ -92,7 +92,9 @@ export const AppDataTable = React.forwardRef(function AppDataTableInner<RowT ext
 ) {
   const { endpoint, dataStream, columns, filters, limit = 10, live = true, normalizeFilters, ...rest } = props;
 
-  const sseEnabled = !!dataStream && live;
+  const [subscribed, setSubscribed] = React.useState(false);
+
+  const sseEnabled = !!dataStream && live && subscribed;
 
   const handlersRef = React.useRef<{
     emit: (event: StreamEvent<RowT>) => void;
@@ -132,10 +134,15 @@ export const AppDataTable = React.forwardRef(function AppDataTableInner<RowT ext
     [endpoint, limit, normalizeFilters],
   );
 
+  const sseUrl = React.useMemo(() => {
+    if (!dataStream) return '';
+    return `${dataStream}${toQueryString(normalizedParams)}`;
+  }, [dataStream, normalizedParams]);
+
   useEventSource({
     enabled: sseEnabled,
     key: sseKey,
-    url: () => `${dataStream!}${toQueryString(normalizedParams)}`,
+    url: () => sseUrl,
     withCredentials: true,
 
     onData: (evt) => {
@@ -156,17 +163,11 @@ export const AppDataTable = React.forwardRef(function AppDataTableInner<RowT ext
     (nextCtx: FetchParams, handlers: { emit: (event: StreamEvent<RowT>) => void; error?: (err: unknown) => void }): Unsubscribe => {
       handlersRef.current = handlers;
       setCtx(nextCtx);
-
-      fetcher(nextCtx)
-        .then((snap) => {
-          if (handlersRef.current === handlers) {
-            handlers.emit({ type: 'replace', rows: snap.data });
-          }
-        })
-        .catch((err) => handlers.error?.(err));
+      setSubscribed(true);
 
       return () => {
         if (handlersRef.current === handlers) handlersRef.current = null;
+        setSubscribed(false);
       };
     },
     [fetcher],

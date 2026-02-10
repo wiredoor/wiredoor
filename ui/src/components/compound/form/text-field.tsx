@@ -43,12 +43,7 @@ export function TextField<T extends FieldValues>(props: TextFieldProps<T>) {
               </InputGroupAddon>
             )}
 
-            <InputGroupInput
-              {...rest}
-              {...reg}
-              {...a11y}
-              className={[className, leading != null ? 'pl-9' : '', trailing != null ? 'pr-9' : ''].filter(Boolean).join(' ')}
-            />
+            <InputGroupInput {...rest} {...reg} {...a11y} className={[className, leading != null ? 'pl-9' : ''].filter(Boolean).join(' ')} />
 
             {trailing != null && (
               <InputGroupAddon align='inline-end' className={trailingInteractive ? 'pointer-events-auto' : undefined}>

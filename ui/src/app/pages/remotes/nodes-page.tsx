@@ -1,12 +1,17 @@
+import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { Container } from '@/components/foundations';
 import { PageHeader } from '@/app/layouts/partials/page-header';
 import { PageContent } from '@/app/layouts/partials/page-content';
-import { RemotesTable } from '@/modules/remotes/components/remotes-list';
+import { NodeList, RemotesTableProps } from '@/modules/remotes/components/table/node-list';
 import { Button } from '@/components/ui/button';
+import { NodeFilters } from '@/modules/remotes/components/table/node-filters';
 
-export default function RemotesPage() {
+export default function NodesPage() {
   const navigate = useNavigate();
+
+  const [filters, setFilters] = React.useState<RemotesTableProps['filters']>({ search: '', status: '', type: '' });
 
   function addNode() {
     navigate('/nodes/new');
@@ -21,11 +26,12 @@ export default function RemotesPage() {
           title='Remote nodes'
           description='Securely connects private environments using managed remote agents and gateways, enabling encrypted traffic routing and controlled access to isolated services.'
           actions={<Button onClick={addNode}>Add Node</Button>}
+          content={<NodeFilters filters={filters} onChange={setFilters} />}
         />
       }
     >
       <Container size='xl'>
-        <RemotesTable />
+        <NodeList filters={filters} />
       </Container>
     </PageContent>
   );

@@ -38,10 +38,11 @@ import {
   AdminTokenHandler,
   AuthenticatedUser,
 } from '../middlewares/admin-token-handler';
+import { AuthWebHandler } from '../middlewares/auth-web-handler';
 
 @Service()
 @JsonController('/services')
-@UseBefore(AdminTokenHandler)
+@UseBefore(AuthWebHandler)
 export default class NodeServiceController extends BaseController {
   constructor(
     @Inject() private readonly httpServicesService: HttpServicesService,

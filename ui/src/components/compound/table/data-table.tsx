@@ -72,10 +72,12 @@ export interface EmptyState {
 
 export interface DataTableRef<RowT extends { id: Id }> {
   refetch: () => Promise<void>;
+  setSseOn: (on: boolean) => void;
   addItem: (row: RowT) => void;
   updateItem: (id: Id, patch: Partial<RowT>) => void;
   removeItem: (id: Id) => void;
   setPage: (page: number) => void;
+  setLoading: (loading: boolean) => void;
 }
 
 export type DataTableProps<RowT extends { id: Id }> = {
@@ -300,6 +302,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
   } = props;
 
   const [loading, setLoading] = React.useState(false);
+  const [sseOn, setSseOn] = React.useState(true);
   const [rows, setRows] = React.useState<RowT[]>([]);
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(limit);
@@ -337,6 +340,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
   // subscribe (stream / live updates)
   React.useEffect(() => {
     if (!subscribe) return;
+    if (!sseOn) return;
 
     return subscribe(ctx, {
       emit: (event) => {
@@ -361,7 +365,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
         }
       },
     });
-  }, [subscribe, ctx, getRowId]);
+  }, [subscribe, ctx, getRowId, sseOn]);
 
   // selection
   const checkAll = (checked: boolean) => {
@@ -392,10 +396,12 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
     ref,
     () => ({
       refetch,
-      addItem: (row) => setRows((prev) => [...prev, row]),
+      setSseOn,
+      addItem: (row) => setRows((prev) => upsertRow(prev, row, getRowId, { position: 'start' })),
       updateItem: (id, patch) => setRows((prev) => prev.map((r) => (getRowId(r) === id ? ({ ...(r as any), ...(patch as any) } as RowT) : r))),
       removeItem: (id) => setRows((prev) => prev.filter((r) => getRowId(r) !== id)),
       setPage,
+      setLoading,
     }),
     [refetch, getRowId],
   );

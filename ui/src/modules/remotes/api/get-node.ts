@@ -6,7 +6,7 @@ export const nodeById = createItemResource<{ id: number }, Node>({
   normalize: (p) => ({ id: p.id }),
   enabledWhen: (p) => Number.isFinite(p.id) && p.id > 0,
   fetcher: async ({ id }) => {
-    const res = await fetch(`/api/nodes/${id}`, { credentials: 'include' });
+    const res = await fetch(`/api/nodes/${id}`);
     if (!res.ok) throw new Error('Failed to fetch node');
     return (await res.json()) as Node;
   },

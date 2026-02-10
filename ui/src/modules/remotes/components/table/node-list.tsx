@@ -6,22 +6,21 @@ import { Button } from '@/components/ui/button';
 import { Icon, Inline, Stack, Text } from '@/components/foundations';
 import { StatusBadge } from '@/components/compound/badges';
 
-import { QueryDataTable } from '@/modules/shared/components/query-data-table';
 import { formatBytes, getLatestHS } from '@/lib/format';
-import { enableNode } from '../api/update-node';
+import { enableNode } from '../../api/update-node';
 import { ConnectionIndicator } from './connection-indicator';
 import { NodeInfo } from './node-info';
 import { Dropdown } from '@/components/ui/dropdown';
 import { cn } from '@/lib/utils';
 import { useDialog } from '@/components/compound/dialogs';
-import { deleteNode } from '../api/delete-node';
-import { toast } from '../../../components/compound/toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { invalidateResourceFamily } from '../../../lib/react-query';
+import { deleteNode } from '../../api/delete-node';
+import { toast } from '@/components/compound/toast';
+import { NodeTokenDialog } from '../dialog/node-token-dialog';
+import { AppDataTable } from '@/modules/shared/components/app-data-table';
 
 type Filters = {
   search: string;
-  status: '' | 'online' | 'offline' | 'iddle';
+  status: '' | 'online' | 'offline' | 'iddle' | 'disabled';
   type: '' | 'node' | 'gateway';
 };
 
@@ -89,10 +88,19 @@ export function TrafficCell({ id, rx, tx }: { id: number; rx?: number; tx?: numb
 }
 
 // ---------------- Dropdown actions ----------------
-function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: boolean; onOpenChange: (open: boolean) => void }) {
+function ActionsDropdown({
+  row,
+  open,
+  onOpenChange,
+  tableRef,
+}: {
+  row: RemoteRow;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  tableRef?: React.RefObject<DataTableRef<RemoteRow> | null>;
+}) {
   const navigate = useNavigate();
   const dialog = useDialog();
-  const qc = useQueryClient();
   return (
     <div className='flex justify-end'>
       <Dropdown
@@ -109,6 +117,16 @@ function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: bo
         }}
         items={[
           {
+            label: 'Instructions',
+            type: 'item',
+            onAction: async () => {
+              await NodeTokenDialog({
+                name: row.name,
+                showInstallInstructions: true,
+              });
+            },
+          },
+          {
             label: 'Edit',
             type: 'item',
             onAction: () => {
@@ -123,6 +141,7 @@ function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: bo
               const description = row.enabled
                 ? 'Disabling the node will stop all connections and exposed services. Are you sure you want to disable this node?'
                 : 'Enabling the node will allow connections if the node is properly configured. Are you sure you want to enable this node?';
+              const enable = row.enabled ? false : true;
 
               const ok = await dialog.confirm({
                 title: title,
@@ -136,8 +155,10 @@ function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: bo
               });
 
               if (ok) {
-                await enableNode(row.id as number, row.enabled ? 'disable' : 'enable');
-                invalidateResourceFamily(qc, '/api/nodes/');
+                tableRef?.current?.updateItem(row.id, { enabled: enable });
+                tableRef?.current?.setSseOn(false);
+                await enableNode(row.id as number, enable ? 'enable' : 'disable');
+                tableRef?.current?.setSseOn(true);
                 return;
               }
             },
@@ -163,9 +184,11 @@ function ActionsDropdown({ row, open, onOpenChange }: { row: RemoteRow; open: bo
 
               if (ok) {
                 try {
+                  tableRef?.current?.removeItem(row.id);
+                  tableRef?.current?.setSseOn(false);
                   await deleteNode(row.id as number);
-                  await invalidateResourceFamily(qc, '/api/nodes/');
                   toast.success(`Node ${row.name} deleted successfully`, { duration: 2500 });
+                  tableRef?.current?.setSseOn(true);
                 } catch (err: any) {
                   dialog.alert({
                     title: 'Error deleting node',
@@ -219,17 +242,20 @@ const commonColumns: ColumnDef<RemoteRow>[] = [
 export type RemotesTableProps = {
   limit?: number;
   live?: boolean;
+  filters: Filters;
 
   onAdd?: () => void;
   onRowClick?: (row: RemoteRow) => void;
 };
 
-export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTableProps) {
+export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTableProps) {
   const tableRef = React.useRef<DataTableRef<RemoteRow>>(null);
   const [openByRow, setOpenByRow] = React.useState<Record<string, boolean>>({});
   const [expandedRow, setExpandedRow] = React.useState<RemoteRow | null>(null);
 
-  const [filters, setFilters] = React.useState<Filters>({ search: '', status: '', type: '' });
+  const handleExpand = React.useCallback((row: RemoteRow) => {
+    queueMicrotask(() => setExpandedRow(row));
+  }, []);
 
   const columns: ColumnDef<RemoteRow>[] = React.useMemo(
     () => [
@@ -241,7 +267,7 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
         render: ({ row }) => {
           const k = String(row.id);
           const open = !!openByRow[k];
-          return <ActionsDropdown row={row} open={open} onOpenChange={(v) => setOpenByRow((p) => ({ ...p, [k]: v }))} />;
+          return <ActionsDropdown row={row} open={open} tableRef={tableRef} onOpenChange={(v) => setOpenByRow((p) => ({ ...p, [k]: v }))} />;
         },
       },
     ],
@@ -249,7 +275,7 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
   );
 
   return (
-    <QueryDataTable<RemoteRow>
+    <AppDataTable<RemoteRow>
       ref={tableRef}
       columns={columns}
       filters={filters}
@@ -265,7 +291,7 @@ export function RemotesTable({ limit = 10, live = true, onAdd }: RemotesTablePro
         description: 'Create your first node to start exposing services from private networks.',
         action: 'Create node',
       }}
-      onExpand={(row) => setExpandedRow(row)}
+      onExpand={handleExpand}
       rowClassName={(row) => cn(!row.enabled ? 'opacity-60' : '', openByRow[String(row.id)] ? 'bg-muted/30' : '')}
       renderExpandedRow={({ row }) => <NodeInfo row={row} />}
     />

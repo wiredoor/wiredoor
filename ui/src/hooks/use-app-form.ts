@@ -43,6 +43,8 @@ export function useAppForm<TForm extends FieldValues, TData>(cfg: {
    * Custom error message extractor
    */
   getErrorMessage?: (err: any) => string;
+
+  resetKey?: string | number;
 }) {
   const numericId = cfg.id !== undefined && cfg.id !== null && cfg.id !== '' ? Number(cfg.id) : undefined;
 
@@ -78,7 +80,7 @@ export function useAppForm<TForm extends FieldValues, TData>(cfg: {
     form,
     data: query?.data,
     mapToFormValues: (data) => cfg.mapToFormValues?.(data) ?? (data as any as TForm),
-    resetKey: numericId,
+    resetKey: cfg.resetKey ?? numericId,
   });
 
   const cancel = React.useCallback(() => cfg.onCancel?.(), [cfg]);

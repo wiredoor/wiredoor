@@ -110,7 +110,7 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
           },
           {
             path: 'nodes',
-            lazy: () => import('@/app/pages/remotes/remotes-page').then(convert(queryClient)),
+            lazy: () => import('@/app/pages/remotes/nodes-page').then(convert(queryClient)),
           },
           {
             path: 'nodes/new',

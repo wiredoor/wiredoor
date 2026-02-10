@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Container, Icon } from '@/components/foundations';
 import { PageHeader } from '@/app/layouts/partials/page-header';
 import { PageContent } from '@/app/layouts/partials/page-content';
-import { RemoteForm } from '@/modules/remotes/components/node-form';
+import { RemoteForm } from '@/modules/remotes/components/form/node-form';
 
 export default function FormPage() {
   const { id } = useParams();

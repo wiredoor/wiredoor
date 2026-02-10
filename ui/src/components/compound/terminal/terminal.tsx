@@ -79,6 +79,124 @@ function useTypingText(text: string, started: boolean, speedMs: number) {
   return displayed;
 }
 
+function TerminalResultLine({
+  line,
+  isVisible,
+  typingResults,
+  typingSpeed,
+  index,
+}: {
+  line: string;
+  isVisible: boolean;
+  typingResults?: boolean;
+  typingSpeed: number;
+  index: number;
+}) {
+  const startLine = isVisible && !!typingResults;
+  const typedLine = useTypingText(line, startLine, Math.max(10, typingSpeed - 6));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -3 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -3 }}
+      transition={{ duration: 0.2, delay: 0.02 * index }}
+      className='text-white/55'
+    >
+      {typingResults ? typedLine : line}
+    </motion.div>
+  );
+}
+
+function TerminalEntry({
+  cmd,
+  idx,
+  isVisible,
+  showCheck,
+  typingSpeed,
+  baseInitial,
+  baseAnimate,
+  copyCommand,
+}: {
+  cmd: TerminalCommand;
+  idx: number;
+  isVisible: boolean;
+  showCheck: boolean;
+  typingSpeed: number;
+  baseInitial: any;
+  baseAnimate: any;
+  copyCommand: (index: number) => void;
+}) {
+  const typedCommand = useTypingText(cmd.command, isVisible && !!cmd.typing, typingSpeed);
+
+  return (
+    <motion.div
+      initial={baseInitial}
+      animate={isVisible ? baseAnimate : baseInitial}
+      transition={{ duration: 0.25, delay: 0 }}
+      className={cn('group')}
+    >
+      <div className='flex items-start gap-2'>
+        <span className='select-none text-white/35'>$</span>
+
+        <div className='min-w-0 flex-1'>
+          <span className='block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-white/92'>
+            {cmd.typing ? typedCommand : cmd.command}
+          </span>
+
+          {(cmd.flags ?? []).map((f, k) => {
+            const canShowFlag = !cmd.typing || typedCommand.length >= cmd.command.length;
+            return (
+              <span
+                key={k}
+                className={cn('inline min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-white/75', canShowFlag ? 'inline' : 'hidden')}
+              >
+                {' '}
+                {f}
+              </span>
+            );
+          })}
+        </div>
+
+        {cmd.copy ? (
+          <div className='shrink-0'>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type='button'
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => copyCommand(idx)}
+                  className={cn(
+                    'inline-flex h-7 w-7 items-center justify-center rounded-md',
+                    'text-white/70 hover:text-white',
+                    'opacity-0 group-hover:opacity-100 transition-opacity',
+                    'focus:opacity-100 focus:outline-none',
+                  )}
+                  aria-label='Copy command'
+                >
+                  <Icon name={showCheck ? 'copyCheck' : 'copy'} className={cn(showCheck ? 'text-success' : 'text-white/70')} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side='top'>
+                <span className='text-xs'>{showCheck ? 'Copied!' : 'Copy'}</span>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        ) : null}
+      </div>
+
+      {(cmd.results ?? []).length ? (
+        <div className='mt-2 space-y-1 pl-4'>
+          {(cmd.results ?? []).map((line, r) => (
+            <TerminalResultLine key={r} line={line} isVisible={isVisible} typingResults={cmd.typingResults} typingSpeed={typingSpeed} index={r} />
+          ))}
+        </div>
+      ) : null}
+
+      <div className='h-4' />
+    </motion.div>
+  );
+}
+
 export function Terminal({
   title,
   entries,
@@ -206,7 +324,7 @@ export function Terminal({
           <div className='relative px-4 sm:px-5 pb-4 pt-4'>
             <div
               className={cn(
-                'overflow-auto pr-2',
+                'overflow-y-auto overflow-x-hidden pr-2',
                 bodyMaxHeightClassName,
                 '[scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,.18)_transparent]',
               )}
@@ -216,87 +334,18 @@ export function Terminal({
                   const isVisible = idx <= revealIndex;
                   const showCheck = !!state[idx]?.showCopyCheck;
 
-                  // Typing only begins once the entry is revealed
-                  const typedCommand = useTypingText(cmd.command, isVisible && !!cmd.typing, typingSpeed);
-
                   return (
-                    <motion.div
+                    <TerminalEntry
                       key={idx}
-                      initial={baseInitial}
-                      animate={isVisible ? baseAnimate : baseInitial}
-                      transition={{ duration: 0.25, delay: 0 }}
-                      className={cn('group')}
-                    >
-                      <div className='flex items-start gap-2'>
-                        <span className='select-none text-white/35'>$</span>
-
-                        <div className='min-w-0 flex-1'>
-                          <span className='text-white/92'>{cmd.typing ? typedCommand : cmd.command}</span>
-
-                          {/* Flags appear after command; if typing, wait until command finished */}
-                          {(cmd.flags ?? []).map((f, k) => {
-                            const canShowFlag = !cmd.typing || typedCommand.length >= cmd.command.length;
-                            return (
-                              <span key={k} className={cn('text-white/75', canShowFlag ? 'inline' : 'hidden')}>
-                                {' '}
-                                {f}
-                              </span>
-                            );
-                          })}
-                        </div>
-
-                        {cmd.copy ? (
-                          <div className='shrink-0'>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                {/* Keep tooltip open on click by preventing focus-loss UX */}
-                                <button
-                                  type='button'
-                                  onMouseDown={(e) => e.preventDefault()}
-                                  onClick={() => copyCommand(idx)}
-                                  className={cn(
-                                    'inline-flex h-7 w-7 items-center justify-center rounded-md',
-                                    'text-white/70 hover:text-white',
-                                    'opacity-0 group-hover:opacity-100 transition-opacity',
-                                    'focus:opacity-100 focus:outline-none',
-                                  )}
-                                  aria-label='Copy command'
-                                >
-                                  <Icon name={showCheck ? 'copyCheck' : 'copy'} className={cn(showCheck ? 'text-success' : 'text-white/70')} />
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent side='top'>
-                                <span className='text-xs'>{showCheck ? 'Copied!' : 'Copy'}</span>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {(cmd.results ?? []).length ? (
-                        <div className='mt-2 space-y-1 pl-4'>
-                          {(cmd.results ?? []).map((line, r) => {
-                            // Optional typingResults: type each line after revealed, with slight offset
-                            const startLine = isVisible && !!cmd.typingResults;
-                            const typedLine = useTypingText(line, startLine, Math.max(10, typingSpeed - 6));
-
-                            return (
-                              <motion.div
-                                key={r}
-                                initial={{ opacity: 0, y: -3 }}
-                                animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: -3 }}
-                                transition={{ duration: 0.2, delay: 0.02 * r }}
-                                className='text-white/55'
-                              >
-                                {cmd.typingResults ? typedLine : line}
-                              </motion.div>
-                            );
-                          })}
-                        </div>
-                      ) : null}
-
-                      <div className='h-4' />
-                    </motion.div>
+                      cmd={cmd}
+                      idx={idx}
+                      isVisible={isVisible}
+                      showCheck={showCheck}
+                      typingSpeed={typingSpeed}
+                      baseInitial={baseInitial}
+                      baseAnimate={baseAnimate}
+                      copyCommand={copyCommand}
+                    />
                   );
                 })}
               </Stack>

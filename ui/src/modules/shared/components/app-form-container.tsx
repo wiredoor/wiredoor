@@ -10,6 +10,8 @@ type AppFormContainerProps<TForm extends FieldValues, TData> = {
   schema: any;
   defaultValues?: Partial<TForm>;
 
+  resetKey?: string | number;
+
   useGet?: (id: number) => UseQueryResult<TData, any>;
   mapToFormValues?: (data: TData) => TForm;
 
@@ -26,6 +28,7 @@ export function AppFormContainer<TForm extends FieldValues, TData>({
   id,
   schema,
   defaultValues,
+  resetKey,
   useGet,
   mapToFormValues,
   create,
@@ -38,6 +41,7 @@ export function AppFormContainer<TForm extends FieldValues, TData>({
     id,
     schema,
     defaultValues,
+    resetKey,
     useGet,
     mapToFormValues,
     create,

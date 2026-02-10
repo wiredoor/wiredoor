@@ -107,7 +107,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
 
   return (
     <>
-      <div className='max-h-[65vh] overflow-auto p-2'>
+      <div className='max-h-[65vh] overflow-y-auto overflow-x-hidden p-2'>
         {spec.render({
           busy,
           setBusy: (b) => dialogStore.setBusy(b),
@@ -174,7 +174,7 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
 function AlertBody({ spec }: { spec: Extract<DialogSpec, { type: 'alert' }>; busy: boolean }) {
   return (
     <>
-      <DialogFooter className='pt-2'>
+      <DialogFooter className='px-6 pb-4'>
         <Button onClick={() => dialogStore.resolve()}>{spec.actionText ?? 'OK'}</Button>
       </DialogFooter>
     </>
@@ -186,7 +186,7 @@ function AlertBody({ spec }: { spec: Extract<DialogSpec, { type: 'alert' }>; bus
 function ConfirmBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'confirm' }>; busy: boolean }) {
   return (
     <>
-      <DialogFooter className='pt-2'>
+      <DialogFooter className='px-6 pb-4'>
         <Button variant='ghost' disabled={busy} onClick={() => dialogStore.dismiss()}>
           {spec.cancelText ?? 'Cancel'}
         </Button>
@@ -251,7 +251,7 @@ function FormBody({ spec }: { spec: Extract<DialogSpec, { type: 'form' }>; busy:
         ) : null}
       </Stack>
 
-      <DialogFooter className='pt-2'>
+      <DialogFooter className='px-6 py-4'>
         <Button variant='ghost' type='button' disabled={isSubmitting} onClick={requestClose}>
           {spec.cancelText ?? 'Cancel'}
         </Button>

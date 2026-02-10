@@ -12,6 +12,8 @@ export type PageHeaderProps = {
 
   actions?: React.ReactNode;
 
+  content?: React.ReactNode;
+
   tabs?: React.ReactNode;
 
   stickyTabs?: boolean;
@@ -19,9 +21,9 @@ export type PageHeaderProps = {
   className?: string;
 };
 
-export function PageHeader({ container, eyebrow, title, description, actions, tabs, stickyTabs = false, className }: PageHeaderProps) {
+export function PageHeader({ container, eyebrow, title, description, actions, content, tabs, stickyTabs = false, className }: PageHeaderProps) {
   const header = (
-    <Inline className='items-start justify-between gap-4'>
+    <Inline className='items-start justify-between gap-4 mb-4'>
       <Stack className='gap-1 min-w-0'>
         {eyebrow ? <Text className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>{eyebrow}</Text> : null}
         <Text as='h1' variant='h3'>
@@ -54,6 +56,8 @@ export function PageHeader({ container, eyebrow, title, description, actions, ta
   return (
     <Stack className={cn('gap-4', className)}>
       {container ? <Container size={container}>{header}</Container> : header}
+
+      {content ? container ? <Container size={container}>{content}</Container> : content : null}
 
       {tabs ? container ? <Container size={container}>{tabsMenu}</Container> : tabsMenu : <Separator />}
     </Stack>
