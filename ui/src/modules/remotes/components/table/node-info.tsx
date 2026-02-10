@@ -144,7 +144,7 @@ export function NodeInfo({ row }: { row: RemoteRow }) {
             ))
           ) : (
             <>
-              <LoaderOverlay loading={loading} />
+              {/* <LoaderOverlay loading={loading} /> */}
               <Text variant='body-sm' align='center' className='text-muted-foreground'>
                 No HTTP services configured
               </Text>
@@ -180,7 +180,7 @@ export function NodeInfo({ row }: { row: RemoteRow }) {
             ))
           ) : (
             <>
-              <LoaderOverlay loading={loading} />
+              {/* <LoaderOverlay loading={loading} /> */}
               <Text variant='body-sm' align='center' className='text-muted-foreground'>
                 No TCP/UDP services configured
               </Text>
