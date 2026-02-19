@@ -174,7 +174,7 @@ describe('HTTP Services Service', () => {
       const result = await service.getNodeHttpServices(node.id, {});
 
       expect((result as HttpService[]).length).toEqual(1);
-      expect(result[0].name).toEqual(httpService.name);
+      expect((result as HttpService[])[0].name).toEqual(httpService.name);
     });
     it('should list HTTP Services paginated for certain node', async () => {
       const serviceData = makeHttpServiceData();
