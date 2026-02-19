@@ -6,7 +6,10 @@ import { Like, Not, SelectQueryBuilder } from 'typeorm';
 import WGCli from '../../utils/wg-cli';
 
 @Service()
-export class NodeQueryFilter extends RepositoryQueryFilter<Node> {
+export class NodeQueryFilter extends RepositoryQueryFilter<
+  Node,
+  NodeRepository
+> {
   constructor(@Inject() repository: NodeRepository) {
     super(repository);
   }

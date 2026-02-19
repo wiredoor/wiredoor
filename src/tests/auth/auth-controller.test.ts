@@ -41,9 +41,11 @@ describe('API Auth Endpoint', () => {
 
       expect(res.status).toBe(200);
 
-      expect(res.body.id).toBeDefined();
-      expect(res.body.name).toBeDefined();
-      expect(res.body.email).toBeDefined();
+      console.log(res.body);
+
+      expect(res.body.user.id).toBeDefined();
+      expect(res.body.user.name).toBeDefined();
+      expect(res.body.user.email).toBeDefined();
 
       const setCookie = res.headers['set-cookie'];
       expect(setCookie).toBeDefined();

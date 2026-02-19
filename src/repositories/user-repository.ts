@@ -6,6 +6,6 @@ import BaseRepository from './base-repository';
 @Service()
 export class UserRepository extends BaseRepository<User> {
   constructor(@Inject('dataSource') dataSource: DataSource) {
-    super(User, dataSource.createEntityManager());
+    super(User, dataSource);
   }
 }

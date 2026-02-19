@@ -28,6 +28,7 @@ iptables -D FORWARD -o wg0 -j ACCEPT;
 const ACCESS_TOKEN_KEY_ENV = 'PRIVATE_KEY';
 const REFRESH_TOKEN_KEY_ENV = 'REFRESH_PRIVATE_KEY';
 const ENCRYPTION_KEY_ENV = 'ENCRYPTION_KEY';
+const API_KEY_SECRET_ENV = 'API_KEY_SECRET';
 
 function getKey(
   name: string,
@@ -93,6 +94,9 @@ export default {
     secret: getKey(ACCESS_TOKEN_KEY_ENV, '/data/.key'),
     refreshSecret: getKey(REFRESH_TOKEN_KEY_ENV, '/data/.refresh.key'),
     algo: process.env.JWT_ALGORITHM || 'HS256',
+  },
+  keys: {
+    secret: getKey(API_KEY_SECRET_ENV, '/data/.api.key'),
   },
   encryption: {
     secret: getKey(ENCRYPTION_KEY_ENV, '/data/.enc.key', 32),

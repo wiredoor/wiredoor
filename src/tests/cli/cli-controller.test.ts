@@ -1,17 +1,18 @@
 import supertest from 'supertest';
 import { loadApp } from '../../main';
 import { mockAuthenticatedToken } from '../.jest/global-mocks';
-import { Node } from '../../database/models/node';
-import { makeHttpServiceData } from '../nodes/stubs/http-service.stub';
+import { NodeWithToken } from '../../database/models/node';
 import { faker } from '@faker-js/faker';
-import { makeTcpServiceData } from '../nodes/stubs/tcp-service.stub';
-import config from '../../config';
+import TestAgent from 'supertest/lib/agent';
+import { NodesService } from '../../services/nodes-service';
+import Container from 'typedi';
 
 let app;
-let request;
-let node: Node;
+let request: TestAgent;
+let node: NodeWithToken;
 let adminToken: string;
 let nodeToken: string;
+let nodesService: NodesService;
 
 beforeAll(async () => {
   app = await loadApp();
@@ -19,19 +20,14 @@ beforeAll(async () => {
 
   adminToken = mockAuthenticatedToken();
 
-  const nodeRes = await request
-    .post('/api/nodes')
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({ name: 'Node' });
+  nodesService = Container.get<NodesService>(NodesService);
 
-  node = nodeRes.body;
+  node = await nodesService.createNodeWithTokenKey({
+    name: 'Test Node',
+    isGateway: false,
+  });
 
-  const patRes = await request
-    .post(`/api/nodes/${node.id}/pats`)
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({ name: 'NewToken' });
-
-  nodeToken = patRes.body.token;
+  nodeToken = node.token;
 });
 
 afterAll(async () => {});
@@ -115,23 +111,13 @@ describe('Wiredoor CLI API', () => {
     it('should update gateway network if node is a gateway', async () => {
       const subnet = faker.internet.ipv4() + '/24';
 
-      const nodeRes = await request
-        .post('/api/nodes')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          name: 'Node',
-          isGateway: true,
-          gatewayNetworks: [{ interface: 'eth0', subnet }],
-        });
+      const gatewayNode = await nodesService.createNodeWithTokenKey({
+        name: 'Node',
+        isGateway: true,
+        gatewayNetworks: [{ interface: 'eth0', subnet }],
+      });
 
-      const gatewayNode = nodeRes.body;
-
-      const patRes = await request
-        .post(`/api/nodes/${gatewayNode.id}/pats`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'NewToken' });
-
-      const gatewayToken = patRes.body.token;
+      const gatewayToken = gatewayNode.token;
 
       const newSubnet = faker.internet.ipv4() + '/16';
 
@@ -148,22 +134,12 @@ describe('Wiredoor CLI API', () => {
       );
     });
     it('should reject if node is not a gateway', async () => {
-      const nodeRes = await request
-        .post('/api/nodes')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          name: 'Node',
-          isGateway: false,
-        });
+      const gatewayNode = await nodesService.createNodeWithTokenKey({
+        name: 'Test Node',
+        isGateway: false,
+      });
 
-      const gatewayNode = nodeRes.body;
-
-      const patRes = await request
-        .post(`/api/nodes/${gatewayNode.id}/pats`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'NewToken' });
-
-      const gatewayToken = patRes.body.token;
+      const gatewayToken = gatewayNode.token;
 
       const newSubnet = faker.internet.ipv4() + '/16';
 
@@ -184,22 +160,12 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(401);
     });
     it('should regenerate node credentials', async () => {
-      const nodeRes = await request
-        .post('/api/nodes')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          name: 'Node',
-          isGateway: false,
-        });
+      const newNode = await nodesService.createNodeWithTokenKey({
+        name: 'Test Node',
+        isGateway: false,
+      });
 
-      const newNode = nodeRes.body;
-
-      const patRes = await request
-        .post(`/api/nodes/${newNode.id}/pats`)
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'NewToken' });
-
-      const newNodeToken = patRes.body.token;
+      const newNodeToken = newNode.token;
 
       const res = await request
         .patch(endpoint)
@@ -212,7 +178,7 @@ describe('Wiredoor CLI API', () => {
         .get('/api/cli/node')
         .set('Authorization', `Bearer ${newNodeToken}`);
 
-      expect(failedRes.status).toEqual(403);
+      expect(failedRes.status).toEqual(401);
 
       const successfulRes = await request
         .get('/api/cli/node')

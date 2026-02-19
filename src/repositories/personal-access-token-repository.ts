@@ -1,10 +1,11 @@
 import { Inject, Service } from 'typedi';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { PersonalAccessToken } from '../database/models/personal-access-token';
+import BaseRepository from './base-repository';
 
 @Service()
-export class PersonalAccessTokenRepository extends Repository<PersonalAccessToken> {
+export class PersonalAccessTokenRepository extends BaseRepository<PersonalAccessToken> {
   constructor(@Inject('dataSource') dataSource: DataSource) {
-    super(PersonalAccessToken, dataSource.createEntityManager());
+    super(PersonalAccessToken, dataSource);
   }
 }

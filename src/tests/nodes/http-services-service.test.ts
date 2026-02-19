@@ -19,9 +19,6 @@ import {
   mockRemoveFile,
   mockSaveToFile,
 } from '../.jest/global-mocks';
-import { PatService } from '../../services/pat-service';
-import { PersonalAccessTokenRepository } from '../../repositories/personal-access-token-repository';
-import { PatQueryFilter } from '../../repositories/filters/pat-query-filter';
 import { TcpServiceRepository } from '../../repositories/tcp-service-repository';
 import { TcpServicesService } from '../../services/tcp-services-service';
 import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-query-filter';
@@ -31,6 +28,7 @@ import { DomainQueryFilter } from '../../repositories/filters/domain-query-filte
 import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { HttpService } from '../../database/models/http-service';
 import ServerUtils from '../../utils/server';
+import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -51,11 +49,10 @@ describe('HTTP Services Service', () => {
   let node: Node;
   let nodeRepository: NodeRepository;
   let tcpServiceRepository: TcpServiceRepository;
-  let patRepository: PersonalAccessTokenRepository;
+  let nodeApiKeyRepository: NodeApiKeyRepository;
   let domainRepository: DomainRepository;
   let nodesService: NodesService;
   let tcpServicesService: TcpServicesService;
-  let patService: PatService;
   let domainService: DomainsService;
 
   beforeEach(async () => {
@@ -64,13 +61,9 @@ describe('HTTP Services Service', () => {
 
     nodeRepository = new NodeRepository(dataSource);
     tcpServiceRepository = new TcpServiceRepository(dataSource);
-    patRepository = new PersonalAccessTokenRepository(dataSource);
+    nodeApiKeyRepository = new NodeApiKeyRepository(dataSource);
     domainRepository = new DomainRepository(dataSource);
 
-    patService = new PatService(
-      patRepository,
-      new PatQueryFilter(patRepository),
-    );
     domainService = new DomainsService(
       domainRepository,
       new DomainQueryFilter(domainRepository),
@@ -97,7 +90,7 @@ describe('HTTP Services Service', () => {
       ),
       service,
       tcpServicesService,
-      patService,
+      nodeApiKeyRepository,
     );
 
     node = await nodesService.createNode(makeNodeData());

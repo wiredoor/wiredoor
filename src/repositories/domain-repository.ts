@@ -9,7 +9,7 @@ import { Logger } from '../logger';
 @Service()
 export class DomainRepository extends BaseRepository<Domain> {
   constructor(@Inject('dataSource') dataSource: DataSource) {
-    super(Domain, dataSource.createEntityManager());
+    super(Domain, dataSource);
   }
 
   getDomainByName(domainName: string): Promise<Domain> {

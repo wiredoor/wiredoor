@@ -21,9 +21,6 @@ import {
 } from '../.jest/global-mocks';
 import { NotFoundError } from 'routing-controllers';
 import { HttpServiceQueryFilter } from '../../repositories/filters/http-service-query-filter';
-import { PatService } from '../../services/pat-service';
-import { PersonalAccessTokenRepository } from '../../repositories/personal-access-token-repository';
-import { PatQueryFilter } from '../../repositories/filters/pat-query-filter';
 import { TcpServicesService } from '../../services/tcp-services-service';
 import { TcpServiceRepository } from '../../repositories/tcp-service-repository';
 import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-query-filter';
@@ -34,6 +31,7 @@ import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { NodeInfo } from '../../database/models/node';
 import { faker } from '@faker-js/faker';
 import config from '../../config';
+import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -53,12 +51,11 @@ describe('Nodes Service', () => {
 
   let httpServiceRepository: HttpServiceRepository;
   let tcpServiceRepository: TcpServiceRepository;
-  let patRepository: PersonalAccessTokenRepository;
   let domainRepository: DomainRepository;
   let wireguardService: WireguardService;
   let httpServicesService: HttpServicesService;
   let tcpServicesService: TcpServicesService;
-  let patService: PatService;
+  let nodeApiKeyRepository: NodeApiKeyRepository;
   let domainService: DomainsService;
 
   beforeEach(async () => {
@@ -67,7 +64,7 @@ describe('Nodes Service', () => {
 
     httpServiceRepository = new HttpServiceRepository(dataSource);
     tcpServiceRepository = new TcpServiceRepository(dataSource);
-    patRepository = new PersonalAccessTokenRepository(dataSource);
+    nodeApiKeyRepository = new NodeApiKeyRepository(dataSource);
     domainRepository = new DomainRepository(dataSource);
 
     wireguardService = new WireguardService(
@@ -90,10 +87,6 @@ describe('Nodes Service', () => {
       repository,
       domainService,
     );
-    patService = new PatService(
-      patRepository,
-      new PatQueryFilter(patRepository),
-    );
 
     service = new NodesService(
       repository,
@@ -101,7 +94,7 @@ describe('Nodes Service', () => {
       wireguardService,
       httpServicesService,
       tcpServicesService,
-      patService,
+      nodeApiKeyRepository,
     );
   });
 
@@ -247,7 +240,7 @@ describe('Nodes Service', () => {
   //   it('should create node and update wireguard config', async () => {
   //     const data = makeNodeData();
 
-  //     const result = await service.createNodeWithPAT(data);
+  //     const result = await service.createNodeWithTokenKey(data);
 
   //     // expect(mockGenPublicKey).toHaveBeenCalledTimes(1);
   //     // expect(mockGenPrivateKey).toHaveBeenCalledTimes(1);

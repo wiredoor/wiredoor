@@ -5,7 +5,10 @@ import { TcpServiceRepository } from '../tcp-service-repository';
 import { SelectQueryBuilder } from 'typeorm';
 
 @Service()
-export class TcpServiceQueryFilter extends RepositoryQueryFilter<TcpService> {
+export class TcpServiceQueryFilter extends RepositoryQueryFilter<
+  TcpService,
+  TcpServiceRepository
+> {
   constructor(@Inject() repository: TcpServiceRepository) {
     super(repository);
   }

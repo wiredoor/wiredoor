@@ -6,7 +6,7 @@ import BaseRepository from './base-repository';
 @Service()
 export class SessionRepository extends BaseRepository<Session> {
   constructor(@Inject('dataSource') dataSource: DataSource) {
-    super(Session, dataSource.createEntityManager());
+    super(Session, dataSource);
   }
 
   async cleanup(): Promise<{ deleted: number }> {

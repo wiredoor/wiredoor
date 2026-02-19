@@ -1,14 +1,15 @@
 import { Inject, Service } from 'typedi';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { TcpService } from '../database/models/tcp-service';
 import config from '../config';
 import { ValidationError } from '../utils/errors/validation-error';
 import Net from '../utils/net';
+import BaseRepository from './base-repository';
 
 @Service()
-export class TcpServiceRepository extends Repository<TcpService> {
+export class TcpServiceRepository extends BaseRepository<TcpService> {
   constructor(@Inject('dataSource') dataSource: DataSource) {
-    super(TcpService, dataSource.createEntityManager());
+    super(TcpService, dataSource);
   }
 
   async getAvailablePort(): Promise<number> {

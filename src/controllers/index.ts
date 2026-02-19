@@ -6,7 +6,6 @@ import DomainController from './domain-controller';
 import ConfigController from './config-controller';
 import LogController from './log-controller';
 import AuthWebController from './auth-web-controller';
-import ExampleController from './example-controller';
 // PLOP_IMPORTS
 
 const controllers = [
@@ -18,7 +17,6 @@ const controllers = [
   CLiController,
   LogController,
   AuthWebController,
-  ExampleController,
   // PLOP_CONTROLLERS
 ];
 

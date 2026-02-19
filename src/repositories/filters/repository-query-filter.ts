@@ -1,4 +1,5 @@
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { SelectQueryBuilder } from 'typeorm';
+import BaseRepository from '../base-repository';
 
 export interface FilterQueryDto {
   id?: number;
@@ -16,11 +17,11 @@ export interface PagedData<T> {
   total: number;
 }
 
-export abstract class RepositoryQueryFilter<T> {
+export abstract class RepositoryQueryFilter<T, R extends BaseRepository<T>> {
   protected filters: FilterQueryDto;
   protected builder: SelectQueryBuilder<T>;
 
-  constructor(protected repository: Repository<T>) {}
+  constructor(protected repository: R) {}
 
   private initBuilder(): void {
     this.builder = this.repository.createQueryBuilder();

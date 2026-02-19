@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, LifeBuoy, MessageSquare, ExternalLink, Activity } from 'lucide-react';
+import { BookOpen, LifeBuoy, MessageSquare, ExternalLink } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,17 +18,15 @@ export type HelpMenuProps = {
   className?: string;
   docsHref?: string; // internal route OR external
   communityHref?: string;
-  supportHref?: string;
-  statusHref?: string;
+  issueHref?: string;
   shortcutsOnClick?: () => void; // open command palette / shortcuts modal
 };
 
 export function HelpMenu({
   className,
-  docsHref = '/docs',
-  communityHref = 'https://github.com/wiredoor/wiredoor',
-  supportHref = '/support',
-  statusHref = 'https://status.wiredoor.io',
+  docsHref = 'https://www.wiredoor.net/docs',
+  communityHref = 'https://github.com/orgs/wiredoor/discussions',
+  issueHref = 'https://github.com/wiredoor/wiredoor/issues/new?assignees=&labels=bug&template=bug_report.yml&title=%5BBUG%5D+Short+descriptive+title',
 }: HelpMenuProps) {
   const isExternal = (href: string) => /^https?:\/\//i.test(href);
 
@@ -65,7 +63,7 @@ export function HelpMenu({
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align='end' className='w-44'>
+      <DropdownMenuContent align='end' className='w-48'>
         <DropdownMenuLabel>Help</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
@@ -81,22 +79,15 @@ export function HelpMenu({
           <ItemLink href={communityHref}>
             <MessageSquare className='mr-2 h-4 w-4' />
             Community
-            <ExternalLink className='ml-auto h-4 w-4 opacity-60' />
+            {isExternal(communityHref) ? <ExternalLink className='ml-auto h-4 w-4 opacity-60' /> : null}
           </ItemLink>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild>
-          <ItemLink href={supportHref}>
+          <ItemLink href={issueHref}>
             <LifeBuoy className='mr-2 h-4 w-4' />
-            Support
-          </ItemLink>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem asChild>
-          <ItemLink href={statusHref}>
-            <Activity className='mr-2 h-4 w-4' />
-            Status
-            <ExternalLink className='ml-auto h-4 w-4 opacity-60' />
+            Report an Issue
+            {isExternal(issueHref) ? <ExternalLink className='ml-auto h-4 w-4 opacity-60' /> : null}
           </ItemLink>
         </DropdownMenuItem>
       </DropdownMenuContent>

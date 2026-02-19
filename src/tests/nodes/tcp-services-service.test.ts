@@ -20,9 +20,6 @@ import {
   mockRemoveFile,
   mockSaveToFile,
 } from '../.jest/global-mocks';
-import { PatService } from '../../services/pat-service';
-import { PersonalAccessTokenRepository } from '../../repositories/personal-access-token-repository';
-import { PatQueryFilter } from '../../repositories/filters/pat-query-filter';
 import { TcpServiceRepository } from '../../repositories/tcp-service-repository';
 import { TcpServicesService } from '../../services/tcp-services-service';
 import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-query-filter';
@@ -33,8 +30,8 @@ import { SSLTermination } from '../../database/models/domain';
 import { TcpService } from '../../database/models/tcp-service';
 import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { faker } from '@faker-js/faker';
-import { Server } from 'http';
 import ServerUtils from '../../utils/server';
+import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -56,11 +53,10 @@ describe('TCP Services Service', () => {
   let gateway: Node;
   let nodeRepository: NodeRepository;
   let httpServiceRepository: HttpServiceRepository;
-  let patRepository: PersonalAccessTokenRepository;
+  let nodeApiKeyRepository: NodeApiKeyRepository;
   let domainRepository: DomainRepository;
   let nodesService: NodesService;
   let httpServicesService: HttpServicesService;
-  let patService: PatService;
   let domainService: DomainsService;
 
   beforeEach(async () => {
@@ -69,13 +65,9 @@ describe('TCP Services Service', () => {
 
     nodeRepository = new NodeRepository(dataSource);
     httpServiceRepository = new HttpServiceRepository(dataSource);
-    patRepository = new PersonalAccessTokenRepository(dataSource);
     domainRepository = new DomainRepository(dataSource);
+    nodeApiKeyRepository = new NodeApiKeyRepository(dataSource);
 
-    patService = new PatService(
-      patRepository,
-      new PatQueryFilter(patRepository),
-    );
     domainService = new DomainsService(
       domainRepository,
       new DomainQueryFilter(domainRepository),
@@ -102,7 +94,7 @@ describe('TCP Services Service', () => {
       ),
       httpServicesService,
       service,
-      patService,
+      nodeApiKeyRepository,
     );
 
     node = await nodesService.createNode(makeNodeData());
@@ -204,7 +196,7 @@ describe('TCP Services Service', () => {
           `/etc/nginx/stream.d/n${gateway.id}s${tcpService5.id}_stream.conf`,
           expect.stringMatching(
             new RegExp(
-              `proxy_pass\\s+\\$n${gateway.id}s${tcpService5.id}_stream:${tcpService5.backendPort}`
+              `proxy_pass\\s+\\$n${gateway.id}s${tcpService5.id}_stream:${tcpService5.backendPort}`,
             ),
           ),
         ],
@@ -215,7 +207,7 @@ describe('TCP Services Service', () => {
   describe('List TCP Services', () => {
     it('should list all TCP Services for certain node', async () => {
       const serviceData = makeTcpServiceData();
-      const tcpService = await repository.save({
+      await repository.save({
         ...serviceData,
         port: faker.number.int({ min: 15000, max: 16000 }),
         nodeId: node.id,

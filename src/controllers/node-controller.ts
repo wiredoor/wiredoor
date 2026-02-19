@@ -23,26 +23,13 @@ import {
   NodeFilterQueryParams,
   NodeFilterStreamParams,
 } from '../validators/node-validators';
-import {
-  CreatePATType,
-  createPATValidator,
-  PatFilterQueryParams,
-  patFilterValidator,
-} from '../validators/pat-validator';
 import { NodesService } from '../services/nodes-service';
 import { PatService } from '../services/pat-service';
 import { ResponseSSE, SetupSSE } from '../middlewares/setup-sse';
 import BaseController from './base-controller';
 import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
 import { PagedData } from '../repositories/filters/repository-query-filter';
-import {
-  PersonalAccessToken,
-  PersonalAccessTokenWithToken,
-} from '../database/models/personal-access-token';
-import {
-  AdminTokenHandler,
-  AuthenticatedUser,
-} from '../middlewares/admin-token-handler';
+import { AuthenticatedUser } from '../middlewares/admin-token-handler';
 import { AuthWebHandler } from '../middlewares/auth-web-handler';
 
 @Service()
@@ -129,7 +116,7 @@ export default class NodeController extends BaseController {
     @Req() req: Request,
     @CurrentUser({ required: true }) user: AuthenticatedUser,
   ): Promise<NodeWithToken> {
-    const node = await this.nodesService.createNodeWithPAT(params);
+    const node = await this.nodesService.createNodeWithTokenKey(params);
     req.logger.audit(`New node ${params.name} created`, {
       nodeId: node.id,
       nodeName: params.name,
@@ -266,98 +253,49 @@ export default class NodeController extends BaseController {
     return this.nodesService.deleteNode(+id);
   }
 
-  @Get('/:id/pats')
-  // @Authorized([ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
-      query: patFilterValidator,
     }),
   )
-  async getPats(
+  @Post('/:id/regenerate-token')
+  // @Authorized([ROLE_ADMIN])
+  async regenerateNodeToken(
     @Param('id') id: string,
-    @QueryParams() params: PatFilterQueryParams,
-  ): Promise<
-    PersonalAccessToken | PersonalAccessToken[] | PagedData<PersonalAccessToken>
-  > {
-    return this.patService.getPATs(+id, params);
+    @Req() req: Request,
+    @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<{ token: string }> {
+    const nodeWithKey = await this.nodesService.regenerateApiKey(+id);
+
+    req.logger.audit(`Regenerated token for node ${nodeWithKey.name}`, {
+      nodeId: id,
+      nodeName: nodeWithKey.name,
+      user: user.name,
+    });
+
+    return { token: nodeWithKey.token };
   }
 
-  @Post('/:id/pats')
-  // @Authorized([ROLE_ADMIN])
   @UseBefore(
     celebrate({
       params: Joi.object({ id: Joi.string().required() }),
-      body: createPATValidator,
     }),
   )
-  async createTokenForNode(
-    @Param('id') id: string,
-    @Req() req: Request,
-    @CurrentUser({ required: true }) user: AuthenticatedUser,
-    @Body() params: CreatePATType,
-  ): Promise<PersonalAccessTokenWithToken> {
-    // ensure that node exists
-    const node = await this.nodesService.getNode(+id);
-
-    const pat = await this.patService.createNodePAT(node.id, params);
-
-    req.logger.audit(`Created PAT ${pat.name} for node ${node.name}`, {
-      nodeId: id,
-      nodeName: node.name,
-      user: user.name,
-      patId: pat.id,
-    });
-
-    return pat;
-  }
-
-  @Delete('/:id/pats/:patId')
+  @Post('/:id/regenerate-keys')
   // @Authorized([ROLE_ADMIN])
-  @UseBefore(
-    celebrate({
-      params: Joi.object({
-        id: Joi.string().required(),
-        patId: Joi.string().required(),
-      }),
-    }),
-  )
-  async deletePat(
+  async regenerateKeys(
     @Param('id') id: string,
     @Req() req: Request,
     @CurrentUser({ required: true }) user: AuthenticatedUser,
-    @Param('patId') patId: string,
-  ): Promise<string> {
-    req.logger.audit(`Deleting PAT with id ${patId} for node with id ${id}`, {
-      nodeId: id,
-      patId: patId,
-      user: user.name,
-    });
-    return this.patService.deletePat(+patId);
-  }
+  ): Promise<{ token: string }> {
+    const nodeWithKey = await this.nodesService.regenerateNodeKeys(+id);
 
-  @Patch('/:id/pats/:patId/revoke')
-  // @Authorized([ROLE_ADMIN])
-  @UseBefore(
-    celebrate({
-      params: Joi.object({
-        id: Joi.string().required(),
-        patId: Joi.string().required(),
-      }),
-    }),
-  )
-  async revokePat(
-    @Param('id') id: string,
-    @Req() req: Request,
-    @CurrentUser({ required: true }) user: AuthenticatedUser,
-    @Param('patId') patId: string,
-  ): Promise<PersonalAccessToken> {
-    const pat = await this.patService.revokeToken(+patId);
-    req.logger.audit(`Revoking PAT ${pat.name} for node with id ${id}`, {
+    req.logger.audit(`Regenerated token for node ${nodeWithKey.name}`, {
       nodeId: id,
-      patId: patId,
+      nodeName: nodeWithKey.name,
       user: user.name,
     });
-    return pat;
+
+    return { token: nodeWithKey.token };
   }
 }

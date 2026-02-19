@@ -161,7 +161,7 @@ export class HttpServicesService extends BaseServices {
       service.requireAuth = false;
     }
 
-    const updated = await this.httpServiceRepository.save(services);
+    const updated = await this.httpServiceRepository.saveMany(services);
 
     for (const service of updated) {
       await this.buildServerConfig(service, false);

@@ -5,7 +5,10 @@ import { PersonalAccessTokenRepository } from '../personal-access-token-reposito
 import { SelectQueryBuilder } from 'typeorm';
 
 @Service()
-export class PatQueryFilter extends RepositoryQueryFilter<PersonalAccessToken> {
+export class PatQueryFilter extends RepositoryQueryFilter<
+  PersonalAccessToken,
+  PersonalAccessTokenRepository
+> {
   constructor(@Inject() repository: PersonalAccessTokenRepository) {
     super(repository);
   }

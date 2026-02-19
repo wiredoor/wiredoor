@@ -22,8 +22,6 @@ export class AuthWebHandler implements ExpressMiddlewareInterface {
   ): Promise<void> {
     const sid = request.cookies?.[config.session.name];
 
-    console.log('SID from cookie:', sid);
-
     if (!sid) {
       throw new UnauthorizedError();
     }

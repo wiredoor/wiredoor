@@ -119,6 +119,9 @@ export class Node {
   })
   isLocal: boolean;
 
+  @Column()
+  cliVersion: string;
+
   @OneToMany(() => HttpService, (service) => service.node)
   httpServices: HttpService[];
 

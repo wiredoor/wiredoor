@@ -11,11 +11,11 @@ import WireguardService, {
 } from './wireguard/wireguard-service';
 import { HttpServicesService } from './http-services-service';
 import { TcpServicesService } from './tcp-services-service';
-import { PatService } from './pat-service';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { NodeQueryFilter } from '../repositories/filters/node-query-filter';
 import Net from '../utils/net';
 import { PagedData } from '../repositories/filters/repository-query-filter';
+import { NodeApiKeyRepository } from '../repositories/node-api-key-repository';
 
 @Service()
 export class NodesService {
@@ -25,7 +25,7 @@ export class NodesService {
     @Inject() private readonly wireguardService: WireguardService,
     @Inject() private readonly httpServicesService: HttpServicesService,
     @Inject() private readonly tcpServicesService: TcpServicesService,
-    @Inject() private readonly patService: PatService,
+    @Inject() private readonly nodeApiKeyRepository: NodeApiKeyRepository,
   ) {}
 
   public async initialize(): Promise<void> {
@@ -73,19 +73,59 @@ export class NodesService {
     return node;
   }
 
-  public async createNodeWithPAT(
+  public async createNodeWithTokenKey(
     params: CreateNodeType,
   ): Promise<NodeWithToken> {
-    const node = await this.createNode(params);
+    const nodeWithToken = await this.nodeRepository.transaction<NodeWithToken>(
+      async (manager) => {
+        const client = await this.wireguardService.getClientParams(params);
+        const node = await this.nodeRepository.save(client, manager);
+        console.log('Node created with id', node.id);
+        const apiKey = await this.nodeApiKeyRepository.createApiKey(
+          {
+            nodeId: node.id,
+            name: 'default',
+          },
+          manager,
+        );
 
-    const pat = await this.patService.createNodePAT(node.id, {
-      name: 'default',
+        return {
+          ...node,
+          token: apiKey.token,
+        };
+      },
+    );
+
+    await this.wireguardService.loadConfig();
+
+    await this.configureGateway(nodeWithToken as unknown as Node);
+
+    return nodeWithToken;
+  }
+
+  public async regenerateApiKey(id: number): Promise<NodeWithToken> {
+    const node = await this.getNode(id);
+
+    if (node.isLocal) {
+      throw new BadRequestError(`Local node can't be regenerated`);
+    }
+
+    return this.nodeRepository.transaction<NodeWithToken>(async (manager) => {
+      await this.nodeApiKeyRepository.revokeKeysForNode(id, manager);
+
+      const apiKey = await this.nodeApiKeyRepository.createApiKey(
+        {
+          nodeId: node.id,
+          name: 'default',
+        },
+        manager,
+      );
+
+      return {
+        ...node,
+        token: apiKey.token,
+      };
     });
-
-    return {
-      ...node,
-      token: pat.token,
-    };
   }
 
   public async regenerateNodeKeys(id: number): Promise<NodeWithToken> {
@@ -109,21 +149,31 @@ export class NodesService {
       node.wgInterface,
     );
 
-    await Promise.all([
-      this.nodeRepository.update({ id: id }, regeneratedData),
-      this.patService.deleteAllTokens(node.id),
-    ]);
+    const nodeWithToken = await this.nodeRepository.transaction<NodeWithToken>(
+      async (manager) => {
+        await this.nodeRepository.save({ id, ...regeneratedData }, manager);
+
+        await this.nodeApiKeyRepository.revokeKeysForNode(id, manager);
+
+        const apiKey = await this.nodeApiKeyRepository.createApiKey(
+          {
+            nodeId: id,
+            name: 'default',
+          },
+          manager,
+        );
+
+        return {
+          ...node,
+          ...regeneratedData,
+          token: apiKey.token,
+        };
+      },
+    );
 
     await this.wireguardService.loadConfig();
 
-    const pat = await this.patService.createNodePAT(node.id, {
-      name: 'default',
-    });
-
-    return {
-      ...node,
-      token: pat.token,
-    };
+    return nodeWithToken;
   }
 
   public async getNode(id: number, relations: string[] = []): Promise<Node> {

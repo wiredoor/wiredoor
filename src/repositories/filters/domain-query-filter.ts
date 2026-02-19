@@ -4,7 +4,10 @@ import { RepositoryQueryFilter } from './repository-query-filter';
 import { DomainRepository } from '../domain-repository';
 
 @Service()
-export class DomainQueryFilter extends RepositoryQueryFilter<Domain> {
+export class DomainQueryFilter extends RepositoryQueryFilter<
+  Domain,
+  DomainRepository
+> {
   constructor(@Inject() repository: DomainRepository) {
     super(repository);
   }

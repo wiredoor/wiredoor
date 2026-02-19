@@ -5,7 +5,10 @@ import { HttpServiceRepository } from '../http-service-repository';
 import { SelectQueryBuilder } from 'typeorm';
 
 @Service()
-export class HttpServiceQueryFilter extends RepositoryQueryFilter<HttpService> {
+export class HttpServiceQueryFilter extends RepositoryQueryFilter<
+  HttpService,
+  HttpServiceRepository
+> {
   constructor(@Inject() repository: HttpServiceRepository) {
     super(repository);
   }
