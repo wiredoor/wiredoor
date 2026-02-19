@@ -1,0 +1,11 @@
+import { Inject, Service } from 'typedi';
+import { DataSource } from 'typeorm';
+import { {{Model}} } from '../database/models/{{kebab Model}}';
+import BaseRepository from './base-repository';
+
+@Service()
+export class {{Model}}Repository extends BaseRepository<{{Model}}> {
+  constructor(@Inject('dataSource') dataSource: DataSource) {
+    super({{Model}}, dataSource.createEntityManager());
+  }
+}

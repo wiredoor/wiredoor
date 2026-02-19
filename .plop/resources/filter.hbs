@@ -1,0 +1,11 @@
+import { Inject, Service } from 'typedi';
+import { {{Model}} } from '../../database/models/{{kebab Model}}';
+import { RepositoryQueryFilter } from './repository-query-filter';
+import { {{Model}}Repository } from '../{{kebab Model}}-repository';
+
+@Service()
+export class {{Model}}QueryFilter extends RepositoryQueryFilter<{{Model}}> {
+  constructor(@Inject() repository: {{Model}}Repository) {
+    super(repository);
+  }
+}

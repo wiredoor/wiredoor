@@ -1,0 +1,27 @@
+import 'reflect-metadata';
+import Container from 'typedi';
+
+import db from '../providers/db';
+import { Logger } from '../logger';
+
+(async (): Promise<void> => {
+  try {
+    await db();
+
+    /**
+     * Resolve dependencies via TypeDI:
+     * const repo = Container.get(SomeRepository);
+     * const service = Container.get(SomeService);
+     */
+
+    Logger.info('Script "{{name}}" started');
+
+    // TODO: implement script logic
+
+    Logger.info('Script "{{name}}" finished');
+    process.exit(0);
+  } catch (err: any) {
+    Logger.error('Script "{{name}}" failed', err);
+    process.exit(1);
+  }
+})();

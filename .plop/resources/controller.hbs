@@ -1,0 +1,115 @@
+import { Inject, Service } from 'typedi';
+import { celebrate, Joi } from 'celebrate';
+import {
+  Body,
+  CurrentUser,
+  Delete,
+  Get,
+  JsonController,
+  Param,
+  Patch,
+  Post,
+  QueryParams,
+  Req,
+  UseBefore,
+} from 'routing-controllers';
+import { Request } from 'express';
+
+import BaseController from './base-controller';
+
+import {{Model}}Service from '../services/{{kebab Model}}-service';
+import { {{Model}} } from '../database/models/{{kebab Model}}';
+
+import {
+  {{Model}}FilterQueryParams,
+  {{camel Model}}FilterValidator,
+  {{Model}}Type,
+  {{camel Model}}Validator,
+} from '../schemas/{{kebab Model}}-schema';
+
+import type { PagedData } from '../repositories/filters/repository-query-filter';
+
+@Service()
+@JsonController('/{{route}}')
+export default class {{Model}}Controller extends BaseController {
+  constructor(@Inject() private readonly {{camel Model}}Service: {{Model}}Service) {
+    super();
+  }
+
+  @Get('/')
+  @UseBefore(
+    celebrate({
+      query: {{camel Model}}FilterValidator,
+    }),
+  )
+  async get{{Model}}s(
+    @QueryParams() filters: {{Model}}FilterQueryParams,
+  ): Promise<{{Model}} | {{Model}}[] | PagedData<{{Model}}>> {
+    return this.{{camel Model}}Service.get{{Model}}s(filters);
+  }
+
+  @Post('/')
+  @UseBefore(
+    celebrate({
+      body: {{camel Model}}Validator,
+    }),
+  )
+  async create{{Model}}(
+    @Body() params: {{Model}}Type,
+    // @Req() req: Request,
+    // @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<{{Model}}> {
+    // req.logger.audit(`Creating new {{kebab Model}}`, {
+    //   user: user.name,
+    // });
+    return this.{{camel Model}}Service.create{{Model}}(params);
+  }
+
+  @Get('/:id')
+  @UseBefore(
+    celebrate({
+      params: Joi.object({ id: Joi.string().required() }),
+    }),
+  )
+  async get{{Model}}(@Param('id') id: string): Promise<{{Model}}> {
+    return this.{{camel Model}}Service.get{{Model}}(+id);
+  }
+
+  @Patch('/:id')
+  @UseBefore(
+    celebrate({
+      params: Joi.object({ id: Joi.string().required() }),
+      body: {{camel Model}}Validator,
+    }),
+  )
+  async update{{Model}}(
+    @Param('id') id: string,
+    @Body() params: {{Model}}Type,
+    // @Req() req: Request,
+    // @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<{{Model}}> {
+    // req.logger.audit(`Updating {{kebab Model}} with id ${id}`, {
+    //   id,
+    //   user: user.name,
+    // });
+    return this.{{camel Model}}Service.update{{Model}}(+id, params);
+  }
+
+  @Delete('/:id')
+  @UseBefore(
+    celebrate({
+      params: Joi.object({ id: Joi.string().required() }),
+    }),
+  )
+  async delete{{Model}}(
+    @Param('id') id: string,
+    // @Req() req: Request,
+    // @CurrentUser({ required: true }) user: AuthenticatedUser,
+  ): Promise<string> {
+    // req.logger.audit(`Deleting {{kebab Model}} with id ${id}`, {
+    //   id,
+    //   user: user.name,
+    // });
+    return this.{{camel Model}}Service.delete{{Model}}(+id);
+  }
+}

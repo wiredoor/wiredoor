@@ -1,0 +1,73 @@
+import Joi from 'joi';
+
+/**
+ * Public types for controller/service.
+ * Keep these stable: Plop-generated controllers import these symbols by name.
+ */
+
+/**
+ * Query params for list endpoint.
+ * Extend safely as your filtering grows.
+ */
+export type {{Model}}FilterQueryParams = {
+  q?: string;
+  page?: number;
+  limit?: number;
+  orderBy?: string;
+  orderDir?: 'asc' | 'desc';
+};
+
+/**
+ * Strongly-typed payload for create/update.
+ * This is intentionally minimal because Plop cannot infer your domain fields.
+ * Add required/optional fields here per model.
+ */
+export type {{Model}}Type = {
+  // Example fields — replace with your real DTO fields
+  // name: string;
+};
+
+/**
+ * Optional: patch payload type (if you want PATCH to accept partials).
+ * If you prefer full replacement semantics, delete this and use {{Model}}Type in PATCH.
+ */
+export type {{Model}}PatchType = Partial<{{Model}}Type>;
+
+/**
+ * Joi validators (celebrate expects Joi schemas).
+ */
+export const {{camel Model}}FilterValidator = Joi.object<{{Model}}FilterQueryParams>({
+  q: Joi.string().allow('').optional(),
+  page: Joi.number().integer().min(1).optional(),
+  limit: Joi.number().integer().min(1).max(250).optional(),
+  orderBy: Joi.string().optional(),
+  orderDir: Joi.string().valid('asc', 'desc').optional(),
+})
+  .unknown(false)
+  .prefs({ abortEarly: false });
+
+export const {{camel Model}}Validator = Joi.object<{{Model}}Type>({
+  // Example:
+  // name: Joi.string().min(2).max(128).required(),
+})
+  .unknown(false)
+  .prefs({ abortEarly: false });
+
+/**
+ * Optional: separate validator for PATCH if you want partial updates.
+ * In that case, update controller to use {{camel Model}}PatchValidator + {{Model}}PatchType.
+ */
+export const {{camel Model}}PatchValidator = Joi.object<{{Model}}PatchType>({
+  // Example:
+  // name: Joi.string().min(2).max(128).optional(),
+})
+  .unknown(false)
+  .prefs({ abortEarly: false });
+
+/**
+ * Common param validators.
+ * Keep consistent across controllers.
+ */
+export const idParamValidator = Joi.object<{ id: string }>({
+  id: Joi.string().required(),
+}).prefs({ abortEarly: false });

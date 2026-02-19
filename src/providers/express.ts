@@ -4,16 +4,9 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import { Container } from 'typedi';
 import { Action, useContainer, useExpressServer } from 'routing-controllers';
-import AuthController from '../controllers/auth-controller';
-import NodeController from '../controllers/node-controller';
-import NodeServiceController from '../controllers/node-service-controller';
-import CLiController from '../controllers/cli-controller';
-import DomainController from '../controllers/domain-controller';
-import ConfigController from '../controllers/config-controller';
-import LogController from '../controllers/log-controller';
 import { errorHandlerMiddleware } from '../middlewares/error-handler-middleware';
 import { createExpressLogger } from '../logger/express-logger';
-import AuthWebController from '../controllers/auth-web-controller';
+import controllers from '../controllers';
 
 export default ({ app }: { app: express.Application }): void => {
   const { middleware, errorMiddleware } = createExpressLogger({
@@ -33,16 +26,7 @@ export default ({ app }: { app: express.Application }): void => {
   useExpressServer(app, {
     routePrefix: 'api',
     defaultErrorHandler: false,
-    controllers: [
-      AuthController,
-      ConfigController,
-      DomainController,
-      NodeController,
-      NodeServiceController,
-      CLiController,
-      LogController,
-      AuthWebController,
-    ],
+    controllers: controllers,
     cors: {
       origin: function (origin, callback) {
         // We can use cors: Disabled by default

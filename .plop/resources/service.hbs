@@ -1,0 +1,48 @@
+import { Inject, Service } from 'typedi';
+
+import { {{Model}}Repository } from '../repositories/{{kebab Model}}-repository';
+import { {{Model}}QueryFilter } from '../repositories/filters/{{kebab Model}}-query-filter';
+import { {{Model}} } from '../database/models/{{kebab Model}}';
+
+import type { {{Model}}FilterQueryParams, {{Model}}Type } from '../schemas/{{kebab Model}}-schema';
+import type { PagedData } from '../repositories/filters/repository-query-filter';
+
+@Service()
+export default class {{Model}}Service {
+  constructor(
+    @Inject() private readonly {{camel Model}}Repository: {{Model}}Repository,
+    @Inject() private readonly {{camel Model}}Filter: {{Model}}QueryFilter,
+  ) {}
+
+  /**
+   * List / search
+   * NOTE: Keep return shape aligned with your repository conventions.
+   * If your repository always returns PagedData, simplify this to Promise<PagedData<{{Model}}>>.
+   */
+  async get{{Model}}s(
+    filters: {{Model}}FilterQueryParams,
+  ): Promise<{{Model}} | {{Model}}[] | PagedData<{{Model}}>> {
+    return this.{{camel Model}}Filter.apply(filters);
+  }
+
+  /** Create */
+  async create{{Model}}(params: {{Model}}Type): Promise<{{Model}}> {
+    return this.{{camel Model}}Repository.save(params);
+  }
+
+  /** Read by id */
+  async get{{Model}}(id: number): Promise<{{Model}}> {
+    return this.{{camel Model}}Repository.findOne({ where: { id } });
+  }
+
+  /** Update */
+  async update{{Model}}(id: number, params: {{Model}}Type): Promise<{{Model}}> {
+    return this.{{camel Model}}Repository.save({ id, ...params });
+  }
+
+  /** Delete */
+  async delete{{Model}}(id: number): Promise<string> {
+    await this.{{camel Model}}Repository.delete(id);
+    return 'Deleted!';
+  }
+}

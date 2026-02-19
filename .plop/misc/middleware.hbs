@@ -1,0 +1,37 @@
+import {
+  ExpressMiddlewareInterface,
+  UnauthorizedError,
+} from 'routing-controllers';
+import { Inject, Service } from 'typedi';
+import type { NextFunction, Request, Response } from 'express';
+
+/**
+ * Middleware scaffold (routing-controllers + TypeDI).
+ *
+ * Usage:
+ *   @UseBefore({{Name}}Handler)
+ */
+@Service()
+export class {{Name}}Handler implements ExpressMiddlewareInterface {
+  constructor(
+    // @Inject() private readonly someService: SomeService,
+  ) {}
+
+  async use(
+    request: Request,
+    response: Response,
+    next: (err?: unknown) => NextFunction,
+  ): Promise<void> {
+    /**
+     * Implement auth/validation/etc.
+     * Throw routing-controllers errors for standardized responses:
+     * - UnauthorizedError
+     * - ForbiddenError
+     * - BadRequestError
+     */
+    // Example:
+    // if (!request.user) throw new UnauthorizedError();
+
+    next();
+  }
+}
