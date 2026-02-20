@@ -4,38 +4,21 @@ import { DataSource, EntityManager } from 'typeorm';
 import { NodeApiKey } from '../database/models/node-api-key';
 import config from '../config';
 import BaseRepository from './base-repository';
-
-function base64url(buf: Buffer): string {
-  return buf
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
-}
+import { generateTokenString, hashToken } from '../utils/cypher';
 
 @Service()
 export class NodeApiKeyRepository extends BaseRepository<NodeApiKey> {
+  private readonly secret = config.keys.secret;
   constructor(@Inject('dataSource') dataSource: DataSource) {
     super(NodeApiKey, dataSource);
-  }
-
-  private hashToken(rawToken: string): string {
-    return crypto
-      .createHmac('sha256', config.keys.secret)
-      .update(rawToken, 'utf8')
-      .digest('hex');
-  }
-  private createTokenString(): string {
-    // 48 bytes random -> 64 chars base64url -> 64 chars token string
-    return `${base64url(crypto.randomBytes(48))}`;
   }
 
   async createApiKey(
     opts: { nodeId: number; name?: string; expiresAt?: Date | null },
     manager?: EntityManager,
   ): Promise<{ apiKey: NodeApiKey; token: string }> {
-    const token = this.createTokenString();
-    const tokenHash = this.hashToken(token);
+    const token = generateTokenString(48);
+    const tokenHash = hashToken(token, this.secret);
 
     const apiKey = await this.save(
       {
@@ -69,7 +52,7 @@ export class NodeApiKeyRepository extends BaseRepository<NodeApiKey> {
     rawToken: string,
     manager?: EntityManager,
   ): Promise<NodeApiKey | null> {
-    const tokenHash = this.hashToken(rawToken);
+    const tokenHash = hashToken(rawToken, this.secret);
 
     const apiKey = await this.findOne(
       {

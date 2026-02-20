@@ -4,6 +4,25 @@ import config from '../config';
 const algorithm = 'aes-256-gcm';
 const IV_LENGTH = 12;
 
+export function base64url(buf: Buffer): string {
+  return buf
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
+
+export function generateTokenString(bytes: number): string {
+  return base64url(crypto.randomBytes(bytes));
+}
+
+export function hashToken(token: string, secret?: string): string {
+  return crypto
+    .createHmac('sha256', secret || config.encryption.secret)
+    .update(token, 'utf8')
+    .digest('hex');
+}
+
 export function encrypt(secret: string): string {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(
