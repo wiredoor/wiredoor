@@ -84,7 +84,6 @@ export class NodesService {
       async (manager) => {
         const client = await this.wireguardService.getClientParams(params);
         const node = await this.nodeRepository.save(client, manager);
-        console.log('Node created with id', node.id);
         const apiKey = await this.nodeApiKeyRepository.createApiKey(
           {
             nodeId: node.id,
