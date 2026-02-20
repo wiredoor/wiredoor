@@ -1,5 +1,6 @@
 import { Inject, Service } from 'typedi';
 import { Response } from 'express';
+import { EntityManager } from 'typeorm';
 import { NodeRepository } from '../repositories/node-repository';
 import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
 import {
@@ -62,9 +63,12 @@ export class NodesService {
     return this.wireguardService.getRuntimeInfo(nodes, wgInterface, checkPing);
   }
 
-  public async createNode(params: CreateNodeType): Promise<Node> {
+  public async createNode(
+    params: CreateNodeType,
+    manager?: EntityManager,
+  ): Promise<Node> {
     const client = await this.wireguardService.getClientParams(params);
-    const node = await this.nodeRepository.save(client);
+    const node = await this.nodeRepository.save(client, manager);
 
     await this.wireguardService.loadConfig();
 

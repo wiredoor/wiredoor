@@ -161,7 +161,7 @@ export default class BaseRepository<T extends ObjectLiteral> {
   // update does not check for existing entities and is faster than save, but does not trigger entity listeners or subscribers
   // it uses QueryBuilder and does not support all features of the regular update method, such as cascades or relations
   async update(
-    where: FindOptionsWhere<T>,
+    where: string | number | FindOptionsWhere<T>,
     partial: DeepPartial<T>,
     manager?: EntityManager,
   ): Promise<UpdateResult> {
