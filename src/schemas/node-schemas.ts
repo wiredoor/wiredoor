@@ -1,9 +1,8 @@
 import { ObjectSchema, ValidationError } from 'joi';
-import Joi from './joi-validator';
-import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
+import Joi from '../utils/joi-validator';
 import IP_CIDR from '../utils/ip-cidr';
-import { GatewayNetwork } from '../database/models/node';
 import Net from '../utils/net';
+import { FilterQueryDto } from './shared-schemas';
 
 export const validateSubnet = async (c: string): Promise<string> => {
   if (c) {
@@ -101,6 +100,11 @@ export interface NodeFilterStreamParams extends NodeFilterQueryParams {
   token?: string;
 }
 
+export interface GatewayNetwork {
+  interface: string;
+  subnet: string;
+}
+
 export interface CreateNodeType {
   name: string;
   dns?: string;
@@ -112,6 +116,21 @@ export interface CreateNodeType {
   enabled?: boolean;
   gatewayNetworks?: GatewayNetwork[];
   isGateway?: boolean;
+}
+
+export interface NodeInfo extends CreateNodeType {
+  id: number;
+  wgInterface: string;
+  cliVersion?: string;
+  clientIp?: string;
+  latestHandshakeTimestamp?: number;
+  transferRx?: number;
+  transferTx?: number;
+  status?: 'online' | 'offline' | 'idle';
+}
+
+export interface NodeWithToken extends NodeInfo {
+  token: string;
 }
 
 export interface NodeClientParams extends CreateNodeType {

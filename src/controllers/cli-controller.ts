@@ -23,22 +23,23 @@ import {
   HttpServiceType,
   httpServiceValidator,
   ttlValidator,
-} from '../validators/http-service-validator';
+} from '../schemas/http-service-schemas';
 import {
   TcpServiceFilterQueryParams,
   TcpServiceType,
   tcpServiceValidator,
-} from '../validators/tcp-service-validator';
+} from '../schemas/tcp-service-schemas';
 import { AuthenticatedUser } from '../middlewares/auth-token-handler';
 import BaseController from './base-controller';
-import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
+import { Node } from '../database/models/node';
+import { NodeInfo, NodeWithToken } from '../schemas/node-schemas';
 import { WGConfigObject } from '../services/wireguard/wireguard-service';
 import { HttpService } from '../database/models/http-service';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { TcpService } from '../database/models/tcp-service';
 import { CliTokenHandler } from '../middlewares/cli-token-handler';
-import Joi from '../validators/joi-validator';
-import { gatewayNetworkValidator } from '../validators/node-validators';
+import Joi from '../utils/joi-validator';
+import { gatewayNetworkValidator } from '../schemas/node-schemas';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 @JsonController('/cli')

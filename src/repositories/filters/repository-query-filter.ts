@@ -1,21 +1,6 @@
 import { SelectQueryBuilder } from 'typeorm';
 import BaseRepository from '../base-repository';
-
-export interface FilterQueryDto {
-  id?: number;
-  page?: number;
-  limit?: number;
-  orderBy?: string;
-  relations?: string[];
-  [field: string]: string | string[] | number | undefined;
-}
-
-export interface PagedData<T> {
-  data: T[];
-  page: number;
-  limit: number;
-  total: number;
-}
+import { FilterQueryDto, PagedData } from '../../schemas/shared-schemas';
 
 export abstract class RepositoryQueryFilter<T, R extends BaseRepository<T>> {
   protected filters: FilterQueryDto;

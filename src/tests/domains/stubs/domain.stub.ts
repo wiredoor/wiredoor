@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { DomainType } from '../../../validators/domain-validator';
+import { DomainType } from '../../../schemas/domain-schemas';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeDomainData = (params?: any): DomainType => {

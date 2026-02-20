@@ -1,9 +1,9 @@
 import { ObjectSchema, ValidationError } from 'joi';
-import Joi from './joi-validator';
-import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import { nslookupResolvesServerIp } from './domain-validator';
+import Joi from '../utils/joi-validator';
+import { nslookupResolvesServerIp } from './domain-schemas';
 import Container from 'typedi';
 import { DomainRepository } from '../repositories/domain-repository';
+import { FilterQueryDto } from '../schemas/shared-schemas';
 
 export const validateServiceDomain = async (c: string): Promise<string> => {
   const domain = await Container.get(DomainRepository).getDomainByName(c);

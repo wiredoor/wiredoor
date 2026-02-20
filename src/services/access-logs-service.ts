@@ -1,7 +1,7 @@
 import { Inject, Service } from 'typedi';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import ServerUtils from '../utils/server';
-import { LogQueryParams } from '../validators/log-validator';
+import { LogQueryParams } from '../schemas/log-schemas';
 import { HttpServiceRepository } from '../repositories/http-service-repository';
 import { TcpServiceRepository } from '../repositories/tcp-service-repository';
 import { Response } from 'express';

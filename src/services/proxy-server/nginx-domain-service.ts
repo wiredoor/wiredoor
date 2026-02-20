@@ -1,5 +1,6 @@
 import config from '../../config';
-import { Domain, SSLTermination } from '../../database/models/domain';
+import { Domain } from '../../database/models/domain';
+import { SSLTermination } from '../../schemas/domain-schemas';
 import ServerUtils from '../../utils/server';
 import { NginxLocationConf } from './conf/nginx-location-conf';
 import { NginxServerConf } from './conf/nginx-server-conf';
@@ -94,7 +95,7 @@ export class NginxDomainService extends NginxService {
     const domainName = domain.domain;
     await this.removeFile(`/etc/nginx/conf.d/${domainName}.conf`);
 
-    if (domain.ssl === 'self-signed') {
+    if (domain.ssl === SSLTermination.SelfSigned) {
       const certPath = SSLManager.getCertPath(
         domainName,
         domain.ssl as SSLTermination,

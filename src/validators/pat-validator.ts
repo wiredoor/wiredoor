@@ -1,6 +1,6 @@
 import { ObjectSchema } from 'joi';
-import Joi from './joi-validator';
-import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
+import Joi from '../utils/joi-validator';
+import { FilterQueryDto } from '../schemas/shared-schemas';
 
 export interface CreatePATType {
   name: string;

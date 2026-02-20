@@ -1,5 +1,5 @@
 import { Inject, Service } from 'typedi';
-import { Node, NodeInfo } from '../../database/models/node';
+import { Node } from '../../database/models/node';
 import { WgInterface } from '../../database/models/wg-interface';
 import { NodeRepository } from '../../repositories/node-repository';
 import { WgInterfaceRepository } from '../../repositories/wg-interface-repository';
@@ -10,7 +10,8 @@ import FileManager from '../../utils/file-manager';
 import {
   CreateNodeType,
   NodeClientParams,
-} from '../../validators/node-validators';
+  NodeInfo,
+} from '../../schemas/node-schemas';
 import IP_CIDR from '../../utils/ip-cidr';
 import config from '../../config';
 import { getPing } from '../../providers/node-monitor';

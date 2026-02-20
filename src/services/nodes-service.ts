@@ -2,11 +2,13 @@ import { Inject, Service } from 'typedi';
 import { Response } from 'express';
 import { EntityManager } from 'typeorm';
 import { NodeRepository } from '../repositories/node-repository';
-import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
+import { Node } from '../database/models/node';
 import {
   CreateNodeType,
   NodeFilterQueryParams,
-} from '../validators/node-validators';
+  NodeInfo,
+  NodeWithToken,
+} from '../schemas/node-schemas';
 import WireguardService, {
   WGConfigObject,
 } from './wireguard/wireguard-service';
@@ -15,8 +17,8 @@ import { TcpServicesService } from './tcp-services-service';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
 import { NodeQueryFilter } from '../repositories/filters/node-query-filter';
 import Net from '../utils/net';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { NodeApiKeyRepository } from '../repositories/node-api-key-repository';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export class NodesService {

@@ -13,7 +13,7 @@ import BaseController from './base-controller';
 import {
   logParamsValidator,
   LogStreamQueryParams,
-} from '../validators/log-validator';
+} from '../schemas/log-schemas';
 import { Request, Response } from 'express';
 import { SetupSSE } from '../middlewares/setup-sse';
 import { celebrate } from 'celebrate';

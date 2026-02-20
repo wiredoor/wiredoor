@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { CreateNodeType } from '../../../validators/node-validators';
+import { CreateNodeType } from '../../../schemas/node-schemas';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeNodeData = (params?: any): CreateNodeType => {

@@ -11,7 +11,7 @@ import {
   PatFilterQueryParams,
 } from '../validators/pat-validator';
 import { PatQueryFilter } from '../repositories/filters/pat-query-filter';
-import { PagedData } from '../repositories/filters/repository-query-filter';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export class PatService {

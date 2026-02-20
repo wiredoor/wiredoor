@@ -1,8 +1,9 @@
 import client from 'prom-client';
 import { Inject, Service } from 'typedi';
 import { NodesService } from './nodes-service';
-import { Node, NodeInfo } from '../database/models/node';
+import { Node } from '../database/models/node';
 import FileManager from '../utils/file-manager';
+import { NodeInfo } from '../schemas/node-schemas';
 
 const METRICS_STATE_FILE = '/data/metrics.json';
 

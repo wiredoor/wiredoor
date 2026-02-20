@@ -22,23 +22,20 @@ import {
   httpServiceFilterValidator,
   HttpServiceType,
   httpServiceValidator,
-} from '../validators/http-service-validator';
+} from '../schemas/http-service-schemas';
 import {
   TcpServiceFilterQueryParams,
   tcpServiceFilterValidator,
   TcpServiceType,
   tcpServiceValidator,
-} from '../validators/tcp-service-validator';
+} from '../schemas/tcp-service-schemas';
 import { HttpServicesService } from '../services/http-services-service';
 import { TcpServicesService } from '../services/tcp-services-service';
 import { HttpService } from '../database/models/http-service';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { TcpService } from '../database/models/tcp-service';
-import {
-  AdminTokenHandler,
-  AuthenticatedUser,
-} from '../middlewares/admin-token-handler';
+import { AuthenticatedUser } from '../middlewares/admin-token-handler';
 import { AuthWebHandler } from '../middlewares/auth-web-handler';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 @JsonController('/services')

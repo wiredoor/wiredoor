@@ -4,15 +4,15 @@ import { TcpService } from '../database/models/tcp-service';
 import {
   TcpServiceFilterQueryParams,
   TcpServiceType,
-} from '../validators/tcp-service-validator';
+} from '../schemas/tcp-service-schemas';
 import { TcpServiceQueryFilter } from '../repositories/filters/tcp-service-query-filter';
 import { NotFoundError } from 'routing-controllers';
 import { DomainsService } from './domains-service';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 import { NginxTcpService } from './proxy-server/nginx-tcp-service';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export class TcpServicesService extends BaseServices {

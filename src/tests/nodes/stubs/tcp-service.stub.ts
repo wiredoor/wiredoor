@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { TcpServiceType } from '../../../validators/tcp-service-validator';
+import { TcpServiceType } from '../../../schemas/tcp-service-schemas';
 import config from '../../../config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

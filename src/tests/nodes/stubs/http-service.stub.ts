@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { HttpServiceType } from '../../../validators/http-service-validator';
+import { HttpServiceType } from '../../../schemas/http-service-schemas';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeHttpServiceData = (params?: any): HttpServiceType => {
@@ -10,6 +10,6 @@ export const makeHttpServiceData = (params?: any): HttpServiceType => {
     backendProto: params?.backendProto || 'http',
     backendPort: params?.backendPort || 80,
     allowedIps: params?.allowedIps || [],
-    blockedIps: params?.allowedIps || [],
+    blockedIps: params?.blockedIps || [],
   };
 };

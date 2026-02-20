@@ -25,7 +25,7 @@ import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-qu
 import { DomainRepository } from '../../repositories/domain-repository';
 import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
-import { PagedData } from '../../repositories/filters/repository-query-filter';
+import { PagedData } from '../../schemas/shared-schemas';
 import { HttpService } from '../../database/models/http-service';
 import ServerUtils from '../../utils/server';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';

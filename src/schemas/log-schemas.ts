@@ -1,4 +1,4 @@
-import Joi from './joi-validator';
+import Joi from '../utils/joi-validator';
 
 export interface LogQueryParams {
   domain?: string;

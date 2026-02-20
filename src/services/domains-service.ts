@@ -1,19 +1,16 @@
 import Container, { Inject, Service } from 'typedi';
 import { DomainRepository } from '../repositories/domain-repository';
-import {
-  Domain,
-  Oauth2ProxyConfig,
-  SSLTermination,
-} from '../database/models/domain';
+import { Domain } from '../database/models/domain';
 import { DomainQueryFilter } from '../repositories/filters/domain-query-filter';
 import {
   DomainFilterQueryParams,
   DomainType,
   pointToThisServer,
-} from '../validators/domain-validator';
+  Oauth2ProxyConfig,
+  SSLTermination,
+} from '../schemas/domain-schemas';
 import { SSLManager } from './proxy-server/ssl-manager';
 import { BadRequestError, NotFoundError } from 'routing-controllers';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { ValidationError } from '../utils/errors/validation-error';
 import { ProcessManager } from './oauth2-proxy/process-manager';
 import config from '../config';
@@ -21,6 +18,7 @@ import { HttpServicesService } from './http-services-service';
 import { NginxDomainService } from './proxy-server/nginx-domain-service';
 import { DNSService } from './dns/dns-service';
 import Net from '../utils/net';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export class DomainsService {

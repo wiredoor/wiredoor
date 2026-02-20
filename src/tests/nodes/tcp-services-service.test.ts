@@ -26,9 +26,9 @@ import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-qu
 import { DomainRepository } from '../../repositories/domain-repository';
 import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
-import { SSLTermination } from '../../database/models/domain';
+import { SSLTermination } from '../../schemas/domain-schemas';
 import { TcpService } from '../../database/models/tcp-service';
-import { PagedData } from '../../repositories/filters/repository-query-filter';
+import { PagedData } from '../../schemas/shared-schemas';
 import { faker } from '@faker-js/faker';
 import ServerUtils from '../../utils/server';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';

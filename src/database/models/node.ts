@@ -11,26 +11,7 @@ import { HttpService } from './http-service';
 import { PersonalAccessToken } from './personal-access-token';
 import { TcpService } from './tcp-service';
 import { decrypt, encrypt } from '../../utils/cypher';
-
-export interface NodeInfo extends Omit<
-  Node,
-  'publicKey' | 'privateKey' | 'preSharedKey'
-> {
-  clientIp?: string;
-  latestHandshakeTimestamp?: number;
-  transferRx?: number;
-  transferTx?: number;
-  status?: 'online' | 'offline' | 'idle';
-}
-
-export interface NodeWithToken extends NodeInfo {
-  token: string;
-}
-
-export interface GatewayNetwork {
-  interface: string;
-  subnet: string;
-}
+import { GatewayNetwork } from '../../schemas/node-schemas';
 
 @Entity('nodes')
 export class Node {

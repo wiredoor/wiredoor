@@ -13,8 +13,8 @@ import { DomainRepository } from '../../repositories/domain-repository';
 import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
 import { makeDomainData } from './stubs/domain.stub';
-import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { Domain } from '../../database/models/domain';
+import { PagedData } from '../../schemas/shared-schemas';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -114,6 +114,7 @@ describe('Domains Service', () => {
     it('should list all Domains', async () => {
       const data = makeDomainData();
       const domain = await repository.save({ ...data });
+      void domain;
 
       const result = await service.getDomains({});
 

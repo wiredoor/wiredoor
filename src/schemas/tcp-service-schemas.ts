@@ -1,8 +1,8 @@
 import { ObjectSchema } from 'joi';
-import Joi from './joi-validator';
+import Joi from '../utils/joi-validator';
 import config from '../config';
-import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
-import { ttlValidator, validateServiceDomain } from './http-service-validator';
+import { ttlValidator, validateServiceDomain } from './http-service-schemas';
+import { FilterQueryDto } from '../schemas/shared-schemas';
 
 export interface TcpServiceType {
   name: string;

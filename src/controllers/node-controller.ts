@@ -22,15 +22,17 @@ import {
   nodeFilterValidator,
   NodeFilterQueryParams,
   NodeFilterStreamParams,
-} from '../validators/node-validators';
+  NodeInfo,
+  NodeWithToken,
+} from '../schemas/node-schemas';
 import { NodesService } from '../services/nodes-service';
 import { PatService } from '../services/pat-service';
 import { ResponseSSE, SetupSSE } from '../middlewares/setup-sse';
 import BaseController from './base-controller';
-import { Node, NodeInfo, NodeWithToken } from '../database/models/node';
-import { PagedData } from '../repositories/filters/repository-query-filter';
+import { Node } from '../database/models/node';
 import { AuthenticatedUser } from '../middlewares/admin-token-handler';
 import { AuthWebHandler } from '../middlewares/auth-web-handler';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 @JsonController('/nodes')

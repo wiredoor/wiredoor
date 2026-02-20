@@ -21,13 +21,13 @@ import {
   domainFilterValidator,
   DomainType,
   domainValidator,
-} from '../validators/domain-validator';
+} from '../schemas/domain-schemas';
 import { Domain } from '../database/models/domain';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import {
   AdminTokenHandler,
   AuthenticatedUser,
 } from '../middlewares/admin-token-handler';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 @JsonController('/domains')

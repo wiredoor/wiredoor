@@ -7,20 +7,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
-export enum SSLTermination {
-  SelfSigned = 'self-signed',
-  Certbot = 'certbot',
-}
-
-export interface SSLCerts {
-  fullchain: string;
-  privkey: string;
-}
-
-export interface Oauth2ProxyConfig {
-  allowedEmails: string[];
-}
+import {
+  Oauth2ProxyConfig,
+  SSLCerts,
+  SSLTermination,
+} from '../../schemas/domain-schemas';
 
 @Entity('domains')
 export class Domain {

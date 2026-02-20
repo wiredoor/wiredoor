@@ -1,7 +1,7 @@
 import path from 'path';
 import FileManager from '../../utils/file-manager';
 import CLI from '../../utils/cli';
-import { SSLTermination, SSLCerts } from '../../database/models/domain';
+import { SSLTermination, SSLCerts } from '../../schemas/domain-schemas';
 import config from '../../config';
 import { Logger } from '../../logger';
 
@@ -13,7 +13,7 @@ export class SSLManager {
     domain: string,
     type: SSLTermination,
   ): Promise<SSLCerts> {
-    if (!domain || domain === '_' || type === 'self-signed') {
+    if (!domain || domain === '_' || type === SSLTermination.SelfSigned) {
       return this.getSelfSignedCertificates(domain);
     }
 

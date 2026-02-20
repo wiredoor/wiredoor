@@ -1,11 +1,25 @@
 import { ObjectSchema, ValidationError } from 'joi';
-import Joi from './joi-validator';
-import { FilterQueryDto } from '../repositories/filters/repository-query-filter';
+import Joi from '../utils/joi-validator';
 import Net from '../utils/net';
 import ServerUtils from '../utils/server';
 import config from '../config';
 import Container from 'typedi';
 import { DNSService } from '../services/dns/dns-service';
+import { FilterQueryDto } from '../schemas/shared-schemas';
+
+export enum SSLTermination {
+  SelfSigned = 'self-signed',
+  Certbot = 'certbot',
+}
+
+export interface SSLCerts {
+  fullchain: string;
+  privkey: string;
+}
+
+export interface Oauth2ProxyConfig {
+  allowedEmails: string[];
+}
 
 export const pointToThisServer = async (domain: string): Promise<boolean> => {
   const lookup = await Net.lookupIncludesThisServer(domain);

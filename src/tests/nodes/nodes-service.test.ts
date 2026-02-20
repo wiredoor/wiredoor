@@ -27,8 +27,8 @@ import { TcpServiceQueryFilter } from '../../repositories/filters/tcp-service-qu
 import { DomainRepository } from '../../repositories/domain-repository';
 import { DomainsService } from '../../services/domains-service';
 import { DomainQueryFilter } from '../../repositories/filters/domain-query-filter';
-import { PagedData } from '../../repositories/filters/repository-query-filter';
-import { NodeInfo } from '../../database/models/node';
+import { PagedData } from '../../schemas/shared-schemas';
+import { NodeInfo } from '../../schemas/node-schemas';
 import { faker } from '@faker-js/faker';
 import config from '../../config';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';

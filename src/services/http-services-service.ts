@@ -7,15 +7,15 @@ import { BadRequestError, NotFoundError } from 'routing-controllers';
 import {
   HttpServiceFilterQueryParams,
   HttpServiceType,
-} from '../validators/http-service-validator';
+} from '../schemas/http-service-schemas';
 import { HttpServiceQueryFilter } from '../repositories/filters/http-service-query-filter';
 import { DomainsService } from './domains-service';
-import { PagedData } from '../repositories/filters/repository-query-filter';
 import { BaseServices } from './base-services';
 import { NodeRepository } from '../repositories/node-repository';
 import { calculateExpiresAtFromTTL } from '../utils/ttl-utils';
 import { NginxHttpService } from './proxy-server/nginx-http-service';
 import { Logger } from '../logger';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export class HttpServicesService extends BaseServices {

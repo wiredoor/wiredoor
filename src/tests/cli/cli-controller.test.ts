@@ -1,24 +1,20 @@
 import supertest from 'supertest';
 import { loadApp } from '../../main';
-import { mockAuthenticatedToken } from '../.jest/global-mocks';
-import { NodeWithToken } from '../../database/models/node';
 import { faker } from '@faker-js/faker';
 import TestAgent from 'supertest/lib/agent';
 import { NodesService } from '../../services/nodes-service';
+import { NodeWithToken } from '../../schemas/node-schemas';
 import Container from 'typedi';
 
 let app;
 let request: TestAgent;
 let node: NodeWithToken;
-let adminToken: string;
 let nodeToken: string;
 let nodesService: NodesService;
 
 beforeAll(async () => {
   app = await loadApp();
   request = supertest(app, {});
-
-  adminToken = mockAuthenticatedToken();
 
   nodesService = Container.get<NodesService>(NodesService);
 

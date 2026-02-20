@@ -1,4 +1,4 @@
-import { SSLCerts } from '../../../database/models/domain';
+import { SSLCerts } from '../../../schemas/domain-schemas';
 import { NginxConf } from './nginx-conf';
 
 export class NginxServerConf extends NginxConf {
