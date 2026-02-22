@@ -1,52 +1,28 @@
 import * as React from 'react';
+import Joi from 'joi';
 import type { FieldValues } from 'react-hook-form';
-import type { UseQueryResult } from '@tanstack/react-query';
 
-import { useHydrateFormOnce } from '@/hooks/use-hydrate-form-once';
 import { useShake } from '@/hooks/use-shake';
-
 import { useForm } from '@/hooks/use-form';
 
 export function useAppForm<TForm extends FieldValues, TData>(cfg: {
   id?: string | number;
-
-  schema: any;
-
-  /**
-   * Default values for create (or function if needed)
-   */
+  schema: Joi.ObjectSchema<TForm>;
   defaultValues?: Partial<TForm>;
 
-  /**
-   * data fetching hook  (for edit forms)
-   */
-  useGet?: (id: number) => UseQueryResult<TData, any>;
-
-  /**
-   * mapper API data -> form values
-   */
+  get?: (id: number, opts?: { signal?: AbortSignal }) => Promise<TData>;
   mapToFormValues?: (data: TData) => TForm;
 
-  /**
-   * actions
-   */
   create: (values: TForm) => Promise<any>;
   update?: (id: number, values: TForm) => Promise<any>;
 
-  /**
-   * callbacks
-   */
   onSuccess?: (ctx: { id?: number; result: any }) => void;
   onCancel?: () => void;
 
-  /**
-   * Custom error message extractor
-   */
   getErrorMessage?: (err: any) => string;
-
-  resetKey?: string | number;
 }) {
-  const numericId = cfg.id !== undefined && cfg.id !== null && cfg.id !== '' ? Number(cfg.id) : undefined;
+  const id = cfg.id !== undefined && cfg.id !== null && cfg.id !== '' ? Number(cfg.id) : undefined;
+  const isEdit = id !== undefined && Number.isFinite(id);
 
   const { shake, triggerShake } = useShake();
 
@@ -56,34 +32,85 @@ export function useAppForm<TForm extends FieldValues, TData>(cfg: {
     defaultValues: cfg.defaultValues as any,
     onSubmit: async (values: TForm) => {
       try {
-        const result = numericId && cfg.update ? await cfg.update(numericId, values) : await cfg.create(values);
-
-        cfg.onSuccess?.({ id: numericId, result });
+        const result = isEdit && cfg.update ? await cfg.update(id!, values) : await cfg.create(values);
+        cfg.onSuccess?.({ id, result });
       } catch (err: any) {
         triggerShake();
         const message = cfg.getErrorMessage?.(err) ?? err?.response?.data?.message ?? err?.message ?? 'Unknown Server Error';
-
         form.setError('root' as any, { message });
       }
     },
     onError: (err: any) => {
       triggerShake();
       const message = cfg.getErrorMessage?.(err) ?? err?.response?.data?.message ?? 'Validation Error';
-
       form.setError('root' as any, { message });
     },
   });
 
-  const query = numericId && cfg.useGet ? cfg.useGet(numericId) : null;
+  const getRef = React.useRef(cfg.get);
+  const mapRef = React.useRef(cfg.mapToFormValues);
 
-  useHydrateFormOnce<TForm, TData>({
+  const resetRef = React.useRef(form.reset);
+
+  const [loading, setLoading] = React.useState(false);
+  const [loadError, setLoadError] = React.useState<any>(null);
+
+  const abortRef = React.useRef<AbortController | null>(null);
+  const inFlightRef = React.useRef(false);
+  const lastLoadedIdRef = React.useRef<number | null>(null);
+
+  const doLoad = React.useCallback(
+    async (force = false) => {
+      if (!isEdit) return;
+
+      const get = getRef.current;
+      if (!get) return;
+
+      if (!force && lastLoadedIdRef.current === id) return;
+      if (inFlightRef.current) return;
+
+      inFlightRef.current = true;
+
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+
+      setLoading(true);
+      setLoadError(null);
+
+      try {
+        const data = await get(id!, { signal: ac.signal });
+        const values = mapRef.current ? mapRef.current(data) : (data as any as TForm);
+        resetRef.current(values);
+        lastLoadedIdRef.current = id!;
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') setLoadError(err);
+      } finally {
+        setLoading(false);
+        inFlightRef.current = false;
+      }
+    },
+    [isEdit, id],
+  );
+
+  React.useEffect(() => {
+    lastLoadedIdRef.current = null;
+    void doLoad(false);
+
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [doLoad]);
+
+  const cancel = React.useCallback(() => cfg.onCancel?.(), [cfg.onCancel]);
+
+  return {
     form,
-    data: query?.data,
-    mapToFormValues: (data) => cfg.mapToFormValues?.(data) ?? (data as any as TForm),
-    resetKey: cfg.resetKey ?? numericId,
-  });
-
-  const cancel = React.useCallback(() => cfg.onCancel?.(), [cfg]);
-
-  return { form, id: numericId, query, shake, cancel };
+    id,
+    loading,
+    loadError,
+    shake,
+    cancel,
+    retry: () => doLoad(true),
+  };
 }

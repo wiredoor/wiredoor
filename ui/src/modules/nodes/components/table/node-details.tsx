@@ -1,20 +1,21 @@
 import React from 'react';
 
 import { Icon, Inline, Stack, Text } from '@/components/foundations';
-import { RemoteRow } from './node-list';
-import { formatBytes } from '@/lib/format';
+import { formatBytes, humanDate } from '@/lib/format';
+import { Link } from '@/components/foundations/link';
+import { NodeInfo } from '../../node-schemas';
 import { listNodeHttpServices } from '../../api/list-node-http-services';
 import { listNodeTcpServices } from '../../api/list-node-tcp-services';
-import { Link } from '@/components/foundations/link';
-import { LoaderOverlay } from '@/components/compound/loader/loader-overlay';
 
-export function NodeInfo({ row }: { row: RemoteRow }) {
+export function NodeDetails({ row }: { row: NodeInfo }) {
   const id = Number(row.id);
 
   const [tcpServices, setTcpServices] = React.useState<any[]>([]);
   const [httpServices, setHttpServices] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+
+  void error;
 
   const load = React.useCallback(async () => {
     const controller = new AbortController();
@@ -73,7 +74,7 @@ export function NodeInfo({ row }: { row: RemoteRow }) {
               Uptime
             </Text>
             <Text variant='body-sm' className='text-foreground'>
-              {row.uptime || '-'}
+              {!row.disconnectedAt && row.connectedAt ? humanDate(row.connectedAt) : '-'}
             </Text>
           </Inline>
         </Stack>
@@ -106,7 +107,7 @@ export function NodeInfo({ row }: { row: RemoteRow }) {
           </Inline>
           <Inline justify='between'>
             <Text variant='body-sm' className='text-muted-foreground'>
-              Traffic Received from Node
+              Traffic Received from Node (RX)
             </Text>
             <Text variant='body-sm' className='font-mono text-foreground'>
               {row.transferRx ? formatBytes(row.transferRx) : '-'}
@@ -114,7 +115,7 @@ export function NodeInfo({ row }: { row: RemoteRow }) {
           </Inline>
           <Inline justify='between'>
             <Text variant='body-sm' className='text-muted-foreground'>
-              Traffic Transmitted to Node
+              Traffic Transmitted to Node (TX)
             </Text>
             <Text variant='body-sm' className='font-mono text-foreground'>
               {row.transferTx ? formatBytes(row.transferTx) : '-'}

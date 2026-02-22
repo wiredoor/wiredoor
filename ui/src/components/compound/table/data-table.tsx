@@ -13,6 +13,9 @@ import {
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LoaderOverlay } from '@/components/compound/loader/loader-overlay';
+import { Dropdown, DropdownVariant } from '@/components/ui/dropdown';
+import { Button } from '@/components/ui/button';
+import { cn } from '../../../lib/utils';
 
 export type Id = string | number;
 
@@ -80,11 +83,36 @@ export interface DataTableRef<RowT extends { id: Id }> {
   setLoading: (loading: boolean) => void;
 }
 
+export type RowActionCtx<RowT extends { id: Id }> = {
+  row: RowT;
+  table: DataTableRef<RowT>;
+};
+
+export type RowActionItem<RowT extends { id: Id }> =
+  | {
+      type: 'item';
+      label: React.ReactNode;
+      variant?: DropdownVariant;
+      disabled?: boolean;
+      inset?: boolean;
+      shortcut?: string;
+      keepOpen?: boolean;
+      className?: string;
+      onAction: (ctx: RowActionCtx<RowT>) => void | Promise<void>;
+    }
+  | { type: 'separator'; className?: string };
+
+export type RowActions<RowT extends { id: Id }> = RowActionItem<RowT>[] | ((ctx: RowActionCtx<RowT>) => RowActionItem<RowT>[]);
+
 export type DataTableProps<RowT extends { id: Id }> = {
   columns: ColumnDef<RowT>[];
 
   fetcher: DataTableFetcher<RowT>;
   subscribe?: DataTableSubscribe<RowT>;
+
+  rowActions?: RowActions<RowT>;
+  rowActionsAlign?: 'start' | 'end';
+  rowActionsColumnClassName?: string;
 
   limit?: number;
   filters?: Record<string, string | number | undefined>;
@@ -281,6 +309,9 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
     columns,
     fetcher,
     subscribe,
+    rowActions,
+    rowActionsAlign = 'end',
+    rowActionsColumnClassName = 'w-px pr-5 relative',
     limit = 10,
     filters,
     showPagination = true,
@@ -309,6 +340,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
   const [total, setTotal] = React.useState(0);
 
   const [selected, setSelected] = React.useState<Id[]>([]);
+  const [openByRow, setOpenByRow] = React.useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
 
   const totalPages = React.useMemo(() => {
@@ -455,6 +487,12 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                   {c.label}
                 </th>
               ))}
+
+              {rowActions ? (
+                <th key='actions' className={rowActionsColumnClassName}>
+                  <span className='sr-only'>Actions</span>
+                </th>
+              ) : null}
             </tr>
           </thead>
 
@@ -473,6 +511,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                       'data-[selected=true]:bg-primary/5',
                       'data-[selected=true]:hover:bg-primary/8',
                       // rowIndex % 2 === 1 ? 'bg-muted/10' : '',
+                      openByRow[String(row.id)] ? 'bg-muted/30' : '',
                       rowClassName ? rowClassName(row, rowIndex) : '',
                     ].join(' ')}
                   >
@@ -517,6 +556,34 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                         </td>
                       );
                     })}
+
+                    {rowActions ? (
+                      <td className={rowActionsColumnClassName}>
+                        <div className='flex justify-end'>
+                          <Dropdown
+                            align={rowActionsAlign}
+                            open={!!openByRow[String(rowId)]}
+                            onOpenChange={(v) => setOpenByRow((p) => ({ ...p, [String(rowId)]: v }))}
+                            trigger={
+                              <Button variant='ghost' size='icon-sm' className={cn('rounded-md', openByRow[String(rowId)] ? 'bg-muted/60' : '')}>
+                                <Icon name='more' />
+                              </Button>
+                            }
+                            contentProps={{
+                              className: 'min-w-40 mt-2',
+                            }}
+                            items={
+                              typeof rowActions === 'function'
+                                ? rowActions({
+                                    row,
+                                    table: { refetch, setSseOn, addItem: () => {}, updateItem: () => {}, removeItem: () => {}, setPage, setLoading },
+                                  })
+                                : rowActions
+                            }
+                          />
+                        </div>
+                      </td>
+                    ) : null}
                   </tr>
 
                   {expandable && isExpanded ? (

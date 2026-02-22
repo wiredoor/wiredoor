@@ -38,7 +38,7 @@ export type DropdownNode =
       shortcut?: string;
       keepOpen?: boolean;
       className?: string;
-      onAction?: () => void;
+      onAction?: (ctx?: any) => void;
     }
   | {
       type: 'group';

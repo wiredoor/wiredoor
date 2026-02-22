@@ -61,7 +61,9 @@ type CommonSpec = {
    * If true, user can't dismiss via overlay/esc while busy (e.g. form submit).
    */
   preventCloseWhileBusy?: boolean;
-  dialogFooter?: React.ReactNode;
+  dialogFooter?:
+    | React.ReactNode
+    | ((ctx: { close: () => void; dismiss: () => void; setBusy: (busy: boolean) => void; busy: boolean }) => React.ReactNode);
 };
 
 export type AlertSpec = CommonSpec & {

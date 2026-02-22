@@ -100,8 +100,17 @@ export class Node {
   })
   isLocal: boolean;
 
-  @Column()
+  @Column({ nullable: true })
+  mtu: number;
+
+  @Column({ nullable: true })
   cliVersion: string;
+
+  @Column({ nullable: true })
+  connectedAt: Date;
+
+  @Column({ nullable: true })
+  disconnectedAt: Date;
 
   @OneToMany(() => HttpService, (service) => service.node)
   httpServices: HttpService[];

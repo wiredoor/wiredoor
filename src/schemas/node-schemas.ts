@@ -126,6 +126,8 @@ export interface NodeInfo extends CreateNodeType {
   latestHandshakeTimestamp?: number;
   transferRx?: number;
   transferTx?: number;
+  connectedAt?: Date;
+  disconnectedAt?: Date;
   status?: 'online' | 'offline' | 'idle';
 }
 

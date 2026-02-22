@@ -1,7 +1,7 @@
 import { Icon, Inline } from '@/components/foundations';
 import { StatusDot } from '@/components/compound/badges';
 
-export function ConnectionIndicator({ row }: { row: { status: 'online' | 'offline' | 'iddle'; enabled: boolean } }) {
+export function ConnectionIndicator({ row }: { row: { status?: 'online' | 'offline' | 'idle'; enabled?: boolean } }) {
   return (
     <Inline justify='center' align='center'>
       {!row.enabled ? (

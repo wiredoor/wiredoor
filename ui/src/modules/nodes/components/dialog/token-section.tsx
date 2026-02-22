@@ -6,10 +6,9 @@ import { useForm } from '../../../../hooks/use-form';
 
 interface TokenSectionProps {
   token: string;
-  expiresIn?: string;
 }
 
-export function TokenSection({ token, expiresIn = '6 hours' }: TokenSectionProps) {
+export function TokenSection({ token }: TokenSectionProps) {
   const [copied, setCopied] = useState(false);
 
   const form = useForm({
@@ -62,17 +61,14 @@ export function TokenSection({ token, expiresIn = '6 hours' }: TokenSectionProps
         trailingInteractive
       />
 
-      {expiresIn && (
-        <div className='flex gap-3 p-3 bg-warning/10 border border-warning/30 rounded-md mt-3'>
-          <Icon name='warning' className='w-4 h-4 text-warning flex-shrink-0 mt-0.5' />
-          <div className='text-xs text-muted-foreground'>
-            <strong className='text-foreground font-medium'>This token is shown only once</strong>
-            <br />
-            The token will expire in <strong>{expiresIn}</strong> and must be used within that time to authenticate the node. If it expires, you can
-            regenerate a new token.
-          </div>
+      <div className='flex gap-3 p-3 bg-warning/10 border border-warning/30 rounded-md mt-3'>
+        <Icon name='warning' className='w-4 h-4 text-warning flex-shrink-0 mt-0.5' />
+        <div className='text-xs text-muted-foreground'>
+          <strong className='text-foreground font-medium'>This token is displayed only once</strong>
+          <br />
+          You can generate a new token at any time, which will immediately revoke the previous one.
         </div>
-      )}
+      </div>
     </Stack>
   );
 }

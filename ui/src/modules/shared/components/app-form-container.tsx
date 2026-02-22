@@ -1,8 +1,8 @@
 import React from 'react';
 import type { FieldValues } from 'react-hook-form';
-import type { UseQueryResult } from '@tanstack/react-query';
 
 import { useAppForm } from '@/hooks/use-app-form';
+import { Button } from '@/components/ui';
 
 type AppFormContainerProps<TForm extends FieldValues, TData> = {
   id?: string | number;
@@ -10,9 +10,7 @@ type AppFormContainerProps<TForm extends FieldValues, TData> = {
   schema: any;
   defaultValues?: Partial<TForm>;
 
-  resetKey?: string | number;
-
-  useGet?: (id: number) => UseQueryResult<TData, any>;
+  get?: (id: number) => Promise<TData>;
   mapToFormValues?: (data: TData) => TForm;
 
   create: (values: TForm) => Promise<any>;
@@ -28,8 +26,7 @@ export function AppFormContainer<TForm extends FieldValues, TData>({
   id,
   schema,
   defaultValues,
-  resetKey,
-  useGet,
+  get,
   mapToFormValues,
   create,
   update,
@@ -37,12 +34,11 @@ export function AppFormContainer<TForm extends FieldValues, TData>({
   onCancel,
   ...props
 }: AppFormContainerProps<TForm, TData>) {
-  const { form, query, shake, cancel } = useAppForm<TForm, TData>({
+  const { form, loading, loadError, shake, cancel, retry } = useAppForm<TForm, TData>({
     id,
     schema,
     defaultValues,
-    resetKey,
-    useGet,
+    get,
     mapToFormValues,
     create,
     update,
@@ -50,13 +46,25 @@ export function AppFormContainer<TForm extends FieldValues, TData>({
     onCancel,
   });
 
-  const loading = Boolean(!!id && (query?.isLoading || (query?.isFetching && !query?.data)));
-
-  if (!!id && query?.isError) {
+  if (!!id && loadError) {
     return (
-      <div className='p-6 text-sm'>
-        <div className='font-medium'>Failed to load</div>
-        <div className='text-muted-foreground'>Please try again.</div>
+      <div className='p-6 text-sm space-y-3'>
+        <div>
+          <div className='font-medium'>Failed to load</div>
+          <div className='text-muted-foreground'>Please try again.</div>
+        </div>
+
+        <div className='flex gap-2'>
+          <Button onClick={() => retry()} disabled={loading}>
+            Retry
+          </Button>
+
+          {onCancel && (
+            <Button variant='ghost' size='sm' onClick={() => cancel()} disabled={loading}>
+              Cancel
+            </Button>
+          )}
+        </div>
       </div>
     );
   }

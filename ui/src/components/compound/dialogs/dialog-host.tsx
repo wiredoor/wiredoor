@@ -155,10 +155,16 @@ function CustomBody({ spec, busy }: { spec: Extract<DialogSpec, { type: 'custom'
               );
             })}
           </>
+        ) : typeof spec.dialogFooter === 'function' ? (
+          spec.dialogFooter({
+            busy,
+            setBusy: (b: boolean) => dialogStore.setBusy(b),
+            close: () => dialogStore.resolve(),
+            dismiss: () => dialogStore.dismiss(),
+          })
         ) : (
           spec.dialogFooter
         )}
-
         {showDefaultClose ? (
           <Button variant='default' onClick={() => dialogStore.resolve()}>
             Close

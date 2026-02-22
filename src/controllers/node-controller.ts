@@ -292,7 +292,7 @@ export default class NodeController extends BaseController {
   ): Promise<{ token: string }> {
     const nodeWithKey = await this.nodesService.regenerateNodeKeys(+id);
 
-    req.logger.audit(`Regenerated token for node ${nodeWithKey.name}`, {
+    req.logger.audit(`Regenerated keys for node ${nodeWithKey.name}`, {
       nodeId: id,
       nodeName: nodeWithKey.name,
       user: user.name,

@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { Container } from '@/components/foundations';
 import { PageHeader } from '@/app/layouts/partials/page-header';
 import { PageContent } from '@/app/layouts/partials/page-content';
-import { NodeList, RemotesTableProps } from '@/modules/remotes/components/table/node-list';
+import { NodeList, RemotesTableProps } from '@/modules/nodes/components/table/node-list';
 import { Button } from '@/components/ui/button';
-import { NodeFilters } from '@/modules/remotes/components/table/node-filters';
+import { NodeFilters } from '@/modules/nodes/components/table/node-filters';
 
 export default function NodesPage() {
   const navigate = useNavigate();

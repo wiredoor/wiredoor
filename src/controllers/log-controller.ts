@@ -1,6 +1,5 @@
 import { Inject, Service } from 'typedi';
 import {
-  Authorized,
   Get,
   JsonController,
   QueryParams,
@@ -18,7 +17,6 @@ import { Request, Response } from 'express';
 import { SetupSSE } from '../middlewares/setup-sse';
 import { celebrate } from 'celebrate';
 import { AdminTokenHandler } from '../middlewares/admin-token-handler';
-import { ROLE_ADMIN, ROLE_OPERATOR, ROLE_VIEWER } from '../utils/constants';
 
 @Service()
 @JsonController('/logs')

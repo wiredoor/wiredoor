@@ -1,27 +1,29 @@
 import { useDialog } from '@/components/compound/dialogs';
 import { TokenSection } from './token-section';
 import { InstallationTabs } from './install-tabs';
-import { Icon, Stack } from '@/components/foundations';
+import { Icon, Inline, Stack } from '@/components/foundations';
 import { Button } from '@/components/ui';
+import React from 'react';
 
 export type NodeTokenDialogProps = {
+  id: number;
   name: string;
   token?: string;
-  tokenExpiresIn?: string;
   serverUrl?: string;
   showInstallInstructions?: boolean;
+  eventSource?: 'create' | 'regenerate';
 };
 
-export function NodeTokenDialog({ name, token, tokenExpiresIn, serverUrl, showInstallInstructions }: NodeTokenDialogProps): Promise<void> {
+export function NodeTokenDialog({ name, token, serverUrl, showInstallInstructions, eventSource = 'create' }: NodeTokenDialogProps): Promise<void> {
   const dialog = useDialog();
 
   return dialog.custom<void>({
     title: 'Connect your node',
-    description: `Node "${name}" has been created successfully. Follow the instructions below to connect your node to the platform.`,
+    description: `Node "${name}" has been ${eventSource === 'regenerate' ? 'regenerated' : 'created'} successfully. Follow the instructions below to connect your node to the platform.`,
     size: 'xl',
     closeOnOverlayClick: false,
     closeOnEsc: true,
-    dialogFooter: (
+    dialogFooter: ({ busy, close }) => (
       <div className='w-full space-y-3'>
         {/* Next Steps */}
         <div className='flex items-start gap-2'>
@@ -33,22 +35,23 @@ export function NodeTokenDialog({ name, token, tokenExpiresIn, serverUrl, showIn
         </div>
 
         {/* Footer Notes */}
-        <div className='flex items-center justify-between pt-3 border-t border-border'>
+        <Inline className='pt-3 border-t border-border' justify='between'>
           <p className='text-xs text-muted-foreground'>The token will be securely stored on the node after successful connection.</p>
-          <Button variant='ghost' size='sm' leadingIcon='refresh'>
-            Regenerate token
-          </Button>
-          <Button size='sm'>Close</Button>
-        </div>
+          <Inline justify='end' gap={2}>
+            <Button size='sm' disabled={busy} onClick={close}>
+              Close
+            </Button>
+          </Inline>
+        </Inline>
       </div>
     ),
     render: function (): React.ReactNode {
       return (
-        <div className='w-full p-6'>
+        <div className='w-full px-6'>
           <Stack gap={6}>
             {token ? (
               <>
-                <TokenSection token={token} expiresIn={tokenExpiresIn} />
+                <TokenSection token={token} />
 
                 <div className='border-t border-border' />
               </>

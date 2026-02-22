@@ -8,6 +8,14 @@ export const getTraffic = (traffic?: number | string) => {
   return '-';
 };
 
+export const humanDate = (date?: Date) => {
+  if (date) {
+    return `${formatDistanceStrict(new Date(date), Date.now(), { addSuffix: true })}`;
+  }
+
+  return '-';
+};
+
 export const getLatestHS = (timestamp?: number) => {
   if (timestamp) {
     return `${formatDistanceStrict(new Date(timestamp), Date.now(), { addSuffix: true })}`;
