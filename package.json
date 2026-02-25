@@ -84,6 +84,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "helmet": "^8.1.0",
+    "ioredis": "^5.9.3",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.6.1",
