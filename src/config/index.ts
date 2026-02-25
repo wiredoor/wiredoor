@@ -90,6 +90,13 @@ export default {
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE || '/data/db.sqlite',
   },
+  redis: {
+    host: process.env.REDIS_HOST || '127.0.0.1',
+    port: +process.env.REDIS_PORT || 6379,
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+    db: +process.env.REDIS_DB || 0,
+  },
   jwt: {
     secret: getKey(ACCESS_TOKEN_KEY_ENV, '/data/.key'),
     refreshSecret: getKey(REFRESH_TOKEN_KEY_ENV, '/data/.refresh.key'),
