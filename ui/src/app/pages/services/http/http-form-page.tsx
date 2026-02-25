@@ -4,17 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Container, Icon } from '@/components/foundations';
 import { PageHeader } from '@/app/layouts/partials/page-header';
 import { PageContent } from '@/app/layouts/partials/page-content';
-import { RemoteForm } from '@/modules/nodes/components/form/node-form';
 
 export default function FormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
 
-  const title = isEdit ? 'Edit Remote Node' : 'Create Remote Node';
+  const title = isEdit ? 'Edit HTTP Service' : 'Create HTTP Service';
   const description = isEdit
-    ? 'Update this remote node configuration.'
-    : 'Remote nodes allow you to securely connect private environments using managed remote agents and gateways, enabling encrypted traffic routing and controlled access to isolated services.';
+    ? 'Update this HTTP service configuration.'
+    : 'Securely expose HTTP services with custom domains, routing rules, and access control.';
 
   return (
     <PageContent
@@ -25,7 +24,7 @@ export default function FormPage() {
           title={title}
           description={description}
           actions={
-            <Button variant='ghost' size='icon' onClick={() => navigate('/nodes')}>
+            <Button variant='ghost' size='icon' onClick={() => navigate('/services/http')}>
               <Icon name='close' />
             </Button>
           }
@@ -33,7 +32,7 @@ export default function FormPage() {
       }
     >
       <Container size='xl'>
-        <RemoteForm nodeId={id} />
+        <NodeForm nodeId={id} />
       </Container>
     </PageContent>
   );

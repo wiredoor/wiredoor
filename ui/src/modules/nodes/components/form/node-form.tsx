@@ -10,13 +10,13 @@ import { updateNode } from '@/modules/nodes/api/update-node';
 import { NodeTokenDialog } from '../dialog/node-token-dialog';
 import { CreateNodeType, createNodeValidator } from '../../node-schemas';
 
-export function RemoteForm({ nodeId }: { nodeId?: string }) {
+export function NodeForm({ nodeId }: { nodeId?: string }) {
   const navigate = useNavigate();
 
   const onSuccess = async ({ id, result }: { id?: number; result: any }) => {
     navigate('/nodes');
     await NodeTokenDialog({
-      id,
+      id: id!,
       name: result.name,
       token: result.token,
       showInstallInstructions: true,

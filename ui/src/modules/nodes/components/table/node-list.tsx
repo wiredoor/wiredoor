@@ -14,6 +14,7 @@ import { type NodeInfo } from '../../node-schemas';
 import { NodeDetails } from './node-details';
 import { nodeColumns } from './columns';
 import { regenerateNodeKeys } from '../../api/regenerate-keys';
+import { Icon, Inline } from '@/components/foundations';
 
 type Filters = {
   search: string;
@@ -43,7 +44,12 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
     ({ row, table }: { row: NodeInfo; table: DataTableRef<NodeInfo> }): RowActionItem<NodeInfo>[] => {
       return [
         {
-          label: 'Instructions',
+          label: (
+            <Inline gap={1}>
+              <Icon name='info' />
+              Instructions
+            </Inline>
+          ),
           type: 'item',
           onAction: async () => {
             await NodeTokenDialog({
@@ -54,14 +60,24 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
           },
         },
         {
-          label: 'Edit',
+          label: (
+            <Inline gap={1}>
+              <Icon name='edit' />
+              Edit
+            </Inline>
+          ),
           type: 'item',
           onAction: () => {
             navigate(`/nodes/edit/${row.id}`);
           },
         },
         {
-          label: row.enabled ? 'Disable' : 'Enable',
+          label: (
+            <Inline gap={1}>
+              <Icon name={row.enabled ? 'disconnect' : 'connect'} />
+              {row.enabled ? 'Disable' : 'Enable'}
+            </Inline>
+          ),
           type: 'item',
           onAction: async () => {
             const title = row.enabled ? 'Disable node?' : 'Enable node?';
@@ -82,8 +98,8 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
             });
 
             if (ok) {
-              table.updateItem(row.id, { enabled: enable });
               table.setSseOn(false);
+              table.updateItem(row.id, { enabled: enable });
               try {
                 await enableNode(row.id as number, enable ? 'enable' : 'disable');
               } catch {
@@ -99,7 +115,12 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
           type: 'separator',
         },
         {
-          label: 'Regenerate Keys',
+          label: (
+            <Inline gap={1}>
+              <Icon name='refresh' />
+              Regenerate Keys
+            </Inline>
+          ),
           type: 'item',
           onAction: async () => {
             const title = 'Regenerate node keys?';
@@ -133,7 +154,12 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
           type: 'separator',
         },
         {
-          label: 'Delete',
+          label: (
+            <Inline gap={1}>
+              <Icon name='delete' />
+              Delete
+            </Inline>
+          ),
           type: 'item',
           variant: 'destructive',
           onAction: async () => {
@@ -149,8 +175,8 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
             });
 
             if (ok) {
-              table.removeItem(row.id);
               table.setSseOn(false);
+              table.removeItem(row.id);
               try {
                 await deleteNode(row.id as number);
                 toast.success(`Node ${row.name} deleted successfully`, { duration: 2500 });

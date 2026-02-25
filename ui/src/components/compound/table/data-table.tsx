@@ -576,7 +576,16 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                               typeof rowActions === 'function'
                                 ? rowActions({
                                     row,
-                                    table: { refetch, setSseOn, addItem: () => {}, updateItem: () => {}, removeItem: () => {}, setPage, setLoading },
+                                    table: {
+                                      refetch,
+                                      setSseOn,
+                                      addItem: (r) => setRows((prev) => upsertRow(prev, r, getRowId, { position: 'start' })),
+                                      updateItem: (id, patch) =>
+                                        setRows((prev) => prev.map((r) => (getRowId(r) === id ? ({ ...(r as any), ...(patch as any) } as RowT) : r))),
+                                      removeItem: (id) => setRows((prev) => prev.filter((r) => getRowId(r) !== id)),
+                                      setPage,
+                                      setLoading,
+                                    },
                                   })
                                 : rowActions
                             }
@@ -588,7 +597,10 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
 
                   {expandable && isExpanded ? (
                     <tr role='region'>
-                      <td colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0)} className='px-4 py-6 bg-muted/20'>
+                      <td
+                        colSpan={columns.length + (showCheckbox ? 1 : 0) + (expandable ? 1 : 0) + (rowActions ? 1 : 0)}
+                        className='px-4 py-6 bg-muted/20'
+                      >
                         {renderExpandedRow ? renderExpandedRow({ row, rowIndex }) : null}
                       </td>
                     </tr>

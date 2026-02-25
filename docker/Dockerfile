@@ -9,7 +9,7 @@ ENV PYTHONWARNINGS="ignore:::pkg_resources"
 
 RUN apk add --no-cache \
   iptables tzdata supercronic \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl libcap sudo \
+  wireguard-tools conntrack-tools tcpdump redis nginx nginx-mod-stream python3 openssl libcap sudo \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3
@@ -20,6 +20,7 @@ COPY docker/resources/openssl /etc/openssl/
 COPY docker/resources/supervisor /etc/supervisor/
 COPY docker/resources/fluent-bit /etc/fluent-bit/
 COPY docker/resources/sudoers.d /etc/sudoers.d/
+COPY docker/resources/redis/redis.conf /etc/redis/redis.conf
 
 RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && chown -R node:node /var/run/supervisor /var/log/supervisor /etc/supervisor/conf.d \

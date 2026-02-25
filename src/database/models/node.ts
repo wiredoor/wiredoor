@@ -12,6 +12,7 @@ import { PersonalAccessToken } from './personal-access-token';
 import { TcpService } from './tcp-service';
 import { decrypt, encrypt } from '../../utils/cypher';
 import { GatewayNetwork } from '../../schemas/node-schemas';
+import { HttpUpstream } from './http-upstream';
 
 @Entity('nodes')
 export class Node {
@@ -111,6 +112,9 @@ export class Node {
 
   @Column({ nullable: true })
   disconnectedAt: Date;
+
+  @OneToMany(() => HttpUpstream, (upstream) => upstream.node)
+  httpUpstreams: HttpUpstream[];
 
   @OneToMany(() => HttpService, (service) => service.node)
   httpServices: HttpService[];

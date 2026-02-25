@@ -14,7 +14,14 @@ export type NodeTokenDialogProps = {
   eventSource?: 'create' | 'regenerate';
 };
 
-export function NodeTokenDialog({ name, token, serverUrl, showInstallInstructions, eventSource = 'create' }: NodeTokenDialogProps): Promise<void> {
+export function NodeTokenDialog({
+  id,
+  name,
+  token,
+  serverUrl,
+  showInstallInstructions,
+  eventSource = 'create',
+}: NodeTokenDialogProps): Promise<void> {
   const dialog = useDialog();
 
   return dialog.custom<void>({
