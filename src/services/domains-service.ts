@@ -20,6 +20,7 @@ import { DNSService } from './dns/dns-service';
 import Net from '../utils/net';
 import { PagedData } from '../schemas/shared-schemas';
 import { EntityManager } from 'typeorm';
+import { NginxDomainResource } from './proxy-server/nginx-domain-resource';
 
 @Service()
 export class DomainsService {
@@ -29,6 +30,7 @@ export class DomainsService {
   constructor(
     @Inject() private readonly domainRepository: DomainRepository,
     @Inject() private readonly domainFilter: DomainQueryFilter,
+    @Inject() private readonly nginxDomainResource: NginxDomainResource,
   ) {
     this.nginxDomainService = new NginxDomainService();
     this.dnsService = Container.get(DNSService);
@@ -83,7 +85,7 @@ export class DomainsService {
     const domains = await this.domainRepository.find();
 
     for (const domain of domains) {
-      await this.buildServerConfig(domain, false);
+      await this.buildServerConfig(domain);
     }
 
     await ProcessManager.restart();
@@ -101,19 +103,18 @@ export class DomainsService {
 
   public async createDomain(
     params: DomainType,
-    restart = true,
     manager?: EntityManager,
   ): Promise<Domain> {
-    let oauth2ServicePort = null;
-    let oauth2Config: Oauth2ProxyConfig = null;
+    // let oauth2ServicePort = null;
+    // let oauth2Config: Oauth2ProxyConfig = null;
 
-    if (params.authentication) {
-      this.checkAuthConfig();
-      oauth2ServicePort = await this.domainRepository.getAvailablePort();
-      oauth2Config = {
-        allowedEmails: params.allowedEmails,
-      };
-    }
+    // if (params.authentication) {
+    //   this.checkAuthConfig();
+    //   oauth2ServicePort = await this.domainRepository.getAvailablePort();
+    //   oauth2Config = {
+    //     allowedEmails: params.allowedEmails,
+    //   };
+    // }
 
     const sslCerts = await SSLManager.getSSLCertificates(
       params.domain,
@@ -124,13 +125,11 @@ export class DomainsService {
       {
         ...params,
         sslPair: sslCerts,
-        oauth2ServicePort,
-        oauth2Config,
       },
       manager,
     );
 
-    await this.buildServerConfig(domain, restart);
+    await this.buildServerConfig(domain);
 
     return domain;
   }
@@ -162,7 +161,6 @@ export class DomainsService {
             ? SSLTermination.Certbot
             : SSLTermination.SelfSigned,
       },
-      false,
       manager,
     );
   }
@@ -242,21 +240,14 @@ export class DomainsService {
   public async deleteDomain(id: number): Promise<string> {
     const domain = await this.getDomain(id);
 
-    if (domain.oauth2ServicePort) {
-      await ProcessManager.removeOauthProcess(domain);
-    }
-
-    await this.nginxDomainService.remove(domain);
+    await this.nginxDomainResource.remove(domain);
 
     await this.domainRepository.delete(id);
 
     return 'Deleted!';
   }
 
-  public async buildServerConfig(
-    domain: Domain,
-    restart = true,
-  ): Promise<void> {
+  public async buildServerConfig(domain: Domain): Promise<void> {
     if (!domain.sslPair && domain.ssl) {
       domain.sslPair = await SSLManager.getSSLCertificates(
         domain.domain,
@@ -266,11 +257,7 @@ export class DomainsService {
       await this.domainRepository.save(domain);
     }
 
-    if (domain.oauth2ServicePort) {
-      await ProcessManager.addOauthProcess(domain, restart);
-    }
-
-    await this.nginxDomainService.create(domain, restart);
+    await this.nginxDomainResource.create(domain);
   }
 
   private checkAuthConfig(): void {

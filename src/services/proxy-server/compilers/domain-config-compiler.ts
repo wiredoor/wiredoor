@@ -73,4 +73,10 @@ export class DomainConfigCompiler
 
     return serverConf.getNginxConf();
   }
+
+  onDeleted(resource: Domain): Promise<void> {
+    void resource;
+    return Promise.resolve();
+    // throw new Error('Method not implemented.');
+  }
 }
