@@ -1,0 +1,80 @@
+apiVersion: wiredoor.io/v1alpha1
+kind: Stack
+
+nodes:
+  - name: web-server
+    externalId: web-server
+
+  - name: api-server
+    externalId: api-server
+
+  - name: api-server-v2
+    externalId: api-server-v2
+
+auth:
+  providers:
+    - name: Google
+      externalId: google
+      type: google
+      clientId: test-client-id.apps.googleusercontent.com
+      clientSecret: test-secret
+      scopes: openid profile email
+
+http:
+  - name: myapp
+    externalId: myapp
+    domain: myapp.example.com
+    enabled: true
+    providerRef: google
+    upstreams:
+      - type: prefix
+        pathPattern: /
+        targetProtocol: http
+        targetNodeRef: web-server
+        targetPort: 3000
+
+      - type: prefix
+        pathPattern: /api/
+        targetProtocol: http
+        targetNodeRef: api-server
+        targetPort: 8080
+
+      - type: prefix
+        pathPattern: /api/v2/
+        targetProtocol: http
+        targetNodeRef: api-server-v2
+        targetPort: 8080
+
+    accessRules:
+      - order: 1000
+        when:
+          type: prefix
+          pathPattern: /
+        action:
+          type: access.public
+
+      - order: 100
+        when:
+          type: prefix
+          pathPattern: /api/
+          methods:
+            - GET
+            - POST
+        action:
+          type: access.require_auth
+          params:
+            onUnauthenticated: redirect
+
+    edgeRules:
+      - order: 10
+        when:
+          type: prefix
+          pathPattern: /api/
+        action:
+          type: rate_limit.req
+          params:
+            zone: api_limit
+            rate: 10r/s
+            burst: 20
+            nodelay: true
+            status: 429

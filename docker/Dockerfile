@@ -27,7 +27,7 @@ RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && rm -f /etc/supervisord.conf \
   && ln -s /etc/supervisor/supervisord.conf /etc/supervisord.conf \
   && mkdir -p /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt /var/www/wiredoor-verify \
-  && chown -R node:node /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt /var/www/wiredoor-verify \
+  && chown -R node:node /var/run/nginx /var/log/nginx /var/lib/nginx /etc/nginx/locations /etc/nginx/zones /etc/nginx/ssl /etc/nginx/stream.d /var/www/letsencrypt /var/www/wiredoor-verify \
   && rm -f /etc/nginx/conf.d/stream.conf \
   && mkdir -p /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \
   && chown -R node:node /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt \

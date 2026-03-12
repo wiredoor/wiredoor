@@ -181,11 +181,18 @@ export class NodesService {
     return nodeWithToken;
   }
 
-  public async getNode(id: number, relations: string[] = []): Promise<Node> {
-    const node = await this.nodeRepository.findOne({
-      where: { id },
-      relations,
-    });
+  public async getNode(
+    id: number,
+    relations: string[] = [],
+    manager?: EntityManager,
+  ): Promise<Node> {
+    const node = await this.nodeRepository.findOne(
+      {
+        where: { id },
+        relations,
+      },
+      manager,
+    );
 
     if (!node) {
       throw new NotFoundError('Node not found!');
@@ -253,8 +260,9 @@ export class NodesService {
   public async updateNode(
     id: number,
     params: Partial<CreateNodeType>,
+    manager?: EntityManager,
   ): Promise<Node> {
-    const old = await this.getNode(id);
+    const old = await this.getNode(id, [], manager);
 
     if (old.isLocal) {
       throw new BadRequestError(`Local node can't be updated`);
@@ -264,12 +272,15 @@ export class NodesService {
       await this.disableGateway(old);
     }
 
-    await this.nodeRepository.save({
-      id,
-      ...params,
-    });
+    await this.nodeRepository.save(
+      {
+        id,
+        ...params,
+      },
+      manager,
+    );
 
-    const updatedNode = await this.getNode(id);
+    const updatedNode = await this.getNode(id, [], manager);
 
     if (updatedNode.isGateway) {
       await this.configureGateway(updatedNode);

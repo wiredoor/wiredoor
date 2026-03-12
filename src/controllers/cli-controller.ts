@@ -11,9 +11,11 @@ import {
   Post,
   QueryParams,
   Req,
+  Res,
   UseBefore,
 } from 'routing-controllers';
-import { Request } from 'express';
+import YAML from 'yaml';
+import { Request, Response } from 'express';
 import { NodesService } from '../services/nodes-service';
 import { HttpServicesService } from '../services/http-services-service';
 import { TcpServicesService } from '../services/tcp-services-service';
@@ -40,6 +42,8 @@ import { CliTokenHandler } from '../middlewares/cli-token-handler';
 import Joi from '../utils/joi-validator';
 import { gatewayNetworkValidator } from '../schemas/node-schemas';
 import { PagedData } from '../schemas/shared-schemas';
+import { NodeIacService } from '../services/node-iac-service';
+import { parseBody } from './iac-stack-controller';
 
 @Service()
 @JsonController('/cli')
@@ -49,6 +53,7 @@ export default class CLiController extends BaseController {
     @Inject() private readonly nodesService: NodesService,
     @Inject() private readonly httpServicesService: HttpServicesService,
     @Inject() private readonly tcpServicesService: TcpServicesService,
+    @Inject() private readonly nodeIacService: NodeIacService,
   ) {
     super();
   }
@@ -382,5 +387,199 @@ export default class CLiController extends BaseController {
       patId: cli.id,
     });
     return this.nodesService.regenerateNodeKeys(cli.nodeId);
+  }
+
+  @Get('/iac/export')
+  async exportNodeManifest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @CurrentUser({ required: true }) cli: AuthenticatedUser,
+  ): Promise<Response> {
+    req.logger.audit(`Exporting node manifest for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+    });
+
+    const node = await this.nodesService.getNode(+cli.nodeId);
+    const nodeContext = {
+      id: cli.nodeId,
+      externalId: node.externalId,
+      name: node.name,
+    };
+
+    const manifest = await this.nodeIacService.export(nodeContext);
+
+    const format = req.query.format ?? 'yaml';
+
+    if (format === 'json') {
+      res.json(manifest);
+      return;
+    }
+
+    const yaml = YAML.stringify(manifest, {
+      indent: 2,
+      lineWidth: 120,
+      nullStr: '',
+    });
+
+    res
+      .set('Content-Type', 'application/x-yaml')
+      .set('Content-Disposition', 'attachment; filename="wiredoor.yml"')
+      .send(yaml);
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${node.name}-manifest.yaml"`,
+    );
+
+    return res.send(manifest);
+  }
+
+  @Post('/iac/validate')
+  async validateNodeManifest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @CurrentUser({ required: true }) cli: AuthenticatedUser,
+  ): Promise<Response> {
+    const manifest = this.nodeIacService.parseAndValidate(parseBody(req));
+
+    req.logger.audit(`Validating node manifest for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      patId: cli.id,
+      manifest,
+    });
+
+    const node = await this.nodesService.getNode(+cli.nodeId);
+    const nodeContext = {
+      id: cli.nodeId,
+      externalId: node.externalId,
+      name: node.name,
+    };
+
+    const ownershipErrors = await this.nodeIacService.verifyOwnership(
+      manifest,
+      nodeContext,
+    );
+
+    if (ownershipErrors.length > 0) {
+      return res.status(403).json({
+        valid: false,
+        errors: ownershipErrors.map((message) => ({
+          phase: 'ownership',
+          severity: 'error',
+          path: '',
+          code: 'OWNERSHIP_VIOLATION',
+          message,
+        })),
+        warnings: [],
+      });
+    }
+
+    const validationResult = await this.nodeIacService.validate(
+      manifest,
+      nodeContext,
+    );
+
+    return res
+      .status(validationResult.valid ? 200 : 422)
+      .json(validationResult);
+  }
+
+  @Post('/iac/plan')
+  async planNodeManifest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @CurrentUser({ required: true }) cli: AuthenticatedUser,
+  ): Promise<Response> {
+    const manifest = this.nodeIacService.parseAndValidate(parseBody(req));
+
+    req.logger.audit(`Planning node manifest for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      manifest,
+    });
+
+    const node = await this.nodesService.getNode(+cli.nodeId);
+    const nodeContext = {
+      id: cli.nodeId,
+      externalId: node.externalId,
+      name: node.name,
+    };
+
+    const ownershipErrors = await this.nodeIacService.verifyOwnership(
+      manifest,
+      nodeContext,
+    );
+
+    if (ownershipErrors.length > 0) {
+      return res.status(403).json({
+        valid: false,
+        error: 'Ownership violation',
+        details: ownershipErrors,
+      });
+    }
+
+    const result = await this.nodeIacService.reconcile(
+      manifest,
+      nodeContext,
+      'plan',
+    );
+
+    result.phases = result.phases.filter((p) => p.phaseId !== 'node');
+
+    return res.json(result);
+  }
+
+  @Post('/iac/apply')
+  async applyNodeManifest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @CurrentUser({ required: true }) cli: AuthenticatedUser,
+  ): Promise<Response> {
+    const manifest = this.nodeIacService.parseAndValidate(parseBody(req));
+
+    await this.nodeIacService.ensureExternalIds();
+
+    req.logger.audit(`Applying node manifest for node ${cli.nodeName}`, {
+      nodeName: cli.nodeName,
+      patName: cli.tokenName,
+      nodeId: cli.nodeId,
+      manifest,
+    });
+
+    const node = await this.nodesService.getNode(+cli.nodeId);
+    const nodeContext = {
+      id: cli.nodeId,
+      externalId: node.externalId,
+      name: node.name,
+    };
+
+    const ownershipErrors = await this.nodeIacService.verifyOwnership(
+      manifest,
+      nodeContext,
+    );
+
+    if (ownershipErrors.length > 0) {
+      return res.status(403).json({
+        valid: false,
+        error: 'Ownership violation',
+        details: ownershipErrors,
+      });
+    }
+
+    const result = await this.nodeIacService.reconcile(
+      manifest,
+      nodeContext,
+      'apply',
+    );
+
+    result.phases = result.phases.filter((p) => p.phaseId !== 'node');
+
+    return res.json(result);
   }
 }

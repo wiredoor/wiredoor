@@ -13,7 +13,7 @@ export class NginxServerConf extends NginxConf {
   }
 
   setServerName(name?: string): NginxServerConf {
-    if (name && name != '_') {
+    if (name && name != '_' && name != 'default') {
       this.addBlock('server_name', name);
     }
 

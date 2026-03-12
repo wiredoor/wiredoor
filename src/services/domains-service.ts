@@ -19,6 +19,7 @@ import { NginxDomainService } from './proxy-server/nginx-domain-service';
 import { DNSService } from './dns/dns-service';
 import Net from '../utils/net';
 import { PagedData } from '../schemas/shared-schemas';
+import { EntityManager } from 'typeorm';
 
 @Service()
 export class DomainsService {
@@ -101,6 +102,7 @@ export class DomainsService {
   public async createDomain(
     params: DomainType,
     restart = true,
+    manager?: EntityManager,
   ): Promise<Domain> {
     let oauth2ServicePort = null;
     let oauth2Config: Oauth2ProxyConfig = null;
@@ -118,20 +120,29 @@ export class DomainsService {
       params.ssl as SSLTermination,
     );
 
-    const domain = await this.domainRepository.save({
-      ...params,
-      sslPair: sslCerts,
-      oauth2ServicePort,
-      oauth2Config,
-    });
+    const domain = await this.domainRepository.save(
+      {
+        ...params,
+        sslPair: sslCerts,
+        oauth2ServicePort,
+        oauth2Config,
+      },
+      manager,
+    );
 
     await this.buildServerConfig(domain, restart);
 
     return domain;
   }
 
-  public async createDomainIfNotExists(domain: string): Promise<Domain> {
-    const instance = await this.domainRepository.getDomainByName(domain);
+  public async createDomainIfNotExists(
+    domain: string,
+    manager?: EntityManager,
+  ): Promise<Domain> {
+    const instance = await this.domainRepository.getDomainByName(
+      domain,
+      manager,
+    );
 
     if (instance) {
       return instance;
@@ -152,6 +163,7 @@ export class DomainsService {
             : SSLTermination.SelfSigned,
       },
       false,
+      manager,
     );
   }
 

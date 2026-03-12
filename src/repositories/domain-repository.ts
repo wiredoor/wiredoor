@@ -1,5 +1,5 @@
 import { Inject, Service } from 'typedi';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { Domain } from '../database/models/domain';
 import BaseRepository from './base-repository';
 import Net from '../utils/net';
@@ -12,8 +12,11 @@ export class DomainRepository extends BaseRepository<Domain> {
     super(Domain, dataSource);
   }
 
-  getDomainByName(domainName: string): Promise<Domain> {
-    return this.findOneBy({ domain: domainName });
+  getDomainByName(
+    domainName: string,
+    manager?: EntityManager,
+  ): Promise<Domain> {
+    return this.findOneBy({ domain: domainName }, manager);
   }
 
   async getAvailablePort(): Promise<number> {

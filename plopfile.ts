@@ -106,7 +106,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/database/models/${d.resource}.ts`,
           templateFile: '.plop/resources/entity.hbs',
           data: { Model: d.Model, table },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ] satisfies Actions;
     },
@@ -132,7 +132,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/repositories/${d.resource}-repository.ts`,
           templateFile: '.plop/resources/repository.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ];
 
@@ -142,7 +142,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/repositories/filters/${d.resource}-query-filter.ts`,
           templateFile: '.plop/resources/filter.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         });
       }
 
@@ -158,10 +158,10 @@ export default function (plop: NodePlopAPI) {
       return [
         {
           type: 'add',
-          path: `src/schemas/${d.resource}-schema.ts`,
+          path: `src/schemas/${d.resource}-schemas.ts`,
           templateFile: '.plop/resources/schema.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ] satisfies Actions;
     },
@@ -178,7 +178,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/services/${d.resource}-service.ts`,
           templateFile: '.plop/resources/service.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ] satisfies Actions;
     },
@@ -214,7 +214,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/controllers/${d.resource}-controller.ts`,
           templateFile: '.plop/resources/controller.hbs',
           data: { Model: d.Model, route },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ];
 
@@ -287,7 +287,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/database/models/${d.resource}.ts`,
           templateFile: '.plop/resources/entity.hbs',
           data: { Model: d.Model, table },
-          abortOnFail: true,
+          skipIfExists: true,
         },
 
         // repo + filter
@@ -296,23 +296,23 @@ export default function (plop: NodePlopAPI) {
           path: `src/repositories/${d.resource}-repository.ts`,
           templateFile: '.plop/resources/repository.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
         {
           type: 'add',
           path: `src/repositories/filters/${d.resource}-query-filter.ts`,
           templateFile: '.plop/resources/filter.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
 
         // schema
         {
           type: 'add',
-          path: `src/schemas/${d.resource}-schema.ts`,
+          path: `src/schemas/${d.resource}-schemas.ts`,
           templateFile: '.plop/resources/schema.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
 
         // service
@@ -321,7 +321,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/services/${d.resource}-service.ts`,
           templateFile: '.plop/resources/service.hbs',
           data: { Model: d.Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
 
         // controller
@@ -330,7 +330,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/controllers/${d.resource}-controller.ts`,
           templateFile: '.plop/resources/controller.hbs',
           data: { Model: d.Model, route },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ];
 
@@ -389,7 +389,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/middlewares/${name}-middleware.ts`,
           templateFile: '.plop/misc/middleware.hbs',
           data: { Name: Model },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ] satisfies Actions;
     },
@@ -416,7 +416,7 @@ export default function (plop: NodePlopAPI) {
           path: `src/scripts/${name}.ts`,
           templateFile: '.plop/misc/script.hbs',
           data: { name },
-          abortOnFail: true,
+          skipIfExists: true,
         },
       ] satisfies Actions;
     },

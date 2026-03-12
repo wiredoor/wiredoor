@@ -95,9 +95,11 @@
     "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "routing-controllers": "^0.10.4",
+    "slugify": "^1.6.6",
     "sqlite3": "^5.1.7",
     "typedi": "^0.10.0",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "yaml": "^2.8.2"
   },
   "overrides": {
     "cookie": "0.7.0",

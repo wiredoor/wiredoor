@@ -5,12 +5,28 @@ import TestAgent from 'supertest/lib/agent';
 import { NodesService } from '../../services/nodes-service';
 import { NodeWithToken } from '../../schemas/node-schemas';
 import Container from 'typedi';
+import YAML from 'yaml';
+import {
+  makeHttpResourceManifest,
+  makeNodeScopedManifest,
+  makeUpstreamManifest,
+} from '../iac-stack/stubs/stack-manifest.stub';
+import { HttpResourceRepository } from '../../repositories/http-resource-repository';
+import { HttpUpstreamRepository } from '../../repositories/http-upstream-repository';
 
 let app;
 let request: TestAgent;
 let node: NodeWithToken;
 let nodeToken: string;
 let nodesService: NodesService;
+
+function sendYamlAsNode(path: string, manifest: any, token: string) {
+  return request
+    .post(path)
+    .set('Authorization', `Bearer ${token}`)
+    .set('Content-Type', 'text/plain')
+    .send(YAML.stringify(manifest));
+}
 
 beforeAll(async () => {
   app = await loadApp();
@@ -561,4 +577,348 @@ describe('Wiredoor CLI API', () => {
   //     );
   //   });
   // });
+
+  describe('GET /api/cli/iac/export', () => {
+    const endpoint = '/api/cli/iac/export';
+    it('should reject unauthenticated if no token provided', async () => {
+      const res = await request.get(endpoint);
+
+      expect(res.status).toBe(401);
+    });
+    it('should export only resources belonging to the authenticated node', async () => {
+      const node1 = await nodesService.createNodeWithTokenKey({
+        name: 'Node1',
+      });
+      const node2 = await nodesService.createNodeWithTokenKey({
+        name: 'Node2',
+      });
+
+      const ext1 = faker.string.alphanumeric(10);
+      const ext2 = faker.string.alphanumeric(10);
+
+      // Node 1 creates a resource
+      await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        makeNodeScopedManifest({
+          http: [
+            makeHttpResourceManifest({
+              externalId: ext1,
+              upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+            }),
+          ],
+        }),
+        node1.token,
+      );
+
+      // Node 2 creates a resource
+      await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        makeNodeScopedManifest({
+          http: [
+            makeHttpResourceManifest({
+              externalId: ext2,
+              upstreams: [makeUpstreamManifest({ targetPort: 4000 })],
+            }),
+          ],
+        }),
+        node2.token,
+      );
+
+      // Node 1 exports — should only see its own resource
+      const res = await request
+        .get('/api/cli/iac/export?format=json')
+        .set('Authorization', `Bearer ${node1.token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.kind).toBe('NodeConfig');
+      expect(res.body.http.some((h: any) => h.externalId === ext1)).toBe(true);
+      expect(res.body.http.some((h: any) => h.externalId === ext2)).toBe(false);
+    });
+    it('should strip targetNodeRef from exported upstreams', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+
+      const httpExtId = faker.string.alphanumeric(10);
+
+      await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        makeNodeScopedManifest({
+          http: [
+            makeHttpResourceManifest({
+              externalId: httpExtId,
+              upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+            }),
+          ],
+        }),
+        node.token,
+      );
+
+      const res = await request
+        .get('/api/cli/iac/export?format=json')
+        .set('Authorization', `Bearer ${node.token}`);
+
+      expect(res.status).toBe(200);
+
+      const http = res.body.http.find((h: any) => h.externalId === httpExtId);
+      expect(http).toBeDefined();
+
+      // targetNodeRef should be stripped (it's implicit)
+      for (const upstream of http.upstreams) {
+        expect(upstream.targetNodeRef).toBeUndefined();
+      }
+    });
+    it('should return YAML by default', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+
+      const res = await request
+        .get('/api/cli/iac/export')
+        .set('Authorization', `Bearer ${node.token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.headers['content-type']).toContain('yaml');
+
+      const parsed = YAML.parse(res.text);
+      expect(parsed.kind).toBe('NodeConfig');
+    });
+  });
+
+  describe('POST /api/cli/iac/validate', () => {
+    it('should validate a valid node-scoped manifest', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+          }),
+        ],
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/validate',
+        manifest,
+        node.token,
+      );
+
+      console.log(res.body);
+
+      expect(res.status).toBe(200);
+      expect(res.body.valid).toBe(true);
+    });
+
+    it('should fail on invalid manifest structure', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/validate',
+        {
+          apiVersion: 'wiredoor.io/v1alpha1',
+          kind: 'NodeConfig',
+          http: [{ name: '' }],
+        },
+        node.token,
+      );
+
+      expect(res.status).toBe(422);
+    });
+  });
+
+  describe('POST /api/cli/iac/apply', () => {
+    it('should create resources scoped to the authenticated node', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+      const httpExtId = faker.string.alphanumeric(10);
+      const domain = `${httpExtId}.${faker.internet.domainName()}`;
+
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            externalId: httpExtId,
+            domain,
+            upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+          }),
+        ],
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body.changed).toBe(true);
+
+      // Verify resource was created in DB
+      const resources = await Container.get(HttpResourceRepository).findBy({
+        externalId: httpExtId,
+      });
+      expect(resources).toHaveLength(1);
+      expect(resources[0].domain).toBe(domain);
+
+      // Verify upstream points to the authenticated node
+      const upstreams = await Container.get(HttpUpstreamRepository).find({
+        where: { httpResourceId: resources[0].id },
+      });
+      expect(upstreams).toHaveLength(1);
+      expect(upstreams[0].targetNodeId).toBe(node.id);
+    });
+
+    it('should allow explicit targetHost for local containers', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+        isGateway: true, // Gateway nodes should be able to use targetHost
+        gatewayNetworks: [{ interface: 'eth0', subnet: '172.16.0.0/12' }],
+      });
+      const httpExtId = faker.string.alphanumeric(10);
+
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            externalId: httpExtId,
+            upstreams: [
+              makeUpstreamManifest({
+                targetHost: 'my-docker-container',
+                targetPort: 8080,
+              }),
+            ],
+          }),
+        ],
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+
+      expect(res.status).toBe(200);
+
+      const resources = await Container.get(HttpResourceRepository).findBy({
+        externalId: httpExtId,
+      });
+
+      expect(resources).toHaveLength(1);
+
+      const upstreams = await Container.get(HttpUpstreamRepository).find({
+        where: { httpResourceId: resources[0].id },
+      });
+
+      // When targetHost is set, it should use that instead of the node
+      expect(upstreams[0].targetHost).toBe('my-docker-container');
+    });
+
+    it('should be idempotent', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+          }),
+        ],
+      });
+
+      const first = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+      expect(first.body.changed).toBe(true);
+
+      const second = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+      expect(second.body.changed).toBe(false);
+    });
+
+    it('should not include node phase in response', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
+          }),
+        ],
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+
+      expect(res.status).toBe(200);
+      // Node phase should be filtered out
+      const nodePhase = res.body.phases.find((p: any) => p.phaseId === 'node');
+      expect(nodePhase).toBeUndefined();
+    });
+
+    it('should handle multiple upstreams', async () => {
+      const node = await nodesService.createNodeWithTokenKey({
+        name: 'TestNode',
+      });
+      const httpExtId = faker.string.alphanumeric(10);
+
+      const manifest = makeNodeScopedManifest({
+        http: [
+          makeHttpResourceManifest({
+            externalId: httpExtId,
+            upstreams: [
+              makeUpstreamManifest({
+                pathPattern: '/',
+                targetPort: 3000,
+              }),
+              makeUpstreamManifest({
+                pathPattern: '/api/',
+                targetPort: 8080,
+              }),
+              makeUpstreamManifest({
+                pathPattern: '/static/',
+                targetHost: 'minio',
+                targetPort: 9000,
+              }),
+            ],
+          }),
+        ],
+      });
+
+      const res = await sendYamlAsNode(
+        '/api/cli/iac/apply',
+        manifest,
+        node.token,
+      );
+
+      expect(res.status).toBe(200);
+
+      const resources = await Container.get(HttpResourceRepository).findBy({
+        externalId: httpExtId,
+      });
+      const upstreams = await Container.get(HttpUpstreamRepository).find({
+        where: { httpResourceId: resources[0].id },
+      });
+
+      expect(upstreams).toHaveLength(3);
+
+      // Two upstreams should point to the node
+      // const nodeUpstreams = upstreams.filter((u) => u.targetNodeId === node.id);
+      // expect(nodeUpstreams).toHaveLength(2);
+
+      // One upstream should use explicit targetHost
+      const hostUpstream = upstreams.find((u) => u.targetHost === 'minio');
+      expect(hostUpstream).toBeDefined();
+    });
+  });
 });

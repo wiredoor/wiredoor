@@ -116,6 +116,7 @@ export interface CreateNodeType {
   enabled?: boolean;
   gatewayNetworks?: GatewayNetwork[];
   isGateway?: boolean;
+  externalId?: string;
 }
 
 export interface NodeInfo extends CreateNodeType {
@@ -196,7 +197,7 @@ export const createNodeValidator: ObjectSchema<CreateNodeType> = Joi.object({
   allowInternet: Joi.boolean().optional(),
   isGateway: Joi.boolean().optional(),
   advanced: Joi.boolean().optional(),
-  mtu: Joi.number().integer().min(1280).max(1440).optional(),
+  mtu: Joi.number().allow(null).integer().min(1280).max(1440).optional(),
   gatewayNetworks: Joi.when('isGateway', {
     is: true,
     then: gatewayNetworksValidator,

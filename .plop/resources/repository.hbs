@@ -1,7 +1,7 @@
 import { Inject, Service } from 'typedi';
 import { DataSource } from 'typeorm';
 import { {{Model}} } from '../database/models/{{kebab Model}}';
-import BaseRepository from './base-repository';
+import BaseRepository from '../core/base-repository';
 
 @Service()
 export class {{Model}}Repository extends BaseRepository<{{Model}}> {

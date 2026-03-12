@@ -8,6 +8,7 @@ import {
   FindOneOptions,
   FindOptionsWhere,
   InsertResult,
+  ObjectId,
   ObjectLiteral,
   RemoveOptions,
   Repository,
@@ -169,7 +170,17 @@ export default class BaseRepository<T extends ObjectLiteral> {
   }
 
   async delete(
-    where: number | string | FindOptionsWhere<T>,
+    where:
+      | string
+      | number
+      | string[]
+      | number[]
+      | FindOptionsWhere<T>
+      | Date
+      | ObjectId
+      | FindOptionsWhere<T>[]
+      | Date[]
+      | ObjectId[],
     manager?: EntityManager,
   ): Promise<DeleteResult> {
     return this.repo(manager).delete(where);

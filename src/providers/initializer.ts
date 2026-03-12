@@ -6,6 +6,7 @@ import { DomainsService } from '../services/domains-service';
 import { NginxManager } from '../services/proxy-server/nginx-manager';
 import { Logger } from '../logger';
 import { BootstrapService } from '../services/bootstrap-service';
+import { HttpResourceService } from '../services/http-resources';
 
 export default async (): Promise<void> => {
   try {
@@ -25,6 +26,12 @@ export default async (): Promise<void> => {
     await Container.get(DomainsService).initialize();
   } catch (e: Error | any) {
     Logger.error('Unable to initialize Domains:', e);
+  }
+
+  try {
+    await Container.get(HttpResourceService).initialize();
+  } catch (e: Error | any) {
+    Logger.error('Unable to initialize HTTP Resources:', e);
   }
 
   try {

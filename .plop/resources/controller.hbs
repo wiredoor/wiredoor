@@ -27,7 +27,7 @@ import {
   {{camel Model}}Validator,
 } from '../schemas/{{kebab Model}}-schema';
 
-import type { PagedData } from '../repositories/filters/repository-query-filter';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 @JsonController('/{{route}}')

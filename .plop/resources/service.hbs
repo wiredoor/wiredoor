@@ -5,7 +5,7 @@ import { {{Model}}QueryFilter } from '../repositories/filters/{{kebab Model}}-qu
 import { {{Model}} } from '../database/models/{{kebab Model}}';
 
 import type { {{Model}}FilterQueryParams, {{Model}}Type } from '../schemas/{{kebab Model}}-schema';
-import type { PagedData } from '../repositories/filters/repository-query-filter';
+import { PagedData } from '../schemas/shared-schemas';
 
 @Service()
 export default class {{Model}}Service {
