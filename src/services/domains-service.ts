@@ -15,7 +15,6 @@ import { ValidationError } from '../utils/errors/validation-error';
 import { ProcessManager } from './oauth2-proxy/process-manager';
 import config from '../config';
 import { HttpServicesService } from './http-services-service';
-import { NginxDomainService } from './proxy-server/nginx-domain-service';
 import { DNSService } from './dns/dns-service';
 import Net from '../utils/net';
 import { PagedData } from '../schemas/shared-schemas';
@@ -24,7 +23,6 @@ import { NginxDomainResource } from './proxy-server/nginx-domain-resource';
 
 @Service()
 export class DomainsService {
-  private nginxDomainService: NginxDomainService;
   private dnsService: DNSService;
 
   constructor(
@@ -32,7 +30,6 @@ export class DomainsService {
     @Inject() private readonly domainFilter: DomainQueryFilter,
     @Inject() private readonly nginxDomainResource: NginxDomainResource,
   ) {
-    this.nginxDomainService = new NginxDomainService();
     this.dnsService = Container.get(DNSService);
   }
 
