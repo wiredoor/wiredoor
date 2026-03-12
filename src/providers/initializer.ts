@@ -22,6 +22,8 @@ export default async (): Promise<void> => {
     Logger.warn('Unable to initialize VPN server:', e);
   }
 
+  Container.get(NginxManager).beginBatch();
+
   try {
     await Container.get(DomainsService).initialize();
   } catch (e: Error | any) {
@@ -46,5 +48,5 @@ export default async (): Promise<void> => {
     Logger.error('Unable to initialize TCP Services:', e);
   }
 
-  await NginxManager.reloadServer();
+  await Container.get(NginxManager).commitBatch();
 };
