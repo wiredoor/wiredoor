@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import {
   Get,
   JsonController,
@@ -22,7 +22,7 @@ import { AdminTokenHandler } from '../middlewares/admin-token-handler';
 @JsonController('/logs')
 @UseBefore(AdminTokenHandler)
 export default class LogController extends BaseController {
-  constructor(@Inject() private readonly accessLogsService: AccessLogsService) {
+  constructor(private readonly accessLogsService: AccessLogsService) {
     super();
   }
 

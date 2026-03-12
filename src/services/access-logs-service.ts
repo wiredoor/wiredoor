@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import ServerUtils from '../utils/server';
 import { LogQueryParams } from '../schemas/log-schemas';
@@ -10,8 +10,8 @@ import { Logger } from '../logger';
 @Service()
 export class AccessLogsService {
   constructor(
-    @Inject() private readonly httpServiceRepository: HttpServiceRepository,
-    @Inject() private readonly tcpServiceRepository: TcpServiceRepository,
+    private readonly httpServiceRepository: HttpServiceRepository,
+    private readonly tcpServiceRepository: TcpServiceRepository,
   ) {}
 
   public async responseRealTimeLogs(

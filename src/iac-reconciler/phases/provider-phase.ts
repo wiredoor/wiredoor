@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { EntityManager, In } from 'typeorm';
 
 import { BaseResourcePhase } from '../../core/reconciler/base-resource-phase';
@@ -34,8 +34,8 @@ export class ProviderPhase
   readonly dependsOn: string[] = [];
 
   constructor(
-    @Inject() private readonly providerRepository: OidcProviderRepository,
-    @Inject() private readonly providerService: OidcProviderService,
+    private readonly providerRepository: OidcProviderRepository,
+    private readonly providerService: OidcProviderService,
   ) {
     super();
   }

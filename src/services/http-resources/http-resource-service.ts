@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 
 import {
@@ -53,14 +53,13 @@ export class HttpResourceService {
   >;
 
   constructor(
-    @Inject() private readonly httpResourceRepository: HttpResourceRepository,
-    @Inject() private readonly httpUpstreamRepository: HttpUpstreamRepository,
-    @Inject()
+    private readonly httpResourceRepository: HttpResourceRepository,
+    private readonly httpUpstreamRepository: HttpUpstreamRepository,
     private readonly httpAccessRuleRepository: HttpAccessRuleRepository,
-    @Inject() private readonly httpEdgeRuleRepository: HttpEdgeRuleRepository,
-    @Inject() private readonly domainsService: DomainsService,
-    @Inject() private readonly httpResourceFilter: HttpResourceQueryFilter,
-    @Inject() private readonly nginxHttpResource: NginxHttpResource,
+    private readonly httpEdgeRuleRepository: HttpEdgeRuleRepository,
+    private readonly domainsService: DomainsService,
+    private readonly httpResourceFilter: HttpResourceQueryFilter,
+    private readonly nginxHttpResource: NginxHttpResource,
   ) {
     this.declarative = new DeclarativeHandler<
       DeclarativeHttpResourceInput,

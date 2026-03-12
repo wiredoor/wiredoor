@@ -1,5 +1,5 @@
 import client from 'prom-client';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { NodesService } from './nodes-service';
 import { Node } from '../database/models/node';
 import FileManager from '../utils/file-manager';
@@ -47,7 +47,7 @@ export class MetricsService {
     labelNames: ['device', 'public_key'],
   });
 
-  constructor(@Inject() private readonly nodesService: NodesService) {
+  constructor(private readonly nodesService: NodesService) {
     this.registry.setDefaultLabels({ app: 'wiredoor' });
     this.registry.registerMetric(this.nodeInfo);
     this.registry.registerMetric(this.handshake);

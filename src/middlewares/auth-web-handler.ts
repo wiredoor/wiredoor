@@ -2,7 +2,7 @@ import {
   ExpressMiddlewareInterface,
   UnauthorizedError,
 } from 'routing-controllers';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { NextFunction, Request, Response } from 'express';
 import { UsersService } from '../services/users-service';
 import { SessionService } from '../services/sessions-service';
@@ -11,8 +11,8 @@ import config from '../config';
 @Service()
 export class AuthWebHandler implements ExpressMiddlewareInterface {
   constructor(
-    @Inject() private readonly usersService: UsersService,
-    @Inject() private readonly sessionService: SessionService,
+    private readonly usersService: UsersService,
+    private readonly sessionService: SessionService,
   ) {}
 
   async use(

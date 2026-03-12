@@ -4,7 +4,7 @@ import {
   UnauthorizedError,
 } from 'routing-controllers';
 import { PatService } from '../services/pat-service';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { NextFunction, Request, Response } from 'express';
 import { AuthenticatedUser, getDataFromToken } from './auth-token-handler';
 import { NodeApiKeyService } from '../services/node-api-key-service';
@@ -40,8 +40,8 @@ function parseWiredoorCliUserAgent(req: Request): string | null {
 @Service()
 export class CliTokenHandler implements ExpressMiddlewareInterface {
   constructor(
-    @Inject() private readonly patService: PatService,
-    @Inject() private readonly nodeApiKeyService: NodeApiKeyService,
+    private readonly patService: PatService,
+    private readonly nodeApiKeyService: NodeApiKeyService,
   ) {}
 
   async use(

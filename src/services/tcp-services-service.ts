@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { TcpServiceRepository } from '../repositories/tcp-service-repository';
 import { TcpService } from '../database/models/tcp-service';
 import {
@@ -19,10 +19,10 @@ export class TcpServicesService extends BaseServices {
   private nginxTcpService: NginxTcpService;
 
   constructor(
-    @Inject() private readonly tcpServiceRepository: TcpServiceRepository,
-    @Inject() private readonly tcpServiceFilter: TcpServiceQueryFilter,
-    @Inject() private readonly nodeRepository: NodeRepository,
-    @Inject() private readonly domainsService: DomainsService,
+    private readonly tcpServiceRepository: TcpServiceRepository,
+    private readonly tcpServiceFilter: TcpServiceQueryFilter,
+    private readonly nodeRepository: NodeRepository,
+    private readonly domainsService: DomainsService,
   ) {
     super(nodeRepository, domainsService);
     this.nginxTcpService = new NginxTcpService();

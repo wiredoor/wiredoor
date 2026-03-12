@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { PersonalAccessTokenRepository } from '../repositories/personal-access-token-repository';
 import jwt from 'jsonwebtoken';
 import config from '../config';
@@ -16,9 +16,8 @@ import { PagedData } from '../schemas/shared-schemas';
 @Service()
 export class PatService {
   constructor(
-    @Inject()
     private readonly personalAccessTokenRepository: PersonalAccessTokenRepository,
-    @Inject() private readonly patFilter: PatQueryFilter,
+    private readonly patFilter: PatQueryFilter,
   ) {}
 
   async getPATs(

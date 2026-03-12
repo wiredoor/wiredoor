@@ -36,7 +36,7 @@ export function parseBody(req: Request): Record<string, unknown> {
 export default class IacStackController extends BaseController {
   constructor(
     @Inject('reconciler') private readonly reconciler: StackReconciler,
-    @Inject() private readonly stackService: StackIaCService,
+    private readonly stackService: StackIaCService,
   ) {
     super();
   }

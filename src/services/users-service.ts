@@ -1,11 +1,11 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { UserRepository } from '../repositories/user-repository';
 import { User } from '../database/models/user';
 import bcrypt from 'bcrypt';
 
 @Service()
 export class UsersService {
-  constructor(@Inject() private readonly userRepository: UserRepository) {}
+  constructor(private readonly userRepository: UserRepository) {}
 
   async getCount(): Promise<number> {
     return this.userRepository.count();

@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import { Request, Response } from 'express';
 import {
@@ -39,8 +39,8 @@ import { PagedData } from '../schemas/shared-schemas';
 @UseBefore(AuthWebHandler)
 export default class NodeController extends BaseController {
   constructor(
-    @Inject() private readonly nodesService: NodesService,
-    @Inject() private readonly patService: PatService,
+    private readonly nodesService: NodesService,
+    private readonly patService: PatService,
   ) {
     super();
   }

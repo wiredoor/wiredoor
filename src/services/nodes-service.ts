@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { Response } from 'express';
 import { EntityManager } from 'typeorm';
 import { NodeRepository } from '../repositories/node-repository';
@@ -23,12 +23,12 @@ import { PagedData } from '../schemas/shared-schemas';
 @Service()
 export class NodesService {
   constructor(
-    @Inject() private readonly nodeRepository: NodeRepository,
-    @Inject() private readonly nodeFilter: NodeQueryFilter,
-    @Inject() private readonly wireguardService: WireguardService,
-    @Inject() private readonly httpServicesService: HttpServicesService,
-    @Inject() private readonly tcpServicesService: TcpServicesService,
-    @Inject() private readonly nodeApiKeyRepository: NodeApiKeyRepository,
+    private readonly nodeRepository: NodeRepository,
+    private readonly nodeFilter: NodeQueryFilter,
+    private readonly wireguardService: WireguardService,
+    private readonly httpServicesService: HttpServicesService,
+    private readonly tcpServicesService: TcpServicesService,
+    private readonly nodeApiKeyRepository: NodeApiKeyRepository,
   ) {}
 
   public async initialize(): Promise<void> {

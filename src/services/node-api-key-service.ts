@@ -1,6 +1,6 @@
 import { NodeApiKeyRepository } from '../repositories/node-api-key-repository';
 import { NodeApiKey } from '../database/models/node-api-key';
-import Container, { Inject, Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { NodeRepository } from '../repositories/node-repository';
 
 export type CreatedNodeApiKey = {
@@ -17,9 +17,7 @@ export type VerifiedNodeApiKey = {
 
 @Service()
 export class NodeApiKeyService {
-  constructor(
-    @Inject() private readonly nodeApiKeyRepository: NodeApiKeyRepository,
-  ) {}
+  constructor(private readonly nodeApiKeyRepository: NodeApiKeyRepository) {}
 
   async create(
     nodeId: number,

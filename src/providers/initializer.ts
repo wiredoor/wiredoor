@@ -5,6 +5,8 @@ import { NginxManager } from '../services/proxy-server/nginx-manager';
 import { Logger } from '../logger';
 import { BootstrapService } from '../services/bootstrap-service';
 import { HttpResourceService } from '../services/http-resources';
+import { HttpServicesService } from '../services/http-services-service';
+import { TcpServicesService } from '../services/tcp-services-service';
 
 export default async (): Promise<void> => {
   try {
@@ -36,15 +38,15 @@ export default async (): Promise<void> => {
 
   await Container.get(NginxManager).commitBatch();
 
-  // try {
-  //   await Container.get(HttpServicesService).initialize();
-  // } catch (e: Error | any) {
-  //   Logger.error('Unable to initialize HTTP Services:', e);
-  // }
+  try {
+    await Container.get(HttpServicesService).initialize();
+  } catch (e: Error | any) {
+    Logger.error('Unable to initialize HTTP Services:', e);
+  }
 
-  // try {
-  //   await Container.get(TcpServicesService).initialize();
-  // } catch (e: Error | any) {
-  //   Logger.error('Unable to initialize TCP Services:', e);
-  // }
+  try {
+    await Container.get(TcpServicesService).initialize();
+  } catch (e: Error | any) {
+    Logger.error('Unable to initialize TCP Services:', e);
+  }
 };

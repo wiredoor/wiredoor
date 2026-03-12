@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import {
   Body,
@@ -35,9 +35,7 @@ import { User } from '../database/models/user';
 @JsonController('/http')
 @UseBefore(AuthWebHandler)
 export default class HttpResourceController extends BaseController {
-  constructor(
-    @Inject() private readonly httpResourceService: HttpResourceService,
-  ) {
+  constructor(private readonly httpResourceService: HttpResourceService) {
     super();
   }
 

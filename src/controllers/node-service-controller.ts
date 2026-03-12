@@ -13,7 +13,7 @@ import {
   UseBefore,
 } from 'routing-controllers';
 import { Request } from 'express';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import Joi from 'joi';
 import { celebrate } from 'celebrate';
 import BaseController from './base-controller';
@@ -42,8 +42,8 @@ import { PagedData } from '../schemas/shared-schemas';
 @UseBefore(AuthWebHandler)
 export default class NodeServiceController extends BaseController {
   constructor(
-    @Inject() private readonly httpServicesService: HttpServicesService,
-    @Inject() private readonly tcpServicesService: TcpServicesService,
+    private readonly httpServicesService: HttpServicesService,
+    private readonly tcpServicesService: TcpServicesService,
   ) {
     super();
   }

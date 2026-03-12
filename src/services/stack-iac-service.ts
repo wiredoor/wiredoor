@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { EntityManager } from 'typeorm';
 
 import {
@@ -84,11 +84,11 @@ function ensureUniqueExternalIds(
 @Service()
 export class StackIaCService {
   constructor(
-    @Inject() private readonly oidcProviderRepository: OidcProviderRepository,
-    @Inject() private readonly nodeRepository: NodeRepository,
-    @Inject() private readonly httpResourceRepository: HttpResourceRepository,
-    @Inject() private readonly nodesService: NodesService,
-    @Inject() private readonly httpResourceService: HttpResourceService,
+    private readonly oidcProviderRepository: OidcProviderRepository,
+    private readonly nodeRepository: NodeRepository,
+    private readonly httpResourceRepository: HttpResourceRepository,
+    private readonly nodesService: NodesService,
+    private readonly httpResourceService: HttpResourceService,
   ) {}
 
   async export(manager?: EntityManager): Promise<StackManifest> {

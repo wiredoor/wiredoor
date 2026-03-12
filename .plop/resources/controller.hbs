@@ -32,7 +32,7 @@ import { PagedData } from '../schemas/shared-schemas';
 @Service()
 @JsonController('/{{route}}')
 export default class {{Model}}Controller extends BaseController {
-  constructor(@Inject() private readonly {{camel Model}}Service: {{Model}}Service) {
+  constructor(private readonly {{camel Model}}Service: {{Model}}Service) {
     super();
   }
 

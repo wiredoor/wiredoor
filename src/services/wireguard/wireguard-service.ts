@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { Node } from '../../database/models/node';
 import { WgInterface } from '../../database/models/wg-interface';
 import { NodeRepository } from '../../repositories/node-repository';
@@ -46,8 +46,8 @@ export interface WGConfigObject {
 class WireguardService {
   private readonly logger: ILogger;
   constructor(
-    @Inject() private readonly wgInterfaceRepository: WgInterfaceRepository,
-    @Inject() private readonly nodeRepository: NodeRepository,
+    private readonly wgInterfaceRepository: WgInterfaceRepository,
+    private readonly nodeRepository: NodeRepository,
   ) {
     this.logger = createLogger({ serviceName: 'wireguard' });
   }

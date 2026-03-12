@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import {
   Body,
@@ -33,7 +33,7 @@ import { PagedData } from '../schemas/shared-schemas';
 @JsonController('/domains')
 @UseBefore(AdminTokenHandler)
 export default class DomainController extends BaseController {
-  constructor(@Inject() private readonly domainsService: DomainsService) {
+  constructor(private readonly domainsService: DomainsService) {
     super();
   }
 

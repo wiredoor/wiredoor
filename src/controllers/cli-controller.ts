@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { celebrate } from 'celebrate';
 import {
   BadRequestError,
@@ -50,10 +50,10 @@ import { parseBody } from './iac-stack-controller';
 @UseBefore(CliTokenHandler)
 export default class CLiController extends BaseController {
   constructor(
-    @Inject() private readonly nodesService: NodesService,
-    @Inject() private readonly httpServicesService: HttpServicesService,
-    @Inject() private readonly tcpServicesService: TcpServicesService,
-    @Inject() private readonly nodeIacService: NodeIacService,
+    private readonly nodesService: NodesService,
+    private readonly httpServicesService: HttpServicesService,
+    private readonly tcpServicesService: TcpServicesService,
+    private readonly nodeIacService: NodeIacService,
   ) {
     super();
   }

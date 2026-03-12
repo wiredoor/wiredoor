@@ -32,6 +32,7 @@ import { PagedData } from '../../schemas/shared-schemas';
 import { faker } from '@faker-js/faker';
 import ServerUtils from '../../utils/server';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
+import { NginxDomainResource } from '../../services/proxy-server/nginx-domain-resource';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -71,6 +72,7 @@ describe('TCP Services Service', () => {
     domainService = new DomainsService(
       domainRepository,
       new DomainQueryFilter(domainRepository),
+      Container.get(NginxDomainResource),
     );
     httpServicesService = new HttpServicesService(
       httpServiceRepository,
@@ -263,10 +265,6 @@ describe('TCP Services Service', () => {
           expect.stringContaining(` ${serviceData.domain};`),
         ],
         [
-          `/etc/nginx/locations/${serviceData.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
-        ],
-        [
           `/etc/nginx/stream.d/n${node.id}s${result.id}_stream.conf`,
           expect.stringContaining(
             ` /etc/nginx/ssl/${serviceData.domain}/privkey.key;`,
@@ -319,10 +317,6 @@ describe('TCP Services Service', () => {
         [
           `/etc/nginx/conf.d/${serviceData.domain}.conf`,
           expect.stringContaining(` ${serviceData.domain};`),
-        ],
-        [
-          `/etc/nginx/locations/${serviceData.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
         ],
         [
           `/etc/nginx/stream.d/n${node.id}s${result.id}_stream.conf`,

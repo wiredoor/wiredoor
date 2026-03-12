@@ -32,6 +32,7 @@ import { NodeInfo } from '../../schemas/node-schemas';
 import { faker } from '@faker-js/faker';
 import config from '../../config';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
+import { NginxDomainResource } from '../../services/proxy-server/nginx-domain-resource';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -74,6 +75,7 @@ describe('Nodes Service', () => {
     domainService = new DomainsService(
       domainRepository,
       new DomainQueryFilter(domainRepository),
+      Container.get(NginxDomainResource),
     );
     httpServicesService = new HttpServicesService(
       httpServiceRepository,

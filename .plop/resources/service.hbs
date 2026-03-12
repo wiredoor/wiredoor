@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 
 import { {{Model}}Repository } from '../repositories/{{kebab Model}}-repository';
 import { {{Model}}QueryFilter } from '../repositories/filters/{{kebab Model}}-query-filter';
@@ -10,8 +10,8 @@ import { PagedData } from '../schemas/shared-schemas';
 @Service()
 export default class {{Model}}Service {
   constructor(
-    @Inject() private readonly {{camel Model}}Repository: {{Model}}Repository,
-    @Inject() private readonly {{camel Model}}Filter: {{Model}}QueryFilter,
+    private readonly {{camel Model}}Repository: {{Model}}Repository,
+    private readonly {{camel Model}}Filter: {{Model}}QueryFilter,
   ) {}
 
   /**

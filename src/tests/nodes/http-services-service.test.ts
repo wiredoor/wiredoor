@@ -29,6 +29,7 @@ import { PagedData } from '../../schemas/shared-schemas';
 import { HttpService } from '../../database/models/http-service';
 import ServerUtils from '../../utils/server';
 import { NodeApiKeyRepository } from '../../repositories/node-api-key-repository';
+import { NginxDomainResource } from '../../services/proxy-server/nginx-domain-resource';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -67,6 +68,7 @@ describe('HTTP Services Service', () => {
     domainService = new DomainsService(
       domainRepository,
       new DomainQueryFilter(domainRepository),
+      Container.get(NginxDomainResource),
     );
     tcpServicesService = new TcpServicesService(
       tcpServiceRepository,
@@ -79,6 +81,7 @@ describe('HTTP Services Service', () => {
       filter,
       nodeRepository,
       domainService,
+      Container.get(NginxDomainResource),
     );
 
     nodesService = new NodesService(

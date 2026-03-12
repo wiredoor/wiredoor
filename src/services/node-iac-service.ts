@@ -1,4 +1,4 @@
-import Container, { Inject, Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { EntityManager, In } from 'typeorm';
 
 import { StackReconciler } from '../core/reconciler/stack-reconciler';
@@ -29,8 +29,8 @@ export type NodeContext = {
 @Service()
 export class NodeIacService {
   constructor(
-    @Inject() private readonly reconciler: StackReconciler,
-    @Inject() private readonly httpResourceRepository: HttpResourceRepository,
+    private readonly reconciler: StackReconciler,
+    private readonly httpResourceRepository: HttpResourceRepository,
   ) {}
 
   async ensureExternalIds(): Promise<void> {

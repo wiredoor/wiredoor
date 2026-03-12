@@ -15,6 +15,7 @@ import { DomainQueryFilter } from '../../repositories/filters/domain-query-filte
 import { makeDomainData } from './stubs/domain.stub';
 import { Domain } from '../../database/models/domain';
 import { PagedData } from '../../schemas/shared-schemas';
+import { NginxDomainResource } from '../../services/proxy-server/nginx-domain-resource';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -35,7 +36,11 @@ describe('Domains Service', () => {
   beforeEach(async () => {
     repository = new DomainRepository(dataSource);
     filter = new DomainQueryFilter(repository);
-    service = new DomainsService(repository, filter);
+    service = new DomainsService(
+      repository,
+      filter,
+      Container.get(NginxDomainResource),
+    );
 
     jest.clearAllMocks();
   });
@@ -69,16 +74,8 @@ describe('Domains Service', () => {
           expect.stringContaining(` ${domainData1.domain};`),
         ],
         [
-          `/etc/nginx/locations/${domainData1.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
-        ],
-        [
           `/etc/nginx/conf.d/${domainData2.domain}.conf`,
           expect.stringContaining(` ${domainData2.domain};`),
-        ],
-        [
-          `/etc/nginx/locations/${domainData2.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
         ],
       ]);
 
@@ -99,13 +96,14 @@ describe('Domains Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         [
           expect.stringMatching(
             new RegExp(`certbot.*${domainData2.domain?.replace('.', '\\.')}.*`),
           ),
         ],
         ['nginx -t'],
-        ['supervisorctl reread && supervisorctl update'],
+        ['nginx -s reload'],
       ]);
     });
   });
@@ -156,10 +154,6 @@ describe('Domains Service', () => {
           `/etc/nginx/conf.d/${data.domain}.conf`,
           expect.stringContaining(` ${data.domain};`),
         ],
-        [
-          `/etc/nginx/locations/${data.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
-        ],
       ]);
 
       expect(mockCLIExec.mock.calls).toEqual([
@@ -203,10 +197,6 @@ describe('Domains Service', () => {
           `/etc/nginx/conf.d/${data.domain}.conf`,
           expect.stringContaining(` ${data.domain};`),
         ],
-        [
-          `/etc/nginx/locations/${data.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
-        ],
       ]);
 
       expect(mockCLIExec.mock.calls).toEqual([
@@ -220,46 +210,19 @@ describe('Domains Service', () => {
       ]);
     });
     it('should create domain with authentication enabled', async () => {
-      const data = makeDomainData({ ssl: 'certbot', authentication: true });
+      const data = makeDomainData({ ssl: 'certbot' });
 
       jest.clearAllMocks();
 
       const result = await service.createDomain(data);
 
-      expect(result.oauth2ServicePort).toEqual(expect.any(Number));
       expect(result.id).toBeDefined();
       expect(result.domain).toEqual(data.domain);
 
       expect(mockSaveToFile.mock.calls).toEqual([
         [
-          `/data/oauth2/.cookie-secret-${data.domain}`,
-          expect.any(String),
-          'utf-8',
-          0o600,
-        ],
-        [
-          `/opt/oauth2-proxy/${data.domain}-emails`,
-          result.oauth2Config.allowedEmails.join('\n'),
-          'utf-8',
-          0o644,
-        ],
-        [
-          `/etc/supervisor/conf.d/oauth2-proxy-d${result.id}.conf`,
-          expect.stringContaining(
-            ` OAUTH2_PROXY_HTTP_ADDRESS="127.0.0.1:${result.oauth2ServicePort}",`,
-          ),
-          'utf-8',
-          0o644,
-        ],
-        [
           `/etc/nginx/conf.d/${data.domain}.conf`,
-          expect.stringContaining(
-            ` http://127.0.0.1:${result.oauth2ServicePort};`,
-          ),
-        ],
-        [
-          `/etc/nginx/locations/${data.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
+          expect.stringContaining(`partials/wiredoor_access.conf;`),
         ],
       ]);
 
@@ -269,7 +232,6 @@ describe('Domains Service', () => {
             new RegExp(`certbot.*${data.domain?.replace('.', '\\.')}.*`),
           ),
         ],
-        ['supervisorctl reread && supervisorctl update'],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
@@ -296,10 +258,6 @@ describe('Domains Service', () => {
         [
           `/etc/nginx/conf.d/${data.domain}.conf`,
           expect.stringContaining(` ${data.domain};`),
-        ],
-        [
-          `/etc/nginx/locations/${data.domain}/__main.conf`,
-          expect.stringContaining(`root /etc/nginx/default_pages;`),
         ],
       ]);
 

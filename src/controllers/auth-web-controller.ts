@@ -9,7 +9,7 @@ import {
   UseBefore,
 } from 'routing-controllers';
 import { Request, Response } from 'express';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { celebrate, Joi } from 'celebrate';
 import rateLimit from 'express-rate-limit';
 import { SessionService } from '../services/sessions-service';
@@ -22,8 +22,8 @@ import { User } from '../database/models/user';
 @JsonController('/auth/web')
 export default class AuthWebController {
   constructor(
-    @Inject() private readonly usersService: UsersService,
-    @Inject() private readonly sessionsService: SessionService,
+    private readonly usersService: UsersService,
+    private readonly sessionsService: SessionService,
   ) {}
 
   @Get('/me')

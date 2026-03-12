@@ -2,7 +2,7 @@ import {
   ExpressMiddlewareInterface,
   UnauthorizedError,
 } from 'routing-controllers';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import type { NextFunction, Request, Response } from 'express';
 
 /**
@@ -14,7 +14,7 @@ import type { NextFunction, Request, Response } from 'express';
 @Service()
 export class {{Name}}Handler implements ExpressMiddlewareInterface {
   constructor(
-    // @Inject() private readonly someService: SomeService,
+    // private readonly someService: SomeService,
   ) {}
 
   async use(

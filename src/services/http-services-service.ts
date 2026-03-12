@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { HttpServiceRepository } from '../repositories/http-service-repository';
 import { HttpService } from '../database/models/http-service';
 import axios, { AxiosRequestConfig } from 'axios';
@@ -22,10 +22,10 @@ export class HttpServicesService extends BaseServices {
   private nginxHttpService: NginxHttpService;
 
   constructor(
-    @Inject() private readonly httpServiceRepository: HttpServiceRepository,
-    @Inject() private readonly httpServiceFilter: HttpServiceQueryFilter,
-    @Inject() private readonly nodeRepository: NodeRepository,
-    @Inject() private readonly domainService: DomainsService,
+    private readonly httpServiceRepository: HttpServiceRepository,
+    private readonly httpServiceFilter: HttpServiceQueryFilter,
+    private readonly nodeRepository: NodeRepository,
+    private readonly domainService: DomainsService,
   ) {
     super(nodeRepository, domainService);
     this.nginxHttpService = new NginxHttpService();

@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { Logger } from '../../logger';
 import { NginxFileManager } from './nginx-file-manager';
 import CLI from '../../utils/cli';
@@ -22,7 +22,7 @@ export class NginxManager {
   private batchResults = new Map<string, ApplyResult>();
   private needsReload = false;
 
-  constructor(@Inject() private readonly fileManager: NginxFileManager) {}
+  constructor(private readonly fileManager: NginxFileManager) {}
 
   async testResource(
     resourceKey: string,

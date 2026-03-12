@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 
 import { OidcProviderRepository } from '../repositories/oidc-provider-repository';
 import { OidcProviderQueryFilter } from '../repositories/filters/oidc-provider-query-filter';
@@ -15,8 +15,8 @@ import { encrypt } from '../utils/cypher';
 @Service()
 export default class OidcProviderService {
   constructor(
-    @Inject() private readonly oidcProviderRepository: OidcProviderRepository,
-    @Inject() private readonly oidcProviderFilter: OidcProviderQueryFilter,
+    private readonly oidcProviderRepository: OidcProviderRepository,
+    private readonly oidcProviderFilter: OidcProviderQueryFilter,
   ) {}
 
   async checkOidcDiscovery(

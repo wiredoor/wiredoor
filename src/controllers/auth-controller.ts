@@ -8,7 +8,7 @@ import {
   UseBefore,
 } from 'routing-controllers';
 import { Request } from 'express';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { AdminAuthService, JWTResponse } from '../services/admin-auth-service';
 import { celebrate, Joi } from 'celebrate';
 import rateLimit from 'express-rate-limit';
@@ -20,7 +20,7 @@ import {
 @Service()
 @JsonController('/auth')
 export default class AuthController {
-  constructor(@Inject() private readonly authService: AdminAuthService) {}
+  constructor(private readonly authService: AdminAuthService) {}
 
   @Get('/me')
   @UseBefore(

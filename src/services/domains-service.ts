@@ -1,4 +1,4 @@
-import Container, { Inject, Service } from 'typedi';
+import Container, { Service } from 'typedi';
 import { DomainRepository } from '../repositories/domain-repository';
 import { Domain } from '../database/models/domain';
 import { DomainQueryFilter } from '../repositories/filters/domain-query-filter';
@@ -26,9 +26,9 @@ export class DomainsService {
   private dnsService: DNSService;
 
   constructor(
-    @Inject() private readonly domainRepository: DomainRepository,
-    @Inject() private readonly domainFilter: DomainQueryFilter,
-    @Inject() private readonly nginxDomainResource: NginxDomainResource,
+    private readonly domainRepository: DomainRepository,
+    private readonly domainFilter: DomainQueryFilter,
+    private readonly nginxDomainResource: NginxDomainResource,
   ) {
     this.dnsService = Container.get(DNSService);
   }
@@ -84,8 +84,6 @@ export class DomainsService {
     for (const domain of domains) {
       await this.buildServerConfig(domain);
     }
-
-    await ProcessManager.restart();
   }
 
   public async getAll(): Promise<Domain[]> {

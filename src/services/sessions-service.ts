@@ -1,4 +1,4 @@
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { randomBytes, createHash } from 'crypto';
 import { Session } from '../database/models/session';
 import { SessionRepository } from '../repositories/session-repository';
@@ -8,8 +8,8 @@ import { User } from '../database/models/user';
 @Service()
 export class SessionService {
   constructor(
-    @Inject() private readonly sessionRepository: SessionRepository,
-    @Inject() private readonly usersRepository: UserRepository,
+    private readonly sessionRepository: SessionRepository,
+    private readonly usersRepository: UserRepository,
   ) {}
 
   createSid(): string {

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Inject, Service } from 'typedi';
+import { Service } from 'typedi';
 import { UsersService } from './users-service';
 import { clearInitTokenFile, generateInitTokenFile } from '../utils/init-token';
 import { createLogger, ILogger } from '../logger';
@@ -9,7 +9,7 @@ import { resolveVpnHost } from '../utils/vpn-host';
 export class BootstrapService {
   private readonly logger: ILogger;
 
-  constructor(@Inject() private readonly usersService: UsersService) {
+  constructor(private readonly usersService: UsersService) {
     this.logger = createLogger({ serviceName: 'bootstrap' });
   }
 
