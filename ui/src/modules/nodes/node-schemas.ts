@@ -78,7 +78,7 @@ export const createNodeValidator = Joi.object<CreateNodeType>({
   name: Joi.string().required().label('Name'),
   dns: Joi.string().allow('', null).optional().label('DNS'),
   keepalive: Joi.number().optional().label('Keepalive'),
-  mtu: Joi.number().integer().min(1280).max(1440).optional().label('MTU'),
+  mtu: Joi.number().allow(null).integer().min(1280).max(1440).optional().label('MTU'),
   address: Joi.string()
     .ip({ version: 'ipv4', cidr: 'forbidden' })
     .when('id', {

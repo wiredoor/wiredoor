@@ -25,7 +25,11 @@ export default function NodesPage() {
           container='xl'
           title='Remote nodes'
           description='Securely connects private environments using managed remote agents and gateways, enabling encrypted traffic routing and controlled access to isolated services.'
-          actions={<Button onClick={addNode}>Add Node</Button>}
+          actions={
+            <Button testId='add-node' onClick={addNode}>
+              Add Node
+            </Button>
+          }
           content={<NodeFilters filters={filters} onChange={setFilters} />}
         />
       }

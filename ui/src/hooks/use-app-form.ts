@@ -31,6 +31,7 @@ export function useAppForm<TForm extends FieldValues, TData>(cfg: {
     schema: cfg.schema,
     defaultValues: cfg.defaultValues as any,
     onSubmit: async (values: TForm) => {
+      console.log('Submitting form with values:', values);
       try {
         const result = isEdit && cfg.update ? await cfg.update(id!, values) : await cfg.create(values);
         cfg.onSuccess?.({ id, result });

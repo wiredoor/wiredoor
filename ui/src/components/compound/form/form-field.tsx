@@ -50,7 +50,7 @@ export function FormField<T extends FieldValues>({
   const { error } = form.getFieldState(name, form.formState);
 
   const reactId = React.useId();
-  const id = idProp ?? `field-${reactId}`;
+  const id = idProp ?? `field-${name ? name : reactId}`;
 
   const descriptionId = description ? `${id}-description` : undefined;
   const errorId = error || invalidProp ? `${id}-error` : undefined;

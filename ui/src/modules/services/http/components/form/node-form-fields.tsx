@@ -253,7 +253,7 @@ export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProp
                   Cancel
                 </Button>
                 <Button type='submit' shake={shake} loadingText='submitting...' isLoading={form.formState.isSubmitting}>
-                  {isEdit ? 'Save node' : 'Create node'}
+                  {isEdit ? 'Save changes' : 'Create node'}
                 </Button>
               </Inline>
             </Inline>

@@ -45,7 +45,7 @@ export function NodeTokenDialog({
         <Inline className='pt-3 border-t border-border' justify='between'>
           <p className='text-xs text-muted-foreground'>The token will be securely stored on the node after successful connection.</p>
           <Inline justify='end' gap={2}>
-            <Button size='sm' disabled={busy} onClick={close}>
+            <Button size='sm' testId='close-node-token-dialog' disabled={busy} onClick={close}>
               Close
             </Button>
           </Inline>

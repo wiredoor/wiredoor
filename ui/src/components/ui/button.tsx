@@ -168,6 +168,8 @@ type BaseProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
     shake?: boolean;
     pulse?: boolean;
 
+    testId?: string;
+
     // Arrow behavior
     arrowIcon?: React.ReactNode; // default ArrowRight
     showArrow?: boolean; // if cta="arrow" and you want auto arrow
@@ -198,6 +200,7 @@ function Button({
   pulse,
   arrowIcon,
   showArrow,
+  testId,
 
   ...props
 }: BaseProps) {
@@ -236,6 +239,7 @@ function Button({
       aria-busy={isLoading || undefined}
       disabled={!asChild && isTrulyDisabled ? true : undefined}
       onClick={handleClick}
+      data-testid={testId}
       {...props}
     >
       {!isLoading && leadingIcon ? (
