@@ -238,10 +238,14 @@ export class HttpConfigCompiler
     loc.addBlock('# Proxy', '');
     loc.includeCommonProxySettings();
 
-    const host = upstream.node?.address ?? upstream.targetHost;
+    let host = upstream.node?.address;
 
-    if (upstream.node?.isGateway && !IP_CIDR.isValidIP(host)) {
-      loc.setResolver(upstream.node.address);
+    if (upstream.node?.isGateway || !upstream.targetNodeId) {
+      host = upstream.targetHost ?? host;
+
+      if (upstream.node?.isGateway && !IP_CIDR.isValidIP(host)) {
+        loc.setResolver(upstream.node.address);
+      }
     }
 
     const varName = `$target_${this.sanitizeVarName(String(upstream.id))}`;

@@ -202,26 +202,10 @@ export class HttpResourceService {
         //   manager,
         // );
 
-        const resource = await this.httpResourceRepository.save(
+        const resource = await this.createDeclarativeResource(
           {
-            name: params.name,
-            domain: params.domain,
-            enabled: params.enabled ?? true,
-            expiresAt: params.expiresAt,
-            oidcProviderId: params.oidcProviderId,
-          },
-          manager,
-        );
-
-        await this.declarative.apply(
-          resource.id,
-          {
-            externalId: resource.externalId ?? '',
-            name: params.name,
-            domain: params.domain,
-            enabled: params.enabled ?? true,
-            expiresAt: params.expiresAt,
-            oidcProviderId: params.oidcProviderId,
+            externalId: '',
+            ...params,
             httpUpstreams: params.httpUpstreams ?? [],
             accessRules: params.accessRules ?? [],
             edgeRules: params.edgeRules ?? [],

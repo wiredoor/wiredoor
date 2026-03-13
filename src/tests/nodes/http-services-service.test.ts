@@ -81,7 +81,6 @@ describe('HTTP Services Service', () => {
       filter,
       nodeRepository,
       domainService,
-      Container.get(NginxDomainResource),
     );
 
     nodesService = new NodesService(
@@ -230,6 +229,7 @@ describe('HTTP Services Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
@@ -267,6 +267,7 @@ describe('HTTP Services Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
@@ -309,6 +310,7 @@ describe('HTTP Services Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         [
           `conntrack -D -p tcp --dst ${created.node.address} --dport ${created.backendPort}`,
         ],
