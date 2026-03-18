@@ -4,7 +4,7 @@
   "eslint.workingDirectories": [{ "mode": "auto" }],
   "editor.formatOnSave": false,
   "cmake.ignoreCMakeListsMissing": true,
-  "jest.jestCommandLine": "npm test -- --runInBand",
+  "jest.jestCommandLine": "npx jest --runInBand --detectOpenHandles",
   "jest.rootPath": ".",
   "jest.enableCodeLens": true,
   "jest.showInlineError": true,
