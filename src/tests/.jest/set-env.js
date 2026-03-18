@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-undef
 process.env = Object.assign(process.env, {
   DB_DATABASE: ':memory:',
+  LOG_LEVEL: 'silent',
   ADMIN_EMAIL: 'admin@example.com',
   ADMIN_PASSWORD: 'admin',
   PRIVATE_SECRET: 'super_secret',

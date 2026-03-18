@@ -456,7 +456,7 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId,
+      externalId: node.externalId || `node-${cli.nodeId}`,
       name: node.name,
     };
 
@@ -507,7 +507,7 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId,
+      externalId: node.externalId || `node-${cli.nodeId}`,
       name: node.name,
     };
 

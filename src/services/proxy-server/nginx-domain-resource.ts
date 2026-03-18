@@ -4,6 +4,10 @@ import { Domain } from '../../database/models/domain';
 import { NginxFileManager } from './nginx-file-manager';
 import { ApplyResult, NginxManager } from './nginx-manager';
 import { DomainConfigCompiler } from './compilers/domain-config-compiler';
+import { SSLManager } from './ssl-manager';
+import FileManager from '../../utils/file-manager';
+import { SSLTermination } from '../../schemas/domain-schemas';
+import ServerUtils from '../../utils/server';
 
 @Service()
 export class NginxDomainResource {
@@ -37,6 +41,19 @@ export class NginxDomainResource {
   }
 
   async remove(resource: Domain): Promise<void> {
+    if (resource.ssl === 'self-signed') {
+      const certPath = SSLManager.getCertPath(
+        resource.domain,
+        SSLTermination.SelfSigned,
+      );
+
+      await FileManager.removeDir(certPath);
+    } else {
+      await SSLManager.deleteCertbotCertificate(resource.domain);
+    }
+
+    await FileManager.removeDir(ServerUtils.getLogsDir(resource.domain));
+
     await this.nginx.remove(resource);
 
     // handle result

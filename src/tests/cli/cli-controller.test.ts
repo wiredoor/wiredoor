@@ -690,9 +690,14 @@ describe('Wiredoor CLI API', () => {
       const node = await nodesService.createNodeWithTokenKey({
         name: 'TestNode',
       });
+      const httpExtId = faker.string.alphanumeric(10);
+      const domain = `${httpExtId}.${faker.internet.domainName()}`;
+
       const manifest = makeNodeScopedManifest({
         http: [
           makeHttpResourceManifest({
+            externalId: httpExtId,
+            domain,
             upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
           }),
         ],

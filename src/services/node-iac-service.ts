@@ -15,6 +15,7 @@ import {
   StackManifest,
 } from '../schemas/iac-schemas';
 import { StackIaCService } from './stack-iac-service';
+import { ValidationError } from '../utils/errors/validation-error';
 
 // The authenticated node context
 
@@ -101,14 +102,16 @@ export class NodeIacService {
 
     if (error) {
       const details = error.details.map((d) => ({
-        path: d.path.join('.'),
+        field: d.path.join('.'),
         message: d.message,
       }));
 
-      const err: any = new Error('Manifest validation failed');
-      err.status = 422;
-      err.details = details;
-      throw err;
+      throw new ValidationError(
+        {
+          body: details,
+        },
+        'Node manifest validation failed',
+      );
     }
 
     return value!;

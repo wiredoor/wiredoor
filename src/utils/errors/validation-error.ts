@@ -14,8 +14,11 @@ const msg = 'Validation failed';
 export class ValidationError extends Error {
   public httpCode = 422;
 
-  constructor(public readonly errors: ValidationErrors) {
-    super(msg);
-    this.message = msg;
+  constructor(
+    public readonly errors: ValidationErrors,
+    message?: string,
+  ) {
+    super(message || msg);
+    this.message = message || msg;
   }
 }
