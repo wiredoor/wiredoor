@@ -289,6 +289,7 @@ describe('TCP Services Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
@@ -333,6 +334,7 @@ describe('TCP Services Service', () => {
           ),
         ],
         ['nginx -t'],
+        ['nginx -s reload'],
         ['nginx -t'],
         ['nginx -s reload'],
       ]);
