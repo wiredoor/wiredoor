@@ -9,7 +9,9 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeHttpResourceData = (params?: any): HttpResourceType => {
   return {
-    name: params?.name || faker.internet.domainWord(),
+    name:
+      params?.name ||
+      faker.internet.domainWord() + faker.string.alphanumeric(4),
     domain:
       params && 'domain' in params
         ? params.domain

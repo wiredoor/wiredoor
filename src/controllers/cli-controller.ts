@@ -405,7 +405,6 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId,
       name: node.name,
     };
 
@@ -456,7 +455,6 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId || `node-${cli.nodeId}`,
       name: node.name,
     };
 
@@ -507,7 +505,6 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId || `node-${cli.nodeId}`,
       name: node.name,
     };
 
@@ -543,8 +540,6 @@ export default class CLiController extends BaseController {
   ): Promise<Response> {
     const manifest = this.nodeIacService.parseAndValidate(parseBody(req));
 
-    await this.nodeIacService.ensureExternalIds();
-
     req.logger.audit(`Applying node manifest for node ${cli.nodeName}`, {
       nodeName: cli.nodeName,
       patName: cli.tokenName,
@@ -555,7 +550,6 @@ export default class CLiController extends BaseController {
     const node = await this.nodesService.getNode(+cli.nodeId);
     const nodeContext = {
       id: cli.nodeId,
-      externalId: node.externalId,
       name: node.name,
     };
 

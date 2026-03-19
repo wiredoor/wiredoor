@@ -6,7 +6,6 @@ export const makeNodeManifest = (params?: any) => {
   const name = params?.name || faker.internet.domainWord();
   return {
     name,
-    externalId: params?.externalId || name,
     allowInternet: params?.allowInternet || false,
     isGateway: params?.isGateway || false,
     gatewayNetworks: params?.gatewayNetworks || null,
@@ -21,7 +20,6 @@ export const makeProviderManifest = (params?: any) => {
   const name = params?.name || faker.company.name();
   return {
     name,
-    externalId: params?.externalId || faker.string.alphanumeric(8),
     type: params?.type || 'google',
     issuerUrl: params?.issuerUrl || 'https://accounts.google.com',
     clientId:
@@ -93,7 +91,6 @@ export const makeHttpResourceManifest = (params?: any) => {
   const domain = params?.domain || `${name}.${faker.internet.domainName()}`;
   return {
     name,
-    externalId: params?.externalId || name,
     domain,
     enabled: params?.enabled !== undefined ? params.enabled : true,
     providerRef: params?.providerRef || undefined,
@@ -132,27 +129,25 @@ export const makeNodeScopedManifest = (params?: any) => {
 // Convenience: build a complete valid manifest
 
 export const makeFullStackManifest = (params?: any) => {
-  const nodeExtId = params?.nodeExternalId || faker.internet.domainWord();
-  const providerExtId =
-    params?.providerExternalId || faker.string.alphanumeric(8);
-  const httpExtId = params?.httpExternalId || faker.internet.domainWord();
-  const domain =
-    params?.domain || `${httpExtId}.${faker.internet.domainName()}`;
+  const nodeName = params?.nodeName || faker.internet.domainWord();
+  const providerName = params?.providerName || faker.string.alphanumeric(8);
+  const httpName = params?.httpName || faker.internet.domainWord();
+  const domain = params?.domain || `${httpName}.${faker.internet.domainName()}`;
 
   return makeStackManifest({
-    nodes: [makeNodeManifest({ externalId: nodeExtId })],
+    nodes: [makeNodeManifest({ name: nodeName })],
     auth: {
-      providers: [makeProviderManifest({ externalId: providerExtId })],
+      providers: [makeProviderManifest({ name: providerName })],
     },
     http: [
       makeHttpResourceManifest({
-        externalId: httpExtId,
+        name: httpName,
         domain,
-        providerRef: providerExtId,
+        providerRef: providerName,
         upstreams: [
           makeUpstreamManifest({
             pathPattern: '/',
-            targetNodeRef: nodeExtId,
+            targetNodeRef: nodeName,
             targetPort: 3000,
           }),
         ],

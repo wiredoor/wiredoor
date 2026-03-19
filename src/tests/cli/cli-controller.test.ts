@@ -35,7 +35,7 @@ beforeAll(async () => {
   nodesService = Container.get<NodesService>(NodesService);
 
   node = await nodesService.createNodeWithTokenKey({
-    name: 'Test Node',
+    name: faker.string.alphanumeric(10),
     isGateway: false,
   });
 
@@ -121,10 +121,11 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(401);
     });
     it('should update gateway network if node is a gateway', async () => {
+      const nodeName = faker.internet.domainWord();
       const subnet = faker.internet.ipv4() + '/24';
 
       const gatewayNode = await nodesService.createNodeWithTokenKey({
-        name: 'Node',
+        name: nodeName,
         isGateway: true,
         gatewayNetworks: [{ interface: 'eth0', subnet }],
       });
@@ -146,8 +147,9 @@ describe('Wiredoor CLI API', () => {
       );
     });
     it('should reject if node is not a gateway', async () => {
+      const nodeName = faker.internet.domainWord();
       const gatewayNode = await nodesService.createNodeWithTokenKey({
-        name: 'Test Node',
+        name: nodeName,
         isGateway: false,
       });
 
@@ -602,7 +604,7 @@ describe('Wiredoor CLI API', () => {
         makeNodeScopedManifest({
           http: [
             makeHttpResourceManifest({
-              externalId: ext1,
+              name: ext1,
               upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
             }),
           ],
@@ -616,7 +618,7 @@ describe('Wiredoor CLI API', () => {
         makeNodeScopedManifest({
           http: [
             makeHttpResourceManifest({
-              externalId: ext2,
+              name: ext2,
               upstreams: [makeUpstreamManifest({ targetPort: 4000 })],
             }),
           ],
@@ -631,12 +633,13 @@ describe('Wiredoor CLI API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.kind).toBe('NodeConfig');
-      expect(res.body.http.some((h: any) => h.externalId === ext1)).toBe(true);
-      expect(res.body.http.some((h: any) => h.externalId === ext2)).toBe(false);
+      expect(res.body.http.some((h: any) => h.name === ext1)).toBe(true);
+      expect(res.body.http.some((h: any) => h.name === ext2)).toBe(false);
     });
     it('should strip targetNodeRef from exported upstreams', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
 
       const httpExtId = faker.string.alphanumeric(10);
@@ -646,7 +649,7 @@ describe('Wiredoor CLI API', () => {
         makeNodeScopedManifest({
           http: [
             makeHttpResourceManifest({
-              externalId: httpExtId,
+              name: httpExtId,
               upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
             }),
           ],
@@ -660,7 +663,7 @@ describe('Wiredoor CLI API', () => {
 
       expect(res.status).toBe(200);
 
-      const http = res.body.http.find((h: any) => h.externalId === httpExtId);
+      const http = res.body.http.find((h: any) => h.name === httpExtId);
       expect(http).toBeDefined();
 
       // targetNodeRef should be stripped (it's implicit)
@@ -669,8 +672,9 @@ describe('Wiredoor CLI API', () => {
       }
     });
     it('should return YAML by default', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
 
       const res = await request
@@ -687,8 +691,9 @@ describe('Wiredoor CLI API', () => {
 
   describe('POST /api/cli/iac/validate', () => {
     it('should validate a valid node-scoped manifest', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
       const httpExtId = faker.string.alphanumeric(10);
       const domain = `${httpExtId}.${faker.internet.domainName()}`;
@@ -696,7 +701,7 @@ describe('Wiredoor CLI API', () => {
       const manifest = makeNodeScopedManifest({
         http: [
           makeHttpResourceManifest({
-            externalId: httpExtId,
+            name: httpExtId,
             domain,
             upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
           }),
@@ -709,15 +714,14 @@ describe('Wiredoor CLI API', () => {
         node.token,
       );
 
-      console.log(res.body);
-
       expect(res.status).toBe(200);
       expect(res.body.valid).toBe(true);
     });
 
     it('should fail on invalid manifest structure', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
 
       const res = await sendYamlAsNode(
@@ -736,8 +740,9 @@ describe('Wiredoor CLI API', () => {
 
   describe('POST /api/cli/iac/apply', () => {
     it('should create resources scoped to the authenticated node', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
       const httpExtId = faker.string.alphanumeric(10);
       const domain = `${httpExtId}.${faker.internet.domainName()}`;
@@ -745,7 +750,7 @@ describe('Wiredoor CLI API', () => {
       const manifest = makeNodeScopedManifest({
         http: [
           makeHttpResourceManifest({
-            externalId: httpExtId,
+            name: httpExtId,
             domain,
             upstreams: [makeUpstreamManifest({ targetPort: 3000 })],
           }),
@@ -763,7 +768,7 @@ describe('Wiredoor CLI API', () => {
 
       // Verify resource was created in DB
       const resources = await Container.get(HttpResourceRepository).findBy({
-        externalId: httpExtId,
+        name: httpExtId,
       });
       expect(resources).toHaveLength(1);
       expect(resources[0].domain).toBe(domain);
@@ -777,8 +782,9 @@ describe('Wiredoor CLI API', () => {
     });
 
     it('should allow explicit targetHost for local containers', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
         isGateway: true, // Gateway nodes should be able to use targetHost
         gatewayNetworks: [{ interface: 'eth0', subnet: '172.16.0.0/12' }],
       });
@@ -787,7 +793,7 @@ describe('Wiredoor CLI API', () => {
       const manifest = makeNodeScopedManifest({
         http: [
           makeHttpResourceManifest({
-            externalId: httpExtId,
+            name: httpExtId,
             upstreams: [
               makeUpstreamManifest({
                 targetHost: 'my-docker-container',
@@ -807,7 +813,7 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(200);
 
       const resources = await Container.get(HttpResourceRepository).findBy({
-        externalId: httpExtId,
+        name: httpExtId,
       });
 
       expect(resources).toHaveLength(1);
@@ -821,8 +827,9 @@ describe('Wiredoor CLI API', () => {
     });
 
     it('should be idempotent', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
       const manifest = makeNodeScopedManifest({
         http: [
@@ -848,8 +855,9 @@ describe('Wiredoor CLI API', () => {
     });
 
     it('should not include node phase in response', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
       const manifest = makeNodeScopedManifest({
         http: [
@@ -872,15 +880,16 @@ describe('Wiredoor CLI API', () => {
     });
 
     it('should handle multiple upstreams', async () => {
+      const nodeName = faker.string.alphanumeric(10);
       const node = await nodesService.createNodeWithTokenKey({
-        name: 'TestNode',
+        name: nodeName,
       });
       const httpExtId = faker.string.alphanumeric(10);
 
       const manifest = makeNodeScopedManifest({
         http: [
           makeHttpResourceManifest({
-            externalId: httpExtId,
+            name: httpExtId,
             upstreams: [
               makeUpstreamManifest({
                 pathPattern: '/',
@@ -909,7 +918,7 @@ describe('Wiredoor CLI API', () => {
       expect(res.status).toBe(200);
 
       const resources = await Container.get(HttpResourceRepository).findBy({
-        externalId: httpExtId,
+        name: httpExtId,
       });
       const upstreams = await Container.get(HttpUpstreamRepository).find({
         where: { httpResourceId: resources[0].id },

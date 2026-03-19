@@ -8,7 +8,7 @@ import {
   SemanticValidator,
   ValidationResult,
 } from '../../core/reconciler/validation';
-import { checkDuplicateExternalIds } from '../../core/reconciler/validation-helpers';
+import { checkDuplicateNames } from '../../core/reconciler/validation-helpers';
 
 import { NodeRepository } from '../../repositories/node-repository';
 import type { CreateNodeType } from '../../schemas/node-schemas';
@@ -47,19 +47,14 @@ export class NodePhase
         result.error('node', `${prefix}.name`, 'REQUIRED', 'name is required');
       }
 
-      if (!node.externalId || node.externalId.trim().length === 0) {
+      if (!node.name || node.name.trim().length === 0) {
+        result.error('node', `${prefix}.name`, 'REQUIRED', 'name is required');
+      } else if (!/^[a-zA-Z0-9._-]+$/.test(node.name)) {
         result.error(
           'node',
-          `${prefix}.externalId`,
-          'REQUIRED',
-          'externalId is required',
-        );
-      } else if (!/^[a-zA-Z0-9._-]+$/.test(node.externalId)) {
-        result.error(
-          'node',
-          `${prefix}.externalId`,
+          `${prefix}.name`,
           'INVALID_FORMAT',
-          'externalId must match [a-zA-Z0-9._-]+',
+          'name must match [a-zA-Z0-9._-]+',
         );
       }
 
@@ -98,7 +93,7 @@ export class NodePhase
     _manifest: Record<string, unknown>,
     result: ValidationResult,
   ): void {
-    checkDuplicateExternalIds(items, 'node', 'nodes', result);
+    checkDuplicateNames(items, 'node', 'nodes', result);
 
     // Check duplicate names
     const seenNames = new Map<string, number>();
@@ -122,13 +117,12 @@ export class NodePhase
   // ═══════════════════════════════════════════════════════════════
 
   protected async findExisting(
-    externalIds: string[],
+    names: string[],
     manager: EntityManager,
   ): Promise<Node[]> {
-    return this.nodeRepository.findBy(
-      { externalId: In(externalIds) },
-      manager,
-    ) as Promise<Node[]>;
+    return this.nodeRepository.findBy({ name: In(names) }, manager) as Promise<
+      Node[]
+    >;
   }
 
   protected async create(
@@ -136,9 +130,6 @@ export class NodePhase
     _refs: RefContext,
     manager: EntityManager,
   ): Promise<Node> {
-    console.log(
-      `Creating node "${spec.name}" with externalId "${spec.externalId}"`,
-    );
     return this.nodeService.createNode(
       this.toCreateParams(spec),
       manager,
@@ -168,7 +159,6 @@ export class NodePhase
       enabled: spec.enabled ?? true,
       isGateway: spec.isGateway ?? false,
       gatewayNetworks: spec.gatewayNetworks ?? [],
-      externalId: spec.externalId ?? null,
     });
   }
 
@@ -182,7 +172,6 @@ export class NodePhase
       enabled: entity.enabled ?? true,
       isGateway: entity.isGateway ?? false,
       gatewayNetworks: entity.gatewayNetworks ?? [],
-      externalId: entity.externalId ?? null,
     });
   }
 
@@ -199,7 +188,6 @@ export class NodePhase
       enabled: spec.enabled ?? true,
       gatewayNetworks: spec.gatewayNetworks ?? [],
       isGateway: spec.isGateway ?? false,
-      externalId: spec.externalId ?? null,
     };
   }
 }

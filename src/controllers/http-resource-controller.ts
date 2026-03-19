@@ -6,6 +6,7 @@ import {
   Delete,
   Get,
   JsonController,
+  NotFoundError,
   Param,
   Patch,
   Post,
@@ -76,7 +77,13 @@ export default class HttpResourceController extends BaseController {
     }),
   )
   async getHttpResource(@Param('id') id: string): Promise<HttpResource> {
-    return this.httpResourceService.getHttpResource(+id);
+    const resource = await this.httpResourceService.getHttpResource(+id);
+
+    if (!resource) {
+      throw new NotFoundError('Http Resource not found');
+    }
+
+    return resource;
   }
 
   @Patch('/:id')
@@ -98,7 +105,17 @@ export default class HttpResourceController extends BaseController {
       userName: user.name,
       params,
     });
-    return this.httpResourceService.updateHttpResource(+id, params);
+
+    const resource = await this.httpResourceService.updateHttpResource(
+      +id,
+      params,
+    );
+
+    if (!resource) {
+      throw new NotFoundError('Http Resource not found');
+    }
+
+    return resource;
   }
 
   @Delete('/:id')

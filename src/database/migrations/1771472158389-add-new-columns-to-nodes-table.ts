@@ -22,15 +22,9 @@ export class AddNewColumnsToNodesTable1771472158389 implements MigrationInterfac
       `"cliVersion" varchar(40)`,
       'cliVersion',
     );
-    await addColumnIfMissing(
-      queryRunner,
-      'nodes',
-      `"externalId" varchar(255)`,
-      'externalId',
-    );
     await queryRunner.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS "UQ_nodes_external_id"
-      ON "nodes" ("externalId");
+      CREATE UNIQUE INDEX IF NOT EXISTS "UQ_nodes_name"
+      ON "nodes" ("name");
     `);
   }
 
@@ -43,6 +37,5 @@ export class AddNewColumnsToNodesTable1771472158389 implements MigrationInterfac
       `ALTER TABLE "nodes" DROP COLUMN "disconnectedAt";`,
     );
     await queryRunner.query(`ALTER TABLE "nodes" DROP COLUMN "mtu";`);
-    await queryRunner.query(`ALTER TABLE "nodes" DROP COLUMN "externalId";`);
   }
 }

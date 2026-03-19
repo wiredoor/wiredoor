@@ -4,7 +4,9 @@ import { CreateNodeType } from '../../../schemas/node-schemas';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const makeNodeData = (params?: any): CreateNodeType => {
   return {
-    name: params?.name || faker.internet.domainWord(),
+    name:
+      params?.name ||
+      faker.internet.domainWord() + faker.string.alphanumeric(4),
     address: params?.address || faker.internet.ipv4(),
     interface: params?.interface || 'wg0',
     allowInternet: params?.allowInternet || false,

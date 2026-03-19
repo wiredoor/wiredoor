@@ -15,15 +15,14 @@ export class CreateOidcProvidersTable1771745193963 implements MigrationInterface
         "extra_params" TEXT NOT NULL DEFAULT '{}',
         "enabled" INTEGER NOT NULL DEFAULT 1,
         "rev" INTEGER NOT NULL DEFAULT 1,
-        "externalId" TEXT,
         "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
         "updated_at" DATETIME NOT NULL DEFAULT (datetime('now'))
       );
     `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS "UQ_oidc_providers_external_id"
-      ON "oidc_providers" ("externalId");
+      CREATE UNIQUE INDEX IF NOT EXISTS "UQ_oidc_providers_name"
+      ON "oidc_providers" ("name");
     `);
 
     await queryRunner.query(`
@@ -49,7 +48,7 @@ export class CreateOidcProvidersTable1771745193963 implements MigrationInterface
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      DROP INDEX IF EXISTS "IDX_oidc_providers_external_id";
+      DROP INDEX IF EXISTS "UQ_oidc_providers_name";
     `);
     await queryRunner.query(`
       DROP INDEX IF EXISTS "IDX_oidc_providers_client_id";

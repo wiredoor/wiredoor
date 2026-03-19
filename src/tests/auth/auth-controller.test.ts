@@ -41,8 +41,6 @@ describe('API Auth Endpoint', () => {
 
       expect(res.status).toBe(200);
 
-      console.log(res.body);
-
       expect(res.body.user.id).toBeDefined();
       expect(res.body.user.name).toBeDefined();
       expect(res.body.user.email).toBeDefined();

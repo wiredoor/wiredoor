@@ -70,18 +70,18 @@ afterAll(async () => {});
 
 describe('Stack Reconciler - Export', () => {
   it('should include resources created via apply', async () => {
-    const nodeExtId = faker.string.alphanumeric(10);
-    const httpExtId = faker.string.alphanumeric(10);
+    const nodeName = faker.string.alphanumeric(10);
+    const httpName = faker.string.alphanumeric(10);
 
     await reconciler.reconcile(
       makeStackManifest({
-        nodes: [makeNodeManifest({ externalId: nodeExtId })],
+        nodes: [makeNodeManifest({ name: nodeName })],
         http: [
           makeHttpResourceManifest({
-            externalId: httpExtId,
+            name: httpName,
             upstreams: [
               makeUpstreamManifest({
-                targetNodeRef: nodeExtId,
+                targetNodeRef: nodeName,
                 targetPort: 3000,
               }),
             ],
@@ -93,21 +93,21 @@ describe('Stack Reconciler - Export', () => {
 
     const result = await service.export();
 
-    const node = result.nodes?.find((n: any) => n.externalId === nodeExtId);
+    const node = result.nodes?.find((n: any) => n.name === nodeName);
     expect(node).toBeDefined();
 
-    const http = result.http?.find((h: any) => h.externalId === httpExtId);
+    const http = result.http?.find((h: any) => h.name === httpName);
     expect(http).toBeDefined();
-    expect(http?.upstreams[0].targetNodeRef).toBe(nodeExtId);
+    expect(http?.upstreams[0].targetNodeRef).toBe(nodeName);
   });
 
   it('should not expose provider secrets', async () => {
-    const providerExtId = faker.string.alphanumeric(10);
+    const providerName = faker.string.alphanumeric(10);
 
     await reconciler.reconcile(
       makeStackManifest({
         auth: {
-          providers: [makeProviderManifest({ externalId: providerExtId })],
+          providers: [makeProviderManifest({ name: providerName })],
         },
       }),
       'apply',
@@ -116,7 +116,7 @@ describe('Stack Reconciler - Export', () => {
     const result = await service.export();
 
     const provider = result.auth?.providers?.find(
-      (p: any) => p.externalId === providerExtId,
+      (p: any) => p.name === providerName,
     );
     expect(provider?.clientId).toBe('**REDACTED**');
     expect(provider?.clientSecret).toBe('**REDACTED**');
@@ -137,25 +137,23 @@ describe('Stack Reconciler - Validate', () => {
     expect(result.errors).toHaveLength(0);
   });
 
-  it('should fail on duplicate node externalIds', async () => {
+  it('should fail on duplicate node names', async () => {
     const manifest = makeStackManifest({
       nodes: [
-        makeNodeManifest({ externalId: 'same-id' }),
-        makeNodeManifest({ externalId: 'same-id' }),
+        makeNodeManifest({ name: 'same-id' }),
+        makeNodeManifest({ name: 'same-id' }),
       ],
     });
 
     const result = await reconciler.validate(manifest);
 
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.code === 'DUPLICATE_EXTERNAL_ID')).toBe(
-      true,
-    );
+    expect(result.errors.some((e) => e.code === 'DUPLICATE_NAME')).toBe(true);
   });
 
   it('should fail on unresolved providerRef', async () => {
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: 'n1' })],
+      nodes: [makeNodeManifest({ name: 'n1' })],
       http: [
         makeHttpResourceManifest({
           providerRef: 'nonexistent-provider',
@@ -174,7 +172,7 @@ describe('Stack Reconciler - Validate', () => {
 
   it('should fail on unresolved targetNodeRef', async () => {
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: 'n1' })],
+      nodes: [makeNodeManifest({ name: 'n1' })],
       http: [
         makeHttpResourceManifest({
           upstreams: [
@@ -199,7 +197,7 @@ describe('Stack Reconciler - Validate', () => {
 
   it('should fail when require_auth rule exists without providerRef', async () => {
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: 'n1' })],
+      nodes: [makeNodeManifest({ name: 'n1' })],
       http: [
         makeHttpResourceManifest({
           // no providerRef
@@ -225,17 +223,17 @@ describe('Stack Reconciler - Validate', () => {
     const domain = faker.internet.domainName();
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: 'n1' })],
+      nodes: [makeNodeManifest({ name: 'n1' })],
       http: [
         makeHttpResourceManifest({
-          externalId: 'app1',
+          name: 'app1',
           domain,
           upstreams: [
             makeUpstreamManifest({ targetNodeRef: 'n1', targetPort: 3000 }),
           ],
         }),
         makeHttpResourceManifest({
-          externalId: 'app2',
+          name: 'app2',
           domain,
           upstreams: [
             makeUpstreamManifest({ targetNodeRef: 'n1', targetPort: 8080 }),
@@ -273,12 +271,12 @@ describe('Stack Reconciler - Plan', () => {
   });
 
   it('should not write anything to the database', async () => {
-    const nodeExtId = faker.string.alphanumeric(10);
-    const manifest = makeFullStackManifest({ nodeExternalId: nodeExtId });
+    const nodeName = faker.string.alphanumeric(10);
+    const manifest = makeFullStackManifest({ nodeName: nodeName });
 
     await reconciler.reconcile(manifest, 'plan');
 
-    const nodes = await nodeRepository.findBy({ externalId: nodeExtId });
+    const nodes = await nodeRepository.findBy({ name: nodeName });
     expect(nodes).toHaveLength(0);
   });
 });
@@ -295,9 +293,9 @@ describe('Stack Reconciler - Apply (Create)', () => {
     const domain = `${httpExtId}.${faker.internet.domainName()}`;
 
     const manifest = makeFullStackManifest({
-      nodeExternalId: nodeExtId,
-      providerExternalId: providerExtId,
-      httpExternalId: httpExtId,
+      nodeName: nodeExtId,
+      providerName: providerExtId,
+      httpName: httpExtId,
       domain,
     });
 
@@ -308,20 +306,20 @@ describe('Stack Reconciler - Apply (Create)', () => {
 
     // Verify node in DB
     const nodes = await nodeRepository.findBy({
-      externalId: nodeExtId,
+      name: nodeExtId,
     });
     expect(nodes).toHaveLength(1);
     expect(nodes[0].name).toBe(manifest.nodes[0].name);
 
     // Verify provider in DB
     const providers = await providerRepository.findBy({
-      externalId: providerExtId,
+      name: providerExtId,
     });
     expect(providers).toHaveLength(1);
 
     // Verify HTTP resource in DB
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     expect(resources).toHaveLength(1);
     expect(resources[0].domain).toBe(domain);
@@ -346,10 +344,10 @@ describe('Stack Reconciler - Apply (Create)', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           upstreams: [
             makeUpstreamManifest({
               pathPattern: '/',
@@ -377,7 +375,7 @@ describe('Stack Reconciler - Apply (Create)', () => {
     expect(result.errors).toHaveLength(0);
 
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     const upstreams = await httpUpstreamRepository.find({
       where: { httpResourceId: resources[0].id },
@@ -395,10 +393,10 @@ describe('Stack Reconciler - Apply (Create)', () => {
     const cidr = faker.internet.ipv4() + '/24';
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           upstreams: [
             makeUpstreamManifest({
               targetNodeRef: nodeExtId,
@@ -435,7 +433,7 @@ describe('Stack Reconciler - Apply (Create)', () => {
     expect(result.errors).toHaveLength(0);
 
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     const edgeRules = await httpEdgeRuleRepository.find({
       where: { httpResourceId: resources[0].id },
@@ -479,10 +477,10 @@ describe('Stack Reconciler - Apply (Update)', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           upstreams: [
             makeUpstreamManifest({
               pathPattern: '/',
@@ -508,7 +506,7 @@ describe('Stack Reconciler - Apply (Update)', () => {
 
     // Verify in DB
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     const upstreams = await httpUpstreamRepository.find({
       where: { httpResourceId: resources[0].id },
@@ -521,10 +519,10 @@ describe('Stack Reconciler - Apply (Update)', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           upstreams: [
             makeUpstreamManifest({
               pathPattern: '/',
@@ -549,14 +547,12 @@ describe('Stack Reconciler - Apply (Update)', () => {
 
     const result = await reconciler.reconcile(manifest, 'apply');
 
-    console.log(JSON.stringify(result, null, 2));
-
     const httpPhase = result.phases.find((p) => p.phaseId === 'http');
     expect(httpPhase!.entities[0].children?.upstreams.created).toBe(1);
     expect(httpPhase!.entities[0].children?.upstreams.unchanged).toBe(1);
 
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     const upstreams = await httpUpstreamRepository.find({
       where: { httpResourceId: resources[0].id },
@@ -569,10 +565,10 @@ describe('Stack Reconciler - Apply (Update)', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           upstreams: [
             makeUpstreamManifest({
               pathPattern: '/',
@@ -601,7 +597,7 @@ describe('Stack Reconciler - Apply (Update)', () => {
     expect(httpPhase!.entities[0].children?.upstreams.unchanged).toBe(1);
 
     const resources = await httpResourceRepository.findBy({
-      externalId: httpExtId,
+      name: httpExtId,
     });
     const upstreams = await httpUpstreamRepository.find({
       where: { httpResourceId: resources[0].id },
@@ -616,13 +612,13 @@ describe('Stack Reconciler - Apply (Update)', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       auth: {
-        providers: [makeProviderManifest({ externalId: providerExtId })],
+        providers: [makeProviderManifest({ name: providerExtId })],
       },
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           providerRef: providerExtId,
           upstreams: [
             makeUpstreamManifest({
@@ -681,10 +677,10 @@ describe('Stack Reconciler - Transaction Atomicity', () => {
     const httpExtId = faker.string.alphanumeric(10);
 
     const manifest = makeStackManifest({
-      nodes: [makeNodeManifest({ externalId: nodeExtId })],
+      nodes: [makeNodeManifest({ name: nodeExtId })],
       http: [
         makeHttpResourceManifest({
-          externalId: httpExtId,
+          name: httpExtId,
           providerRef: 'nonexistent-in-db', // will fail at ref resolution
           upstreams: [
             makeUpstreamManifest({
@@ -704,7 +700,7 @@ describe('Stack Reconciler - Transaction Atomicity', () => {
     ).toBe(true);
 
     // Node should NOT be persisted
-    const nodes = await nodeRepository.findBy({ externalId: nodeExtId });
+    const nodes = await nodeRepository.findBy({ name: nodeExtId });
     expect(nodes).toHaveLength(0);
   });
 });

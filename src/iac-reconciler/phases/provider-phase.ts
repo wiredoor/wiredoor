@@ -9,16 +9,13 @@ import {
   RuntimeValidator,
   ValidationResult,
 } from '../../core/reconciler/validation';
-import { checkDuplicateExternalIds } from '../../core/reconciler/validation-helpers';
+import { checkDuplicateNames } from '../../core/reconciler/validation-helpers';
 
 import { OidcProviderRepository } from '../../repositories/oidc-provider-repository';
 import { OidcProviderManifest } from '../../schemas/iac-schemas';
 import OidcProviderService from '../../services/oidc-provider-service';
 
-type ProviderEntity = { id: number; externalId?: string | null } & Record<
-  string,
-  any
->;
+type ProviderEntity = { id: number; name: string } & Record<string, any>;
 
 const VALID_TYPES = ['google', 'keycloak', 'azuread', 'generic'] as const;
 
@@ -60,13 +57,8 @@ export class ProviderPhase
         result.error('provider', `${p}.name`, 'REQUIRED', 'name is required');
       }
 
-      if (!provider.externalId?.trim()) {
-        result.error(
-          'provider',
-          `${p}.externalId`,
-          'REQUIRED',
-          'externalId is required',
-        );
+      if (!provider.name?.trim()) {
+        result.error('provider', `${p}.name`, 'REQUIRED', 'name is required');
       }
 
       if (!VALID_TYPES.includes(provider.type as any)) {
@@ -130,7 +122,7 @@ export class ProviderPhase
     _manifest: Record<string, unknown>,
     result: ValidationResult,
   ): void {
-    checkDuplicateExternalIds(items, 'provider', 'auth.providers', result);
+    checkDuplicateNames(items, 'provider', 'auth.providers', result);
 
     // Warn on duplicate issuerUrl + clientId (likely a copy-paste error)
     const seen = new Map<string, number>();
@@ -190,13 +182,10 @@ export class ProviderPhase
   // ═══════════════════════════════════════════════════════════════
 
   protected async findExisting(
-    externalIds: string[],
+    names: string[],
     manager: EntityManager,
   ): Promise<ProviderEntity[]> {
-    return this.providerRepository.findBy(
-      { externalId: In(externalIds) },
-      manager,
-    );
+    return this.providerRepository.findBy({ name: In(names) }, manager);
   }
 
   protected async create(
@@ -262,7 +251,6 @@ export class ProviderPhase
       claimMappings: spec.claimMappings,
       extraParams: spec.extraParams,
       enabled: spec.enabled,
-      externalId: spec.externalId,
     };
   }
 }

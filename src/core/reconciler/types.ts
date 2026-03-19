@@ -3,7 +3,7 @@ import { EntityManager } from 'typeorm';
 // ─── Shared ref context ─────────────────────────────────────────
 //
 // Each phase reads refs it depends on and writes refs it provides.
-// This is a simple string→number map keyed by "phaseId:externalId".
+// This is a simple string→number map keyed by "phaseId:name".
 //
 // Example:
 //   refs.set('node', 'node1', 42)   → node phase resolved "node1" to DB id 42
@@ -12,21 +12,21 @@ import { EntityManager } from 'typeorm';
 export class RefContext {
   private store = new Map<string, number>();
 
-  set(phase: string, externalId: string, id: number): void {
-    this.store.set(`${phase}:${externalId}`, id);
+  set(phase: string, name: string, id: number): void {
+    this.store.set(`${phase}:${name}`, id);
   }
 
-  get(phase: string, externalId: string): number | undefined {
-    return this.store.get(`${phase}:${externalId}`);
+  get(phase: string, name: string): number | undefined {
+    return this.store.get(`${phase}:${name}`);
   }
 
-  require(phase: string, externalId: string, label?: string): number {
-    const id = this.get(phase, externalId);
+  require(phase: string, name: string, label?: string): number {
+    const id = this.get(phase, name);
 
     if (id == null) {
       throw new Error(
-        `Unresolved ref: ${label ?? externalId} ` +
-          `(phase="${phase}", externalId="${externalId}") not found. ` +
+        `Unresolved ref: ${label ?? name} ` +
+          `(phase="${phase}", name="${name}") not found. ` +
           `Ensure it is declared in the manifest or already exists.`,
       );
     }
@@ -61,7 +61,7 @@ export type ReconcileCounters = {
 };
 
 export type PhaseEntityResult = {
-  externalId: string;
+  name: string;
   action: EntityAction;
   /** Phases can attach arbitrary sub-counters (upstreams, rules, etc.) */
   children?: Record<string, ReconcileCounters>;
@@ -74,7 +74,7 @@ export type PhaseResult = {
 };
 
 export type PhaseError = {
-  externalId: string;
+  name: string;
   message: string;
 };
 

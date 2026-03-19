@@ -13,7 +13,6 @@ import {
 
 export type NodeManifest = {
   name: string;
-  externalId: string;
   dns?: string;
   keepalive?: number;
   address?: string;
@@ -30,7 +29,6 @@ export type NodeManifest = {
 
 export type OidcProviderManifest = {
   name: string;
-  externalId: string;
   type: 'google' | 'keycloak' | 'azuread' | 'generic';
   issuerUrl: string;
   clientId: string;
@@ -85,7 +83,6 @@ export type HttpEdgeRuleManifest = {
 
 export type HttpResourceManifest = {
   name: string;
-  externalId: string;
   domain: string;
   enabled: boolean;
   providerRef?: string;
@@ -121,8 +118,7 @@ const externalIdValidator = Joi.string()
   .required();
 
 export const nodeManifestValidator = Joi.object<NodeManifest>({
-  name: Joi.string().trim().min(1).max(128).required(),
-  externalId: externalIdValidator,
+  name: externalIdValidator,
   dns: Joi.string().optional(),
   keepalive: Joi.number().integer().min(0).optional(),
   address: Joi.string().optional(),
@@ -142,8 +138,7 @@ export const nodeManifestValidator = Joi.object<NodeManifest>({
 });
 
 export const oidcProviderManifestValidator = Joi.object<OidcProviderManifest>({
-  name: Joi.string().trim().min(1).max(128).required(),
-  externalId: externalIdValidator,
+  name: externalIdValidator,
   type: Joi.string()
     .valid('google', 'keycloak', 'azuread', 'generic')
     .required(),
@@ -157,8 +152,7 @@ export const oidcProviderManifestValidator = Joi.object<OidcProviderManifest>({
 });
 
 export const httpResourceManifestValidator = Joi.object<HttpResourceManifest>({
-  name: Joi.string().trim().min(1).max(128).required(),
-  externalId: externalIdValidator,
+  name: externalIdValidator,
   domain: Joi.string().hostname().required(),
   enabled: Joi.boolean().required(),
   providerRef: externalIdValidator.optional(),

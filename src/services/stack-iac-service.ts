@@ -39,7 +39,7 @@ export type IaCPlanAction = 'create' | 'update' | 'delete' | 'unchanged';
 
 export type IaCPlanChange = {
   kind: 'node' | 'provider' | 'httpResource';
-  externalId: string;
+  name: string;
   action: IaCPlanAction;
   details?: Record<string, any>;
 };
@@ -62,22 +62,22 @@ function newResult(): IaCApplyResult {
   };
 }
 
-function ensureUniqueExternalIds(
-  items: Array<{ externalId: string }>,
+function ensureUniqueNames(
+  items: Array<{ name: string }>,
   path: string,
   errors: Array<{ path: string[]; message: string; type: 'Error' }>,
 ): void {
   const seen = new Set<string>();
 
   for (const item of items) {
-    if (seen.has(item.externalId)) {
+    if (seen.has(item.name)) {
       errors.push({
-        path: [...path, item.externalId],
-        message: `duplicated externalId "${item.externalId}"`,
+        path: [...path, item.name],
+        message: `duplicated name "${item.name}"`,
         type: 'Error',
       });
     }
-    seen.add(item.externalId);
+    seen.add(item.name);
   }
 }
 
@@ -92,9 +92,6 @@ export class StackIaCService {
   ) {}
 
   async export(manager?: EntityManager): Promise<StackManifest> {
-    // Ensure all entities have externalIds
-    await this.ensureExternalIds(manager);
-
     // Load everything
     const nodes = await this.nodeRepository.find(undefined, manager);
     const providers = await this.oidcProviderRepository.find(
@@ -109,12 +106,12 @@ export class StackIaCService {
     // Build lookup maps for reverse-resolving IDs to refs
     const nodeExtIdById = new Map<number, string>();
     for (const node of nodes) {
-      nodeExtIdById.set(node.id, node.externalId!);
+      nodeExtIdById.set(node.id, node.name!);
     }
 
     const providerExtIdById = new Map<number, string>();
     for (const provider of providers) {
-      providerExtIdById.set(provider.id, provider.externalId!);
+      providerExtIdById.set(provider.id, provider.name!);
     }
 
     // Build manifest
@@ -125,7 +122,6 @@ export class StackIaCService {
       nodes: nodes.map(
         (node): NodeManifest => ({
           name: node.name,
-          externalId: node.externalId!,
         }),
       ),
 
@@ -133,7 +129,6 @@ export class StackIaCService {
         providers: providers.map(
           (provider): OidcProviderManifest => ({
             name: provider.name,
-            externalId: provider.externalId!,
             type: provider.type,
             // Secrets are redacted user must fill them in
             issuerUrl: provider.issuerUrl ?? '',
@@ -206,24 +201,18 @@ export class StackIaCService {
     const existingProviders = await this.oidcProviderRepository.find();
     const existingHttpResources = await this.httpResourceRepository.find();
 
-    const desiredNodeIds = new Set(desiredNodes.map((n) => n.externalId));
-    const desiredProviderIds = new Set(
-      desiredProviders.map((p) => p.externalId),
-    );
-    const desiredHttpIds = new Set(
-      desiredHttpResources.map((h) => h.externalId),
-    );
+    const desiredNodeIds = new Set(desiredNodes.map((n) => n.name));
+    const desiredProviderIds = new Set(desiredProviders.map((p) => p.name));
+    const desiredHttpIds = new Set(desiredHttpResources.map((h) => h.name));
 
     for (const spec of desiredNodes) {
-      const current = existingNodes.find(
-        (n) => n.externalId === spec.externalId,
-      );
+      const current = existingNodes.find((n) => n.name === spec.name);
 
       if (!current) {
         summary.nodes.created++;
         changes.push({
           kind: 'node',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'create',
         });
         continue;
@@ -236,40 +225,38 @@ export class StackIaCService {
         summary.nodes.unchanged++;
         changes.push({
           kind: 'node',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'unchanged',
         });
       } else {
         summary.nodes.updated++;
         changes.push({
           kind: 'node',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'update',
         });
       }
     }
 
     for (const row of existingNodes) {
-      if (row.externalId && !desiredNodeIds.has(row.externalId)) {
+      if (row.name && !desiredNodeIds.has(row.name)) {
         summary.nodes.deleted++;
         changes.push({
           kind: 'node',
-          externalId: row.externalId,
+          name: row.name,
           action: 'delete',
         });
       }
     }
 
     for (const spec of desiredProviders) {
-      const current = existingProviders.find(
-        (p) => p.externalId === spec.externalId,
-      );
+      const current = existingProviders.find((p) => p.name === spec.name);
 
       if (!current) {
         summary.providers.created++;
         changes.push({
           kind: 'provider',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'create',
         });
         continue;
@@ -282,46 +269,44 @@ export class StackIaCService {
         summary.providers.unchanged++;
         changes.push({
           kind: 'provider',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'unchanged',
         });
       } else {
         summary.providers.updated++;
         changes.push({
           kind: 'provider',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'update',
         });
       }
     }
 
     for (const row of existingProviders) {
-      if (row.externalId && !desiredProviderIds.has(row.externalId)) {
+      if (row.name && !desiredProviderIds.has(row.name)) {
         summary.providers.deleted++;
         changes.push({
           kind: 'provider',
-          externalId: row.externalId,
+          name: row.name,
           action: 'delete',
         });
       }
     }
 
     const nodeRows = await this.nodeRepository.find();
-    const nodeMap = new Map(nodeRows.map((n) => [n.externalId, n]));
+    const nodeMap = new Map(nodeRows.map((n) => [n.name, n]));
 
     const providerRows = await this.oidcProviderRepository.find();
-    const providerMap = new Map(providerRows.map((p) => [p.externalId, p]));
+    const providerMap = new Map(providerRows.map((p) => [p.name, p]));
 
     for (const spec of desiredHttpResources) {
-      const current = existingHttpResources.find(
-        (h) => h.externalId === spec.externalId,
-      );
+      const current = existingHttpResources.find((h) => h.name === spec.name);
 
       if (!current) {
         summary.httpResources.created++;
         changes.push({
           kind: 'httpResource',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'create',
         });
         continue;
@@ -330,7 +315,7 @@ export class StackIaCService {
       const nestedPlan = await this.httpResourceService.planDeclarativeResource(
         current.id,
         {
-          externalId: spec.externalId,
+          name: spec.name,
           ...this.buildResolvedHttpPayload(spec, providerMap, nodeMap),
         },
       );
@@ -339,7 +324,7 @@ export class StackIaCService {
         summary.httpResources.updated++;
         changes.push({
           kind: 'httpResource',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'update',
           details: nestedPlan,
         });
@@ -347,18 +332,18 @@ export class StackIaCService {
         summary.httpResources.unchanged++;
         changes.push({
           kind: 'httpResource',
-          externalId: spec.externalId,
+          name: spec.name,
           action: 'unchanged',
         });
       }
     }
 
     for (const row of existingHttpResources) {
-      if (row.externalId && !desiredHttpIds.has(row.externalId)) {
+      if (row.name && !desiredHttpIds.has(row.name)) {
         summary.httpResources.deleted++;
         changes.push({
           kind: 'httpResource',
-          externalId: row.externalId,
+          name: row.name,
           action: 'delete',
         });
       }
@@ -378,7 +363,7 @@ export class StackIaCService {
     await this.httpResourceRepository.transaction(async (manager) => {
       for (const spec of value.http ?? []) {
         const existing = await this.httpResourceRepository.findOne(
-          { where: { externalId: spec.externalId } },
+          { where: { name: spec.name } },
           manager,
         );
 
@@ -393,7 +378,7 @@ export class StackIaCService {
 
       for (const spec of value.auth?.providers ?? []) {
         const existing = await this.oidcProviderRepository.findOne(
-          { where: { externalId: spec.externalId } },
+          { where: { name: spec.name } },
           manager,
         );
 
@@ -408,7 +393,7 @@ export class StackIaCService {
 
       for (const spec of value.nodes ?? []) {
         const existing = await this.nodeRepository.findOne(
-          { where: { externalId: spec.externalId } },
+          { where: { name: spec.name } },
           manager,
         );
 
@@ -432,12 +417,12 @@ export class StackIaCService {
     const providers = manifest.auth?.providers ?? [];
     const httpResources = manifest.http ?? [];
 
-    ensureUniqueExternalIds(nodes, 'nodes', errors);
-    ensureUniqueExternalIds(providers, 'auth.providers', errors);
-    ensureUniqueExternalIds(httpResources, 'http', errors);
+    ensureUniqueNames(nodes, 'nodes', errors);
+    ensureUniqueNames(providers, 'auth.providers', errors);
+    ensureUniqueNames(httpResources, 'http', errors);
 
-    const nodeIds = new Set(nodes.map((n) => n.externalId));
-    const providerIds = new Set(providers.map((p) => p.externalId));
+    const nodeIds = new Set(nodes.map((n) => n.name));
+    const providerIds = new Set(providers.map((p) => p.name));
 
     for (const http of httpResources) {
       const upstreams = http.upstreams ?? [];
@@ -450,16 +435,16 @@ export class StackIaCService {
 
       if (!hasDefaultUpstream) {
         errors.push({
-          path: ['http', http.externalId, 'upstreams'],
-          message: `http[${http.externalId}] must have a default upstream with type=prefix and pathPattern=/`,
+          path: ['http', http.name, 'upstreams'],
+          message: `http[${http.name}] must have a default upstream with type=prefix and pathPattern=/`,
           type: 'Error',
         });
       }
 
       if (http.providerRef && !providerIds.has(http.providerRef)) {
         errors.push({
-          path: ['http', http.externalId, 'providerRef'],
-          message: `http[${http.externalId}].providerRef references unknown provider "${http.providerRef}"`,
+          path: ['http', http.name, 'providerRef'],
+          message: `http[${http.name}].providerRef references unknown provider "${http.providerRef}"`,
           type: 'Error',
         });
       }
@@ -467,13 +452,8 @@ export class StackIaCService {
       for (const upstream of upstreams) {
         if (upstream.targetNodeRef && !nodeIds.has(upstream.targetNodeRef)) {
           errors.push({
-            path: [
-              'http',
-              http.externalId,
-              'upstreams',
-              upstream.targetNodeRef,
-            ],
-            message: `http[${http.externalId}].upstreams targetNodeRef "${upstream.targetNodeRef}" does not exist`,
+            path: ['http', http.name, 'upstreams', upstream.targetNodeRef],
+            message: `http[${http.name}].upstreams targetNodeRef "${upstream.targetNodeRef}" does not exist`,
             type: 'Error',
           });
         }
@@ -483,26 +463,16 @@ export class StackIaCService {
 
         if (!hasNodeRef && !hasTargetHost) {
           errors.push({
-            path: [
-              'http',
-              http.externalId,
-              'upstreams',
-              upstream.targetNodeRef,
-            ],
-            message: `http[${http.externalId}].upstreams entry requires targetNodeRef or targetHost`,
+            path: ['http', http.name, 'upstreams', upstream.targetNodeRef],
+            message: `http[${http.name}].upstreams entry requires targetNodeRef or targetHost`,
             type: 'Error',
           });
         }
 
         if (hasNodeRef && hasTargetHost) {
           errors.push({
-            path: [
-              'http',
-              http.externalId,
-              'upstreams',
-              upstream.targetNodeRef,
-            ],
-            message: `http[${http.externalId}].upstreams entry must not define both targetNodeRef and targetHost`,
+            path: ['http', http.name, 'upstreams', upstream.targetNodeRef],
+            message: `http[${http.name}].upstreams entry must not define both targetNodeRef and targetHost`,
             type: 'Error',
           });
         }
@@ -515,7 +485,7 @@ export class StackIaCService {
       if (requiresAuthProvider && !http.providerRef) {
         errors.push({
           path: ['skipAuthRoutes'],
-          message: `http[${http.externalId}] has access.require_auth rules but no providerRef`,
+          message: `http[${http.name}] has access.require_auth rules but no providerRef`,
           type: 'Error',
         });
       }
@@ -530,13 +500,8 @@ export class StackIaCService {
         if (ruleAny.upstreamRef) {
           if (!upstreamKeys.has(ruleAny.upstreamRef)) {
             errors.push({
-              path: [
-                'http',
-                http.externalId,
-                'accessRules',
-                ruleAny.upstreamRef,
-              ],
-              message: `http[${http.externalId}] accessRules upstreamRef "${ruleAny.upstreamRef}" does not match any upstream natural key`,
+              path: ['http', http.name, 'accessRules', ruleAny.upstreamRef],
+              message: `http[${http.name}] accessRules upstreamRef "${ruleAny.upstreamRef}" does not match any upstream natural key`,
               type: 'Error',
             });
           }
@@ -548,8 +513,8 @@ export class StackIaCService {
         if (ruleAny.upstreamRef) {
           if (!upstreamKeys.has(ruleAny.upstreamRef)) {
             errors.push({
-              path: ['http', http.externalId, 'edgeRules', ruleAny.upstreamRef],
-              message: `http[${http.externalId}] edgeRules upstreamRef "${ruleAny.upstreamRef}" does not match any upstream natural key`,
+              path: ['http', http.name, 'edgeRules', ruleAny.upstreamRef],
+              message: `http[${http.name}] edgeRules upstreamRef "${ruleAny.upstreamRef}" does not match any upstream natural key`,
               type: 'Error',
             });
           }
@@ -567,19 +532,18 @@ export class StackIaCService {
     result: IaCApplyResult,
     manager?: EntityManager,
   ): Promise<void> {
-    const desiredIds = new Set(specs.map((n) => n.externalId));
+    const desiredIds = new Set(specs.map((n) => n.name));
     const existingRows = await this.nodeRepository.find({}, manager);
 
     for (const spec of specs) {
       const existing = await this.nodeRepository.findOne(
-        { where: { externalId: spec.externalId } },
+        { where: { name: spec.name } },
         manager,
       );
 
       if (!existing) {
         await this.nodeRepository.save(
           {
-            externalId: spec.externalId,
             name: spec.name,
             dns: spec.dns,
             keepalive: spec.keepalive,
@@ -625,7 +589,7 @@ export class StackIaCService {
     }
 
     for (const row of existingRows) {
-      if (row.externalId && !desiredIds.has(row.externalId)) {
+      if (row.name && !desiredIds.has(row.name)) {
         await this.nodeRepository.delete(row.id, manager);
         result.nodes.deleted++;
       }
@@ -638,19 +602,18 @@ export class StackIaCService {
     manager?: EntityManager,
   ): Promise<Map<string, OidcProvider>> {
     const map = new Map<string, OidcProvider>();
-    const desiredIds = new Set(specs.map((p) => p.externalId));
+    const desiredIds = new Set(specs.map((p) => p.name));
     const existingRows = await this.oidcProviderRepository.find({}, manager);
 
     for (const spec of specs) {
       const existing = await this.oidcProviderRepository.findOne(
         {
-          where: { externalId: spec.externalId },
+          where: { name: spec.name },
         },
         manager,
       );
 
       const payload = {
-        externalId: spec.externalId,
         name: spec.name,
         type: spec.type,
         issuerUrl: spec.issuerUrl,
@@ -668,7 +631,7 @@ export class StackIaCService {
           manager,
         );
         result.providers.created++;
-        map.set(spec.externalId, created);
+        map.set(spec.name, created);
         continue;
       }
 
@@ -677,7 +640,7 @@ export class StackIaCService {
 
       if (currentFingerprint === desiredFingerprint) {
         result.providers.unchanged++;
-        map.set(spec.externalId, existing);
+        map.set(spec.name, existing);
         continue;
       }
 
@@ -690,11 +653,11 @@ export class StackIaCService {
       );
 
       result.providers.updated++;
-      map.set(spec.externalId, updated);
+      map.set(spec.name, updated);
     }
 
     for (const row of existingRows) {
-      if (row.externalId && !desiredIds.has(row.externalId)) {
+      if (row.name && !desiredIds.has(row.name)) {
         await this.oidcProviderRepository.delete(row.id, manager);
         result.providers.deleted++;
       }
@@ -709,15 +672,15 @@ export class StackIaCService {
     result: IaCApplyResult,
     manager?: EntityManager,
   ): Promise<void> {
-    const desiredIds = new Set(specs.map((h) => h.externalId));
+    const desiredIds = new Set(specs.map((h) => h.name));
     const existingRows = await this.httpResourceRepository.find({}, manager);
 
     const nodeRows = await this.nodeRepository.find({}, manager);
-    const nodeMap = new Map(nodeRows.map((n) => [n.externalId, n]));
+    const nodeMap = new Map(nodeRows.map((n) => [n.name, n]));
 
     for (const spec of specs) {
       const existing = await this.httpResourceRepository.findOne(
-        { where: { externalId: spec.externalId } },
+        { where: { name: spec.name } },
         manager,
       );
 
@@ -735,7 +698,7 @@ export class StackIaCService {
       if (!existing) {
         await this.httpResourceService.createDeclarativeResource(
           {
-            externalId: spec.externalId,
+            name: spec.name,
             ...payload,
           },
           manager,
@@ -749,7 +712,7 @@ export class StackIaCService {
         await this.httpResourceService.applyDeclarativeResource(
           existing.id,
           {
-            externalId: spec.externalId,
+            name: spec.name,
             ...payload,
           },
           manager,
@@ -763,7 +726,7 @@ export class StackIaCService {
     }
 
     for (const row of existingRows) {
-      if (row.externalId && !desiredIds.has(row.externalId)) {
+      if (row.name && !desiredIds.has(row.name)) {
         await this.httpResourceService.deleteHttpResource(row.id, manager);
         result.httpResources.deleted++;
       }
@@ -845,45 +808,6 @@ export class StackIaCService {
       accessRules: resolvedAccessRules,
       edgeRules: resolvedEdgeRules,
     };
-  }
-
-  // Auto-generate externalIds for entities that lack them
-
-  async ensureExternalIds(manager?: EntityManager): Promise<void> {
-    await this.ensureExternalIdsFor(this.nodeRepository, 'name', manager);
-    await this.ensureExternalIdsFor(
-      this.oidcProviderRepository,
-      'name',
-      manager,
-    );
-    await this.ensureExternalIdsFor(
-      this.httpResourceRepository,
-      'name',
-      manager,
-    );
-  }
-
-  async ensureExternalIdsFor(
-    repository: any,
-    slugField: string,
-    manager?: EntityManager,
-  ): Promise<void> {
-    const entities = await repository.find(undefined, manager);
-    const existingIds: Set<string> = new Set(
-      entities
-        .filter((e: any) => e.externalId)
-        .map((e: any) => e.externalId as string),
-    );
-
-    for (const entity of entities) {
-      if (entity.externalId) continue;
-
-      const base = toSlug(entity[slugField] || `item-${entity.id}`);
-      const externalId = uniqueSlug(base, existingIds);
-
-      existingIds.add(externalId);
-      await repository.save({ id: entity.id, externalId }, manager);
-    }
   }
 
   private nodeFingerprint(spec: NodeManifest): string {

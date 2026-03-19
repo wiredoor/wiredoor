@@ -10,22 +10,19 @@ export class CreateHttpResourcesTable1771802517696 implements MigrationInterface
         "enabled" integer NOT NULL DEFAULT (1),
         "expiresAt" datetime,
         "oidcProviderId" integer,
-        "externalId" varchar(255),
         "created_at" datetime NOT NULL DEFAULT (datetime('now')),
         "updated_at" datetime NOT NULL DEFAULT (datetime('now'))
       )
     `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX "UQ_http_resources_external_id"
-      ON "http_resources" ("externalId");
+      CREATE UNIQUE INDEX "UQ_http_resources_name"
+      ON "http_resources" ("name");
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "UQ_http_resources_external_id"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "UQ_http_resources_name"`);
     await queryRunner.query(`DROP TABLE "http_resources"`);
   }
 }

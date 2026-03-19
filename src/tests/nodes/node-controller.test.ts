@@ -2,6 +2,7 @@ import supertest from 'supertest';
 import { loadApp } from '../../main';
 import TestAgent from 'supertest/lib/agent';
 import config from '../../config';
+import { faker } from '@faker-js/faker/.';
 
 let app;
 let request: TestAgent;
@@ -41,17 +42,18 @@ describe('Nodes Management API', () => {
       expect(res.status).toBe(401);
     });
     it('should list nodes paginated', async () => {
+      const nodeName = faker.internet.domainWord();
       await request
         .post('/api/nodes')
         .set('Cookie', cookie!)
-        .send({ name: 'client' });
+        .send({ name: nodeName });
       const res = await request.get('/api/nodes').set('Cookie', cookie!);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            name: 'client',
+            name: nodeName,
           }),
         ]),
       );
@@ -70,13 +72,14 @@ describe('Nodes Management API', () => {
       expect(res.status).toBe(401);
     });
     it('should create node', async () => {
+      const nodeName = faker.internet.domainWord();
       const res = await request
         .post('/api/nodes')
         .set('Cookie', cookie!)
-        .send({ name: 'client' });
+        .send({ name: nodeName });
 
       expect(res.status).toBe(200);
-      expect(res.body.name).toEqual('client');
+      expect(res.body.name).toEqual(nodeName);
       expect(res.body.token).toEqual(expect.any(String));
     });
   });
@@ -87,17 +90,18 @@ describe('Nodes Management API', () => {
       expect(res.status).toBe(401);
     });
     it('should get node by id', async () => {
+      const nodeName = faker.internet.domainWord();
       const createdRes = await request
         .post('/api/nodes')
         .set('Cookie', cookie!)
-        .send({ name: 'clientCreated' });
+        .send({ name: nodeName });
 
       const res = await request
         .get(`/api/nodes/${createdRes.body.id}`)
         .set('Cookie', cookie!);
 
       expect(res.status).toBe(200);
-      expect(res.body.name).toEqual('clientCreated');
+      expect(res.body.name).toEqual(nodeName);
     });
     it('should return 404 error if node does not exists', async () => {
       const res = await request.get(`/api/nodes/1000`).set('Cookie', cookie!);
@@ -112,6 +116,7 @@ describe('Nodes Management API', () => {
       expect(res.status).toBe(401);
     });
     it('should update node', async () => {
+      const nodeName = faker.internet.domainWord();
       const createdRes = await request
         .post('/api/nodes')
         .set('Cookie', cookie!)
@@ -120,10 +125,10 @@ describe('Nodes Management API', () => {
       const res = await request
         .patch(`/api/nodes/${createdRes.body.id}`)
         .set('Cookie', cookie!)
-        .send({ name: 'clientUpdated' });
+        .send({ name: nodeName });
 
       expect(res.status).toBe(200);
-      expect(res.body.name).toEqual('clientUpdated');
+      expect(res.body.name).toEqual(nodeName);
     });
   });
   describe('DELETE /api/nodes/:id', () => {

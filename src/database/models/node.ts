@@ -21,6 +21,7 @@ export class Node {
 
   @Column({
     length: 40,
+    unique: true,
   })
   name: string;
 
@@ -112,9 +113,6 @@ export class Node {
 
   @Column({ nullable: true })
   disconnectedAt: Date;
-
-  @Column({ nullable: true, unique: true })
-  externalId?: string;
 
   @OneToMany(() => HttpUpstream, (upstream) => upstream.node)
   httpUpstreams: HttpUpstream[];

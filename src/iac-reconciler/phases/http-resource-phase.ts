@@ -14,7 +14,7 @@ import {
   ValidationResult,
 } from '../../core/reconciler/validation';
 import {
-  checkDuplicateExternalIds,
+  checkDuplicateNames,
   checkRefsExist,
   checkUniqueWithinScope,
   checkUniqueOrders,
@@ -31,10 +31,10 @@ import {
 } from '../../schemas/iac-schemas';
 
 import type {
-  DeclarativeHttpResourceInput,
   HttpUpstreamSpec,
   AccessRuleSpec,
   EdgeRuleSpec,
+  HttpResourceType,
 } from '../../schemas/http-resource-schemas';
 
 @Service()
@@ -93,13 +93,13 @@ export class HttpResourcePhase
     manifest: Record<string, unknown>,
     result: ValidationResult,
   ): void {
-    checkDuplicateExternalIds(items, 'http', 'http', result);
+    checkDuplicateNames(items, 'http', 'http', result);
 
     const nodeIds = new Set(
-      ((manifest.nodes as any) ?? []).map((n: any) => n.externalId),
+      ((manifest.nodes as any) ?? []).map((n: any) => n.name),
     );
     const providerIds = new Set(
-      ((manifest.auth as any)?.providers ?? []).map((p: any) => p.externalId),
+      ((manifest.auth as any)?.providers ?? []).map((p: any) => p.name),
     );
 
     // Duplicate domains across all resources
@@ -132,14 +132,6 @@ export class HttpResourcePhase
         targetLabel: 'auth provider',
         result,
       });
-
-      // Upstreams
-      // checkDuplicateExternalIds(
-      //   resource.upstreams,
-      //   'http',
-      //   `${p}.upstreams`,
-      //   result,
-      // );
 
       checkUniqueWithinScope(
         resource.upstreams,
@@ -176,13 +168,6 @@ export class HttpResourcePhase
 
       // Access rules
       if (resource.accessRules) {
-        // checkDuplicateExternalIds(
-        //   resource.accessRules,
-        //   'http',
-        //   `${p}.accessRules`,
-        //   result,
-        // );
-
         checkUniqueOrders(
           resource.accessRules,
           'http',
@@ -216,13 +201,6 @@ export class HttpResourcePhase
 
       // Edge rules
       if (resource.edgeRules) {
-        // checkDuplicateExternalIds(
-        //   resource.edgeRules,
-        //   'http',
-        //   `${p}.edgeRules`,
-        //   result,
-        // );
-
         checkUniqueOrders(resource.edgeRules, 'http', `${p}.edgeRules`, result);
       }
 
@@ -274,13 +252,13 @@ export class HttpResourcePhase
         manager,
       );
 
-      if (existing && existing.externalId !== resource.externalId) {
+      if (existing && existing.name !== resource.name) {
         result.error(
           'http',
           `http[${i}].domain`,
           'DOMAIN_CONFLICT',
           `Domain "${resource.domain}" is already assigned to ` +
-            `"${existing.name}" (externalId: ${existing.externalId ?? 'none'})`,
+            `"${existing.name}"`,
         );
       }
     }
@@ -291,13 +269,10 @@ export class HttpResourcePhase
   // ═══════════════════════════════════════════════════════════════
 
   protected async findExisting(
-    externalIds: string[],
+    names: string[],
     manager: EntityManager,
   ): Promise<HttpResource[]> {
-    return this.httpResourceRepository.findBy(
-      { externalId: In(externalIds) },
-      manager,
-    );
+    return this.httpResourceRepository.findBy({ name: In(names) }, manager);
   }
 
   protected async create(
@@ -404,7 +379,7 @@ export class HttpResourcePhase
   private toDeclarativeInput(
     spec: HttpResourceManifest,
     refs: RefContext,
-  ): DeclarativeHttpResourceInput {
+  ): HttpResourceType {
     const oidcProviderId = spec.providerRef
       ? refs.require(
           'provider',
@@ -414,7 +389,6 @@ export class HttpResourcePhase
       : undefined;
 
     return {
-      externalId: spec.externalId,
       name: spec.name,
       domain: spec.domain,
       enabled: spec.enabled,

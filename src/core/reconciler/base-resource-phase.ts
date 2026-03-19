@@ -16,7 +16,7 @@ import { stableStringify } from '../../utils/transformers';
 /**
  * Base class that extracts the repetitive reconcile loop:
  *
- *   1. Load existing entities by externalId
+ *   1. Load existing entities by name
  *   2. For each desired item: create / update / unchanged
  *   3. (Optionally) delete items not in desired set
  *
@@ -24,8 +24,8 @@ import { stableStringify } from '../../utils/transformers';
  * specific to each resource type.
  */
 export abstract class BaseResourcePhase<
-  TManifest extends { externalId: string },
-  TEntity extends { id: number; externalId?: string | null },
+  TManifest extends { name: string },
+  TEntity extends { id: number; name: string },
 > implements ResourcePhase<TManifest> {
   abstract readonly phaseId: string;
   abstract readonly dependsOn: string[];
@@ -34,9 +34,9 @@ export abstract class BaseResourcePhase<
 
   // Override points
 
-  /** Load all existing entities whose externalId is in the list */
+  /** Load all existing entities whose name is in the list */
   protected abstract findExisting(
-    externalIds: string[],
+    names: string[],
     manager: EntityManager,
   ): Promise<TEntity[]>;
 
@@ -94,20 +94,20 @@ export abstract class BaseResourcePhase<
     const errors: PhaseError[] = [];
 
     const existing = await this.findExisting(
-      items.map((i) => i.externalId),
+      items.map((i) => i.name),
       manager,
     );
 
     const byExtId = new Map<string, TEntity>();
     for (const entity of existing) {
-      if (entity.externalId) {
-        byExtId.set(entity.externalId, entity);
+      if (entity.name) {
+        byExtId.set(entity.name, entity);
       }
     }
 
     for (const spec of items) {
       try {
-        const current = byExtId.get(spec.externalId);
+        const current = byExtId.get(spec.name);
         let action: EntityAction;
 
         if (!current) {
@@ -116,9 +116,9 @@ export abstract class BaseResourcePhase<
 
           if (mode === 'apply') {
             const created = await this.create(spec, refs, manager);
-            refs.set(this.phaseId, spec.externalId, created.id);
+            refs.set(this.phaseId, spec.name, created.id);
           } else {
-            refs.set(this.phaseId, spec.externalId, 0);
+            refs.set(this.phaseId, spec.name, 0);
           }
 
           const children = await this.reconcileChildren(
@@ -129,21 +129,21 @@ export abstract class BaseResourcePhase<
             manager,
           );
 
-          entities.push({ externalId: spec.externalId, action, children });
+          entities.push({ name: spec.name, action, children });
           continue;
         }
 
         // Populate refs even for unchanged entities
-        refs.set(this.phaseId, spec.externalId, current.id);
+        refs.set(this.phaseId, spec.name, current.id);
 
         const specFp = this.fingerprintFromSpec(spec);
         const entityFp = this.fingerprintFromEntity(current);
 
-        if (specFp !== entityFp) {
-          console.log(`[${this.phaseId}] ${spec.externalId} MISMATCH:`);
-          console.log('  spec:  ', specFp);
-          console.log('  entity:', entityFp);
-        }
+        // if (specFp !== entityFp) {
+        //   console.log(`[${this.phaseId}] ${spec.name} MISMATCH:`);
+        //   console.log('  spec:  ', specFp);
+        //   console.log('  entity:', entityFp);
+        // }
 
         if (specFp === entityFp) {
           // UNCHANGED (but still reconcile children)
@@ -162,7 +162,7 @@ export abstract class BaseResourcePhase<
             : false;
 
           action = childrenChanged ? 'update' : 'unchanged';
-          entities.push({ externalId: spec.externalId, action, children });
+          entities.push({ name: spec.name, action, children });
           continue;
         }
 
@@ -181,10 +181,10 @@ export abstract class BaseResourcePhase<
           manager,
         );
 
-        entities.push({ externalId: spec.externalId, action, children });
+        entities.push({ name: spec.name, action, children });
       } catch (err: any) {
         errors.push({
-          externalId: spec.externalId,
+          name: spec.name,
           message: err.message ?? String(err),
         });
       }

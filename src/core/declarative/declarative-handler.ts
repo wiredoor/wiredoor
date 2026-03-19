@@ -120,8 +120,8 @@ export interface DeclarativeConfig<TInput, TEntity extends { id: number }> {
 //
 
 export class DeclarativeHandler<
-  TInput extends { externalId: string },
-  TEntity extends { id: number; externalId?: string | null },
+  TInput extends { name: string },
+  TEntity extends { id: number; name: string },
 > {
   private readonly config: DeclarativeConfig<TInput, TEntity>;
 

@@ -18,6 +18,7 @@ export class HttpResource {
 
   @Column({
     length: 40,
+    unique: true,
   })
   name: string;
 
@@ -37,9 +38,6 @@ export class HttpResource {
 
   @Column()
   oidcProviderId?: number;
-
-  @Column({ nullable: true, unique: true })
-  externalId?: string;
 
   @OneToMany(() => HttpUpstream, (upstream) => upstream.httpResource)
   httpUpstreams: HttpUpstream[];

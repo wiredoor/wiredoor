@@ -116,7 +116,6 @@ export interface CreateNodeType {
   enabled?: boolean;
   gatewayNetworks?: GatewayNetwork[];
   isGateway?: boolean;
-  externalId?: string;
 }
 
 export interface NodeInfo extends CreateNodeType {

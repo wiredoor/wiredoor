@@ -134,7 +134,7 @@ export class StackReconciler {
           errors.push(
             ...result.errors.map((e) => ({
               ...e,
-              externalId: `[${phase.phaseId}] ${e.externalId}`,
+              name: `[${phase.phaseId}] ${e.name}`,
             })),
           );
         }

@@ -3,18 +3,14 @@ kind: Stack
 
 nodes:
   - name: web-server
-    externalId: web-server
 
   - name: api-server
-    externalId: api-server
 
   - name: api-server-v2
-    externalId: api-server-v2
 
 auth:
   providers:
     - name: Google
-      externalId: google
       type: google
       clientId: test-client-id.apps.googleusercontent.com
       clientSecret: test-secret
@@ -22,7 +18,6 @@ auth:
 
 http:
   - name: myapp
-    externalId: myapp
     domain: myapp.example.com
     enabled: true
     providerRef: google

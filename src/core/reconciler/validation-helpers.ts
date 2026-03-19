@@ -33,9 +33,9 @@ export function validateWithJoi<T>(
   }
 }
 
-// ─── Duplicate externalId checker ───────────────────────────────
+// Duplicate name checker
 
-export function checkDuplicateExternalIds<T extends { externalId: string }>(
+export function checkDuplicateNames<T extends { name: string }>(
   items: T[],
   phase: string,
   pathPrefix: string,
@@ -44,24 +44,24 @@ export function checkDuplicateExternalIds<T extends { externalId: string }>(
   const seen = new Map<string, number>();
 
   for (const [i, item] of items.entries()) {
-    const prev = seen.get(item.externalId);
+    const prev = seen.get(item.name);
 
     if (prev !== undefined) {
       result.error(
         phase,
-        `${pathPrefix}[${i}].externalId`,
-        'DUPLICATE_EXTERNAL_ID',
-        `Duplicate externalId "${item.externalId}" (first seen at ${pathPrefix}[${prev}])`,
+        `${pathPrefix}[${i}].name`,
+        'DUPLICATE_NAME',
+        `Duplicate name "${item.name}" (first seen at ${pathPrefix}[${prev}])`,
       );
     } else {
-      seen.set(item.externalId, i);
+      seen.set(item.name, i);
     }
   }
 }
 
-// ─── Cross-reference checker ────────────────────────────────────
+// Cross-reference checker
 //
-// Verifies that a field on each item references an externalId
+// Verifies that a field on each item references a name
 // that exists in another section of the manifest.
 //
 
@@ -73,7 +73,7 @@ export function checkRefsExist<T>(opts: {
   getRef: (item: T, index: number) => string | number | undefined | null;
   /** Path suffix for the error (e.g. "providerRef") */
   refField: string;
-  /** Set of valid externalIds to check against */
+  /** Set of valid names to check against */
   validIds: Set<string | number | unknown>;
   /** Human label for error messages (e.g. "auth provider") */
   targetLabel: string;
@@ -94,11 +94,7 @@ export function checkRefsExist<T>(opts: {
   }
 }
 
-// ─── Uniqueness within a scope ──────────────────────────────────
-//
-// Example: upstream externalIds must be unique within each
-// HTTP resource, not globally.
-//
+// Uniqueness within a scope
 
 export function checkUniqueWithinScope<T>(
   items: T[],

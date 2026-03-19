@@ -24,7 +24,6 @@ import {
 } from './descriptors';
 
 import type {
-  DeclarativeHttpResourceInput,
   HttpUpstreamSpec,
   AccessRuleSpec,
   EdgeRuleSpec,
@@ -44,11 +43,12 @@ import { HttpUpstream } from '../../database/models/http-upstream';
 import { HttpAccessRuleEntity } from '../../database/models/http-access-rules';
 import { HttpEdgeRuleEntity } from '../../database/models/http-edge-rules';
 import { NginxHttpResource } from '../proxy-server/nginx-http-resource';
+import { NotFoundError } from 'routing-controllers';
 
 @Service()
 export class HttpResourceService {
   private readonly declarative: DeclarativeHandler<
-    DeclarativeHttpResourceInput,
+    HttpResourceType,
     HttpResource
   >;
 
@@ -61,10 +61,7 @@ export class HttpResourceService {
     private readonly httpResourceFilter: HttpResourceQueryFilter,
     private readonly nginxHttpResource: NginxHttpResource,
   ) {
-    this.declarative = new DeclarativeHandler<
-      DeclarativeHttpResourceInput,
-      HttpResource
-    >({
+    this.declarative = new DeclarativeHandler<HttpResourceType, HttpResource>({
       repository: this.httpResourceRepository,
 
       findById: (id, manager?: EntityManager): Promise<HttpResource | null> =>
@@ -77,7 +74,6 @@ export class HttpResourceService {
         ),
 
       toCreatePayload: (input): Partial<HttpResource> => ({
-        externalId: input.externalId,
         name: input.name,
         domain: input.domain,
         enabled: input.enabled ?? true,
@@ -204,7 +200,6 @@ export class HttpResourceService {
 
         const resource = await this.createDeclarativeResource(
           {
-            externalId: '',
             ...params,
             httpUpstreams: params.httpUpstreams ?? [],
             accessRules: params.accessRules ?? [],
@@ -225,7 +220,7 @@ export class HttpResourceService {
     return this.httpResourceRepository.transaction<HttpResource>(
       async (manager) => {
         const current = await this.getHttpResource(id, manager);
-        if (!current) throw new Error('HttpResource not found');
+        if (!current) throw new NotFoundError('HttpResource not found');
 
         if (params.domain && params.domain !== current.domain) {
           await this.domainsService.createDomainIfNotExists(
@@ -262,7 +257,7 @@ export class HttpResourceService {
   // ═══════════════════════════════════════════════════════════════
 
   async createDeclarativeResource(
-    input: DeclarativeHttpResourceInput,
+    input: HttpResourceType,
     manager?: EntityManager,
   ): Promise<HttpResource> {
     return this.declarative.create(input, manager);
@@ -270,7 +265,7 @@ export class HttpResourceService {
 
   async planDeclarativeResource(
     id: number,
-    input: DeclarativeHttpResourceInput,
+    input: HttpResourceType,
     manager?: EntityManager,
   ): Promise<DeclarativePlanResult> {
     return this.declarative.plan(id, input, manager);
@@ -278,7 +273,7 @@ export class HttpResourceService {
 
   async applyDeclarativeResource(
     id: number,
-    input: DeclarativeHttpResourceInput,
+    input: HttpResourceType,
     manager?: EntityManager,
   ): Promise<DeclarativePlanResult> {
     return this.declarative.apply(id, input, manager);
@@ -295,7 +290,6 @@ export class HttpResourceService {
 
     return {
       name: resource.name,
-      externalId: resource.externalId!,
       domain: resource.domain,
       enabled: resource.enabled ?? true,
       ...(providerRef ? { providerRef } : {}),
@@ -384,7 +378,7 @@ export class HttpResourceService {
   private mergePartialWithCurrent(
     current: HttpResource,
     patch: Partial<HttpResourceType>,
-  ): DeclarativeHttpResourceInput {
+  ): HttpResourceType {
     const currentUpstreams: HttpUpstreamSpec[] = (
       current.httpUpstreams ?? []
     ).map((u) => ({
@@ -433,7 +427,6 @@ export class HttpResourceService {
     );
 
     return {
-      externalId: current.externalId ?? '',
       name: patch.name ?? current.name,
       domain: patch.domain ?? current.domain,
       enabled: patch.enabled ?? current.enabled ?? true,

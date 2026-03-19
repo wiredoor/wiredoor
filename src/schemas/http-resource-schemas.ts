@@ -105,15 +105,17 @@ export type EdgeAction =
       };
     };
 
+export type WhenSpec = {
+  type: RuleMatchType;
+  pathPattern: string;
+  methods?: string[] | null;
+};
+
 export type AccessRuleSpec = {
   id?: number;
   enabled?: boolean;
   order?: number;
-  when: {
-    type: RuleMatchType;
-    pathPattern: string;
-    methods?: string[] | null;
-  };
+  when: WhenSpec;
   action: RuleAction; // 'public' | 'require_auth' | 'deny'
   predicate?: HttpPredicateV1 | null;
   upstreamPathPattern?: string;
@@ -123,11 +125,7 @@ export type EdgeRuleSpec = {
   id?: number;
   enabled?: boolean;
   order?: number;
-  when: {
-    type: RuleMatchType;
-    pathPattern: string;
-    methods?: string[] | null;
-  };
+  when: WhenSpec;
   action: EdgeAction;
   upstreamPathPattern?: string;
 };
@@ -137,10 +135,6 @@ export type ReconcileCounters = {
   updated: number;
   deleted: number;
   unchanged: number;
-};
-
-export type DeclarativeHttpResourceInput = HttpResourceType & {
-  externalId: string;
 };
 
 export type DeclarativeHttpResourcePlanResult = {
@@ -164,45 +158,38 @@ export const methodsValidator = Joi.array()
   .items(httpMethodValidator)
   .min(1)
   .unique()
+  .allow(null)
   .optional();
 
-const exactPathValidator = Joi.string()
-  .pattern(/^\//)
-  .messages({ 'string.pattern.base': 'exact path must start with /' });
+const slashPathValidator = Joi.string().pattern(/^\//).messages({
+  'string.pattern.base': 'path must start with `/`',
+});
 
-const prefixPathValidator = Joi.string()
-  .pattern(/^\//)
-  .messages({ 'string.pattern.base': 'prefix path must start with /' });
+export const whenSchemaValidator = Joi.object<WhenSpec>({
+  type: Joi.string().valid('prefix', 'exact', 'regex').required(),
 
-const regexPatternValidator = Joi.string().min(1);
+  pathPattern: Joi.when('type', {
+    is: 'regex',
+    then: Joi.string()
+      .required()
+      .custom((value, helpers) => {
+        try {
+          new RegExp(value, 'i');
+          return value;
+        } catch {
+          return helpers.error('any.custom', {
+            message: 'Invalid regex in path pattern',
+          });
+        }
+      }, 'regex compilation validation')
+      .messages({
+        'any.custom': '{{#message}}',
+      }),
+    otherwise: slashPathValidator.required(),
+  }),
 
-export const whenSchemaValidator = Joi.object({
-  path: Joi.alternatives()
-    .try(
-      Joi.object({ exact: exactPathValidator.required() }).required(),
-      Joi.object({ prefix: prefixPathValidator.required() }).required(),
-      Joi.object({ regex: regexPatternValidator.required() }).required(),
-    )
-    .required(),
   methods: methodsValidator,
-})
-  .custom((value, helpers) => {
-    if (value?.path?.regex) {
-      try {
-        // Always case-insensitive by design
-        // eslint-disable-next-line no-new
-        new RegExp(value.path.regex, 'i');
-      } catch {
-        return helpers.error('any.custom', {
-          message: 'Invalid regex in when.path.regex',
-        });
-      }
-    }
-    return value;
-  }, 'regex compilation validation')
-  .messages({
-    'any.custom': '{{#message}}',
-  });
+});
 
 const ruleActionValidator = Joi.string().valid(
   'public',
@@ -306,12 +293,12 @@ export const predicateValidator: Schema = Joi.object<HttpPredicateV1>()
   })
   .xor('all', 'any', 'not', 'leaf')
   .id('httpPredicateNode')
+  .allow(null)
   .messages({
     'object.xor': 'Predicate must have exactly one of: all, any, not, leaf',
   });
 
-export const accessRuleSpecSchemaValidator = Joi.object({
-  name: Joi.string().min(1).max(128).required(),
+export const accessRuleSpecSchemaValidator = Joi.object<AccessRuleSpec>({
   enabled: Joi.boolean().optional(),
   order: Joi.number().integer().min(0).max(1_000_000).optional(),
 
@@ -515,7 +502,6 @@ export const edgeActionSchemaValidator = Joi.object({
   .messages({ 'any.custom': '{{#message}}' });
 
 export const edgeRuleSpecSchemaValidator = Joi.object({
-  name: Joi.string().min(1).max(128).required(),
   enabled: Joi.boolean().optional(),
   order: Joi.number().integer().min(0).max(1_000_000).optional(),
 
@@ -617,11 +603,6 @@ export const httpUpstreamValidator = Joi.object<HttpUpstreamSpec>({
     if (!hasNode && !hasHost) {
       return helpers.error('any.custom', {
         message: 'Either targetNodeId or targetHost is required',
-      });
-    }
-    if (hasNode && hasHost) {
-      return helpers.error('any.custom', {
-        message: 'Provide only one of targetNodeId or targetHost (not both)',
       });
     }
 

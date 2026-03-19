@@ -18,7 +18,7 @@ export class OidcProvider {
   @Column({ type: 'text' })
   type!: OidcProvidersType;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', unique: true })
   name!: string;
 
   @Column({ name: 'issuer_url', type: 'text' })
@@ -60,9 +60,6 @@ export class OidcProvider {
 
   @Column({ type: 'boolean', default: true })
   enabled!: boolean;
-
-  @Column({ nullable: true, unique: true })
-  externalId?: string;
 
   @Column({ type: 'integer', default: 1 })
   rev!: number;

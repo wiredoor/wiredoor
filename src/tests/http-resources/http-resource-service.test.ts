@@ -635,8 +635,7 @@ describe('HTTP Resource Service', () => {
   describe('Declarative API', () => {
     it('should create declarative resource', async () => {
       const declarativeInput = {
-        externalId: 'test-resource-1',
-        name: 'Test Resource',
+        name: 'TestResource',
         domain: 'declarative.example.com',
         enabled: true,
         httpUpstreams: [makeHttpUpstreamData({ targetNodeId: node.id })],
@@ -648,13 +647,11 @@ describe('HTTP Resource Service', () => {
 
       expect(result.name).toEqual(declarativeInput.name);
       expect(result.domain).toEqual(declarativeInput.domain);
-      expect(result.externalId).toEqual(declarativeInput.externalId);
     });
 
     it('should plan declarative resource changes', async () => {
       const declarativeInput = {
-        externalId: 'test-resource-1',
-        name: 'Test Resource',
+        name: 'TestResource',
         domain: 'declarative.example.com',
         enabled: true,
         httpUpstreams: [],
@@ -679,8 +676,7 @@ describe('HTTP Resource Service', () => {
 
     it('should apply declarative resource changes', async () => {
       const declarativeInput = {
-        externalId: 'test-resource-1',
-        name: 'Test Resource',
+        name: 'TestResource',
         domain: 'declarative.example.com',
         enabled: true,
         httpUpstreams: [],

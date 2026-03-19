@@ -21,7 +21,6 @@ import { ValidationError } from '../utils/errors/validation-error';
 
 export type NodeContext = {
   id: number;
-  externalId: string;
   name: string;
 };
 
@@ -34,10 +33,6 @@ export class NodeIacService {
     private readonly httpResourceRepository: HttpResourceRepository,
   ) {}
 
-  async ensureExternalIds(): Promise<void> {
-    await Container.get(StackIaCService).ensureExternalIds();
-  }
-
   async export(node: NodeContext): Promise<NodeScopedManifest> {
     const fullManifest = await Container.get(StackIaCService).export();
 
@@ -47,9 +42,7 @@ export class NodeIacService {
       http: (fullManifest.http ?? [])
         .filter((resource) => {
           // Include resources where ALL upstreams point to this node
-          return resource.upstreams.every(
-            (u) => u.targetNodeRef === node.externalId,
-          );
+          return resource.upstreams.every((u) => u.targetNodeRef === node.name);
         })
         .map((resource) => ({
           ...resource,
@@ -128,11 +121,11 @@ export class NodeIacService {
   ): Promise<string[]> {
     const errors: string[] = [];
 
-    const externalIds = (manifest.http ?? []).map((h) => h.externalId);
-    if (externalIds.length === 0) return errors;
+    const names = (manifest.http ?? []).map((h) => h.name);
+    if (names.length === 0) return errors;
 
     const existing = await this.httpResourceRepository.findBy(
-      { externalId: In(externalIds) },
+      { name: In(names) },
       manager,
     );
 
@@ -145,7 +138,7 @@ export class NodeIacService {
 
       if (foreignUpstream) {
         errors.push(
-          `Resource "${resource.externalId}" has upstreams pointing to ` +
+          `Resource "${resource.name}" has upstreams pointing to ` +
             `a different node. Nodes can only manage their own resources.`,
         );
       }
@@ -169,7 +162,6 @@ export class NodeIacService {
       nodes: [
         {
           name: node.name,
-          externalId: node.externalId,
         },
       ],
 
@@ -190,7 +182,6 @@ export class NodeIacService {
   ): HttpResourceManifest {
     return {
       name: resource.name,
-      externalId: resource.externalId,
       domain: resource.domain,
       enabled: resource.enabled,
       providerRef: resource.providerRef,
@@ -203,7 +194,7 @@ export class NodeIacService {
           rewrite: upstream.rewrite,
           targetProtocol: upstream.targetProtocol,
           targetHost: upstream.targetHost,
-          targetNodeRef: node.externalId,
+          targetNodeRef: node.name,
           targetPort: upstream.targetPort,
           targetSslVerify: upstream.targetSslVerify,
         }),

@@ -75,7 +75,7 @@ export function createUpstreamDescriptor(
         targetNodeId: spec.targetNodeId ?? null,
       };
 
-      console.log('[upstream] SPEC:', JSON.stringify(obj));
+      // console.log('[upstream] SPEC:', JSON.stringify(obj));
 
       return stableStringify(obj);
     },
@@ -92,7 +92,7 @@ export function createUpstreamDescriptor(
         targetNodeId: entity.targetNodeId ?? null,
       };
 
-      console.log('[upstream] ENTITY:', JSON.stringify(obj));
+      // console.log('[upstream] ENTITY:', JSON.stringify(obj));
 
       return stableStringify(obj);
     },
