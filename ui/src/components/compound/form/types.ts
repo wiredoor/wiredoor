@@ -11,10 +11,14 @@ export type A11y = {
 
 export type ControlA11y = {
   id: string;
-  name?: string;
+  required?: boolean;
   disabled?: boolean;
   'aria-invalid'?: boolean;
   'aria-describedby'?: string;
+};
+
+export type FieldShellRenderArgs = {
+  a11y: ControlA11y;
 };
 
 export type FormFieldCtx<T extends FieldValues = FieldValues> = {
@@ -23,10 +27,8 @@ export type FormFieldCtx<T extends FieldValues = FieldValues> = {
   a11y: A11y;
 };
 
-export type FormFieldProps<T extends FieldValues> = React.HTMLAttributes<HTMLDivElement> & {
+export type FieldShellProps = React.HTMLAttributes<HTMLDivElement> & {
   id?: string;
-  form: ReturnType<typeof useForm<T>>;
-  name: Path<T>;
 
   title?: React.ReactNode;
   label?: React.ReactNode;
@@ -42,7 +44,13 @@ export type FormFieldProps<T extends FieldValues> = React.HTMLAttributes<HTMLDiv
   legend?: React.ReactNode;
   separator?: boolean;
 
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  render?: (args: FieldShellRenderArgs) => React.ReactNode;
+};
+
+export type FormFieldProps<T extends FieldValues> = FieldShellProps & {
+  form: ReturnType<typeof useForm<T>>;
+  name: Path<T>;
 };
 
 export type RegisterRenderArgs<T extends FieldValues> = {

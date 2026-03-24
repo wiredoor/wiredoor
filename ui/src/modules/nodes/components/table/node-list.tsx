@@ -14,7 +14,8 @@ import { type NodeInfo } from '../../node-schemas';
 import { NodeDetails } from './node-details';
 import { nodeColumns } from './columns';
 import { regenerateNodeKeys } from '../../api/regenerate-keys';
-import { Icon, Inline } from '@/components/foundations';
+import { Inline } from '@/components/foundations';
+import { SwitchInput } from '@/components/compound/form';
 
 type Filters = {
   search: string;
@@ -40,16 +41,48 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
   const dialog = useDialog();
   const navigate = useNavigate();
 
+  const handleStatus = React.useCallback(
+    async ({ row }: { row: NodeInfo }): Promise<void> => {
+      const title = row.enabled ? 'Disable node?' : 'Enable node?';
+      const description = row.enabled
+        ? 'Disabling the node will stop all connections and exposed services. Are you sure you want to disable this node?'
+        : 'Enabling the node will allow connections if the node is properly configured. Are you sure you want to enable this node?';
+      const enable = row.enabled ? false : true;
+
+      const ok = await dialog.confirm({
+        title: title,
+        description: description,
+        destructive: row.enabled ? true : false,
+        confirmText: row.enabled ? 'Disable' : 'Enable',
+        cancelText: 'Cancel',
+        closeOnOverlayClick: false,
+        closeOnEsc: true,
+        size: 'sm',
+      });
+
+      if (ok) {
+        tableRef.current?.setSseOn(false);
+        tableRef.current?.updateItem(row.id, { enabled: enable });
+        try {
+          await enableNode(row.id as number, enable ? 'enable' : 'disable');
+          tableRef.current?.updateItem(row.id, { enabled: enable });
+        } catch {
+          tableRef.current?.updateItem(row.id, { enabled: !enable });
+        } finally {
+          tableRef.current?.setSseOn(true);
+        }
+        return;
+      }
+    },
+    [dialog],
+  );
+
   const rowActions = React.useCallback(
-    ({ row, table }: { row: NodeInfo; table: DataTableRef<NodeInfo> }): RowActionItem<NodeInfo>[] => {
+    ({ row }: { row: NodeInfo }): RowActionItem<NodeInfo>[] => {
       return [
         {
-          label: (
-            <Inline gap={1}>
-              <Icon name='info' />
-              Instructions
-            </Inline>
-          ),
+          label: 'Instructions',
+          icon: 'info',
           type: 'item',
           onAction: async () => {
             await NodeTokenDialog({
@@ -60,67 +93,19 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
           },
         },
         {
-          label: (
-            <Inline gap={1}>
-              <Icon name='edit' />
-              Edit
-            </Inline>
-          ),
+          label: 'Edit',
+          icon: 'edit',
           type: 'item',
           onAction: () => {
             navigate(`/nodes/edit/${row.id}`);
           },
         },
         {
-          label: (
-            <Inline gap={1}>
-              <Icon name={row.enabled ? 'disconnect' : 'connect'} />
-              {row.enabled ? 'Disable' : 'Enable'}
-            </Inline>
-          ),
-          type: 'item',
-          onAction: async () => {
-            const title = row.enabled ? 'Disable node?' : 'Enable node?';
-            const description = row.enabled
-              ? 'Disabling the node will stop all connections and exposed services. Are you sure you want to disable this node?'
-              : 'Enabling the node will allow connections if the node is properly configured. Are you sure you want to enable this node?';
-            const enable = row.enabled ? false : true;
-
-            const ok = await dialog.confirm({
-              title: title,
-              description: description,
-              destructive: row.enabled ? true : false,
-              confirmText: row.enabled ? 'Disable' : 'Enable',
-              cancelText: 'Cancel',
-              closeOnOverlayClick: false,
-              closeOnEsc: true,
-              size: 'sm',
-            });
-
-            if (ok) {
-              table.setSseOn(false);
-              table.updateItem(row.id, { enabled: enable });
-              try {
-                await enableNode(row.id as number, enable ? 'enable' : 'disable');
-              } catch {
-                table.updateItem(row.id, { enabled: !enable });
-              } finally {
-                table.setSseOn(true);
-              }
-              return;
-            }
-          },
-        },
-        {
           type: 'separator',
         },
         {
-          label: (
-            <Inline gap={1}>
-              <Icon name='refresh' />
-              Regenerate Keys
-            </Inline>
-          ),
+          label: 'Regenerate keys',
+          icon: 'refresh',
           type: 'item',
           onAction: async () => {
             const title = 'Regenerate node keys?';
@@ -154,12 +139,8 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
           type: 'separator',
         },
         {
-          label: (
-            <Inline gap={1}>
-              <Icon name='delete' />
-              Delete
-            </Inline>
-          ),
+          label: 'Delete',
+          icon: 'delete',
           type: 'item',
           variant: 'destructive',
           onAction: async () => {
@@ -175,15 +156,15 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
             });
 
             if (ok) {
-              table.setSseOn(false);
-              table.removeItem(row.id);
+              tableRef.current?.setSseOn(false);
+              tableRef.current?.removeItem(row.id);
               try {
                 await deleteNode(row.id as number);
                 toast.success(`Node ${row.name} deleted successfully`, { duration: 2500 });
               } catch {
-                table.refetch();
+                tableRef.current?.refetch();
               } finally {
-                table.setSseOn(true);
+                tableRef.current?.setSseOn(true);
               }
             }
           },
@@ -197,7 +178,33 @@ export function NodeList({ limit = 10, filters, live = true, onAdd }: RemotesTab
     queueMicrotask(() => setExpandedRow(row));
   }, []);
 
-  const columns: ColumnDef<NodeInfo>[] = React.useMemo(() => [...nodeColumns], []);
+  const columns: ColumnDef<NodeInfo>[] = React.useMemo(
+    () => [
+      ...nodeColumns,
+      {
+        label: 'Status',
+        key: 'enabled',
+        className: 'text-center w-24',
+        render: ({ row }) => {
+          return (
+            <Inline justify='center'>
+              <div className='w-[32px]'>
+                <SwitchInput
+                  label=''
+                  checked={row.enabled!}
+                  onCheckedChange={async (checked: boolean) => {
+                    void checked;
+                    await handleStatus({ row });
+                  }}
+                />
+              </div>
+            </Inline>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   return (
     <AppDataTable<NodeInfo>

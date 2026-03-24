@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Icon, Inline, Stack } from '@/components/foundations';
+import { Icon, IconName, Inline, Stack } from '@/components/foundations';
 
 import {
   Pagination,
@@ -92,10 +92,11 @@ export type RowActionItem<RowT extends { id: Id }> =
   | {
       type: 'item';
       label: React.ReactNode;
+      icon?: IconName;
       variant?: DropdownVariant;
       disabled?: boolean;
       inset?: boolean;
-      shortcut?: string;
+      shortcut?: React.ReactNode;
       keepOpen?: boolean;
       className?: string;
       onAction: (ctx: RowActionCtx<RowT>) => void | Promise<void>;
@@ -507,7 +508,7 @@ export const DataTable = React.forwardRef(function DataTableInner<RowT extends {
                     data-selected={selected.includes(rowId) ? 'true' : 'false'}
                     className={[
                       'group transition-colors',
-                      'hover:bg-muted/30',
+                      'hover:bg-muted/10',
                       'data-[selected=true]:bg-primary/5',
                       'data-[selected=true]:hover:bg-primary/8',
                       // rowIndex % 2 === 1 ? 'bg-muted/10' : '',

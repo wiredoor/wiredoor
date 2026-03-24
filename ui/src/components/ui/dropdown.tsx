@@ -16,6 +16,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuShortcut,
 } from '@/components/ui/dropdown-menu';
+import { Icon, IconName } from '../foundations';
 
 export type DropdownVariant = 'default' | 'destructive';
 
@@ -31,11 +32,12 @@ export type DropdownNode =
     }
   | {
       type: 'item';
+      icon?: IconName;
       label: React.ReactNode;
       variant?: DropdownVariant;
       disabled?: boolean;
       inset?: boolean;
-      shortcut?: string;
+      shortcut?: React.ReactNode;
       keepOpen?: boolean;
       className?: string;
       onAction?: (ctx?: any) => void;
@@ -143,6 +145,7 @@ function renderNode(node: DropdownNode, key: React.Key, slots?: DropdownSlots): 
             node.onAction?.();
           }}
         >
+          {node.icon && <Icon name={node.icon} className='mr-2 w-4 h-4 text-inherit' />}
           {node.label}
           {node.shortcut && <DropdownMenuShortcut>{node.shortcut}</DropdownMenuShortcut>}
         </ItemBase>

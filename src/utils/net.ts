@@ -296,6 +296,9 @@ export default class Net {
         const ipTrimmed = ip.trim();
         if (ipTrimmed) return ipTrimmed;
       } catch {
+        if (process.env.VPN_HOST) {
+          return process.env.VPN_HOST;
+        }
         error = true;
       }
     }

@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 
 import { Icon } from '@/components/foundations/icon';
-import { AppLayout } from '@/components/layouts/AppLayout';
+import { AppLayout } from '@/layouts/base/AppLayout';
 import { Footer } from './partials/footer';
 import { Logo } from './partials/logo';
 import { AppSidebar } from './partials/app-sidebar';

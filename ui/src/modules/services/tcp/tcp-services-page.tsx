@@ -1,6 +1,6 @@
 import { Container } from '@/components/foundations';
-import { PageHeader } from '@/app/layouts/partials/page-header';
-import { PageContent } from '@/app/layouts/partials/page-content';
+import { PageHeader } from '@/layouts/partials/page-header';
+import { PageContent } from '@/layouts/partials/page-content';
 
 export default function TcpServicesPage() {
   return (

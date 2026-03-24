@@ -1,5 +1,5 @@
-import { PageHeader } from '../layouts/partials/page-header';
-import { PageContent } from '../layouts/partials/page-content';
+import { PageHeader } from '../../layouts/partials/page-header';
+import { PageContent } from '../../layouts/partials/page-content';
 import { Container } from '@/components/foundations';
 
 export default function HomeView() {

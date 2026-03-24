@@ -1,5 +1,5 @@
 import { CreateNodeType, NodeInfo } from '../node-schemas';
-import axios from '../../../lib/axios';
+import axios from '@/lib/axios';
 
 export async function getNode(id: number): Promise<NodeInfo> {
   const { data } = await axios.get<NodeInfo>(`/api/nodes/${id}`);

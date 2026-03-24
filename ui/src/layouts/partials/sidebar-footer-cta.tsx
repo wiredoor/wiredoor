@@ -20,7 +20,7 @@ export function SidebarFooterCTA({
 
   return (
     <div className='space-y-5 mb-5'>
-      <Surface elevation='lg' radius='lg' className={cn('p-4', isCollapsed ? 'items-center text-center' : '')}>
+      <Surface elevation='none' radius='lg' className={cn('p-4', isCollapsed ? 'items-center text-center' : '')}>
         <Inline>
           {!isCollapsed ? (
             <div className='min-w-0'>

@@ -1,4 +1,4 @@
-import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { AuthLayout } from '@/layouts/base/AuthLayout';
 import { TopNav } from './partials/top-nav';
 import { Text } from '@/components/foundations';
 import { Footer } from './partials/footer';

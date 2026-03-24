@@ -1,20 +1,8 @@
 import * as React from 'react';
-import { Path, useController, type FieldValues } from 'react-hook-form';
+import { useController, type FieldValues } from 'react-hook-form';
 
-import {
-  Field,
-  FieldLabel,
-  FieldTitle,
-  FieldDescription,
-  FieldSeparator,
-  FieldContent,
-  FieldGroup,
-  FieldError,
-  FieldSet,
-  FieldLegend,
-} from '@/components/ui';
-import { Inline } from '@/components/foundations';
-import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs } from './types';
+import { FieldShell } from './field-shell';
+import { ControlRenderArgs, FormFieldCtx, FormFieldProps, RegisterRenderArgs, ControlA11y } from './types';
 
 const Ctx = React.createContext<FormFieldCtx<any> | null>(null);
 
@@ -24,14 +12,9 @@ export function useFormField<T extends FieldValues>() {
   return ctx as FormFieldCtx<T>;
 }
 
-function joinIds(ids: Array<string | undefined>) {
-  const s = ids.filter(Boolean).join(' ');
-  return s.length ? s : undefined;
-}
-
 export function FormField<T extends FieldValues>({
   className,
-  id: idProp,
+  id,
   form,
   name,
   title,
@@ -48,75 +31,39 @@ export function FormField<T extends FieldValues>({
   children,
 }: FormFieldProps<T>) {
   const { error } = form.getFieldState(name, form.formState);
-
-  const reactId = React.useId();
-  const id = idProp ?? `field-${name ? name : reactId}`;
-
-  const descriptionId = description ? `${id}-description` : undefined;
-  const errorId = error || invalidProp ? `${id}-error` : undefined;
-
   const invalid = Boolean(invalidProp || error);
-  const describedBy = joinIds([descriptionId, errorId]);
-
-  const Header = (
-    <>
-      {title ? <FieldTitle>{title}</FieldTitle> : null}
-
-      {label || helper ? (
-        <Inline justify='between' align='center'>
-          <FieldLabel htmlFor={id}>
-            {label}
-            {required ? (
-              <span aria-hidden='true' className='text-destructive'>
-                {' '}
-                *
-              </span>
-            ) : null}
-          </FieldLabel>
-          {helper ? helper : null}
-        </Inline>
-      ) : null}
-
-      {separator ? <FieldSeparator /> : null}
-    </>
-  );
-
-  const ctxValue: FormFieldCtx<T> = {
-    form,
-    name,
-    a11y: { id, disabled, required, describedBy, invalid },
-  };
-
-  const Body = (
-    <Ctx.Provider value={ctxValue}>
-      <FieldContent>
-        <FieldGroup>{children}</FieldGroup>
-        {invalid ? (
-          <FieldError id={errorId}>{(error?.message as string) ?? errorMessage ?? 'Invalid value'}</FieldError>
-        ) : description ? (
-          <FieldDescription id={descriptionId}>{description}</FieldDescription>
-        ) : null}
-      </FieldContent>
-    </Ctx.Provider>
-  );
 
   return (
-    <div className={className}>
-      <Field>
-        {asFieldSet ? (
-          <FieldSet>
-            {legend ? <FieldLegend>{legend}</FieldLegend> : null}
-            {Header}
-            {Body}
-          </FieldSet>
-        ) : (
-          <>
-            {Header}
-            {Body}
-          </>
-        )}
-      </Field>
-    </div>
+    <FieldShell
+      className={className}
+      id={id}
+      title={title}
+      label={label}
+      helper={helper}
+      description={description}
+      required={required}
+      disabled={disabled}
+      invalid={invalid}
+      errorMessage={(error?.message as string) ?? errorMessage ?? 'Invalid value'}
+      asFieldSet={asFieldSet}
+      legend={legend}
+      separator={separator}
+      render={({ a11y }) => {
+        const ctxValue: FormFieldCtx<T> = {
+          form,
+          name,
+          a11y: {
+            id: a11y.id,
+            disabled: a11y.disabled,
+            required: a11y.required,
+            invalid,
+            describedBy: a11y['aria-describedby'],
+          },
+        };
+
+        return <Ctx.Provider value={ctxValue}>{children}</Ctx.Provider>;
+      }}
+    />
   );
 }
 
@@ -124,7 +71,7 @@ FormField.Register = function Register<T extends FieldValues>(props: { children:
   const c = useFormField<T>();
   const reg = c.form.register(c.name);
 
-  const a11y = {
+  const a11y: ControlA11y = {
     id: c.a11y.id,
     disabled: c.a11y.disabled,
     required: c.a11y.required,
@@ -140,11 +87,11 @@ FormField.Control = function Control<T extends FieldValues>(props: { children: (
 
   const { field } = useController({
     control: c.form.control,
-    name: c.name as Path<T>,
+    name: c.name,
     disabled: c.a11y.disabled,
   });
 
-  const a11y = {
+  const a11y: ControlA11y = {
     id: c.a11y.id,
     disabled: c.a11y.disabled,
     required: c.a11y.required,

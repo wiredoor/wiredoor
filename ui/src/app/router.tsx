@@ -2,9 +2,9 @@ import React from 'react';
 import { ActionFunction, createBrowserRouter, LoaderFunction, ShouldRevalidateFunction } from 'react-router-dom';
 import { QueryClient } from '@tanstack/react-query';
 
-import { LayoutTypes } from '@/app/layouts/types';
-import { AppAuthLayout } from '@/app/layouts/app-auth-layout';
-import { AppRootLayout } from './layouts/app-root-layout';
+import { LayoutTypes } from '@/layouts/types';
+import { AppAuthLayout } from '@/layouts/app-auth-layout';
+import { AppRootLayout } from '../layouts/app-root-layout';
 import { ProtectedRoute } from './auth/protected-route';
 import { GuestRoute } from './auth/guest-route';
 
@@ -86,11 +86,11 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
     [
       {
         path: '/login',
-        lazy: () => import('@/app/pages/auth/login-page').then(convert(queryClient)),
+        lazy: () => import('@/modules/auth/login-page').then(convert(queryClient)),
       },
       {
         path: '/setup',
-        lazy: () => import('@/app/pages/auth/setup-page').then(convert(queryClient)),
+        lazy: () => import('@/modules/auth/setup-page').then(convert(queryClient)),
       },
       {
         path: '/',
@@ -98,37 +98,45 @@ export const createAppRouter = (queryClient: QueryClient, opts?: { basename: str
         children: [
           {
             index: true,
-            lazy: () => import('@/app/pages/home').then(convert(queryClient)),
+            lazy: () => import('@/modules/home/home-page').then(convert(queryClient)),
           },
           {
             path: 'services/http',
-            lazy: () => import('@/app/pages/services/http/http-services-page').then(convert(queryClient)),
+            lazy: () => import('@/modules/services/http/http-services-page').then(convert(queryClient)),
+          },
+          {
+            path: 'services/http/new',
+            lazy: () => import('@/modules/services/http/http-form-page').then(convert(queryClient)),
+          },
+          {
+            path: 'services/http/edit/:id',
+            lazy: () => import('@/modules/services/http/http-form-page').then(convert(queryClient)),
           },
           {
             path: 'services/tcp',
-            lazy: () => import('@/app/pages/services/tcp-services').then(convert(queryClient)),
+            lazy: () => import('@/modules/services/tcp/tcp-services-page').then(convert(queryClient)),
           },
           {
             path: 'nodes',
-            lazy: () => import('@/app/pages/nodes/nodes-page').then(convert(queryClient)),
+            lazy: () => import('@/modules/nodes/nodes-page').then(convert(queryClient)),
           },
           {
             path: 'nodes/new',
-            lazy: () => import('@/app/pages/nodes/form-page').then(convert(queryClient)),
+            lazy: () => import('@/modules/nodes/form-page').then(convert(queryClient)),
           },
           {
             path: 'nodes/edit/:id',
-            lazy: () => import('@/app/pages/nodes/form-page').then(convert(queryClient)),
+            lazy: () => import('@/modules/nodes/form-page').then(convert(queryClient)),
           },
           {
             path: 'settings',
-            lazy: () => import('@/app/pages/settings/settings-page').then(convert(queryClient)),
+            lazy: () => import('@/modules/settings/settings-page').then(convert(queryClient)),
           },
         ],
       },
       {
         path: '*',
-        lazy: () => import('@/app/pages/errors/not-found').then(convert(queryClient)),
+        lazy: () => import('@/modules/shared/not-found-error-page').then(convert(queryClient)),
       },
     ],
     { basename: opts?.basename },

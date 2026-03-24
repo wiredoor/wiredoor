@@ -218,7 +218,7 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                       }}
                     >
                       {item.icon ? <span className='mr-2 inline-flex'>{item.icon}</span> : null}
-                      <span className='truncate'>{item.label}</span>
+                      <span className='truncate font-light'>{item.label}</span>
 
                       <ChevronRight
                         className={cn(
@@ -239,7 +239,7 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                             <SidebarMenuSubButton asChild data-active={childActive ? 'true' : 'false'} className={subButtonClass}>
                               <Link to={child.href ?? '#'} aria-disabled={child.disabled}>
                                 {child.icon ? <span className='inline-flex'>{child.icon}</span> : null}
-                                <span className='truncate'>{child.label}</span>
+                                <span className='truncate font-light'>{child.label}</span>
                                 {child.badge ? <span className='ml-auto'>{child.badge}</span> : null}
                               </Link>
                             </SidebarMenuSubButton>

@@ -51,7 +51,7 @@ type NodeFormFieldsProps = {
   onCancel: () => void;
 };
 
-export function NodeFormFields({ id, form, shake, onCancel }: NodeFormFieldsProps) {
+export function HttpResourceFields({ id, form, shake, onCancel }: NodeFormFieldsProps) {
   const isEdit = Boolean(id);
 
   const isAdvanced = useWatch({ control: form.control, name: 'advanced' });

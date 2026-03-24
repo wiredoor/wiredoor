@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Icon, Inline, Stack, Text } from '@/components/foundations';
 import { TextField } from '@/components/compound/form';
 import { Button } from '@/components/ui';
-import { useForm } from '../../../../hooks/use-form';
+import { useForm } from '@/hooks/use-form';
 
 interface TokenSectionProps {
   token: string;

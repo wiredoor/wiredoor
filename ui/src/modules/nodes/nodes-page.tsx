@@ -2,8 +2,8 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import { Container } from '@/components/foundations';
-import { PageHeader } from '@/app/layouts/partials/page-header';
-import { PageContent } from '@/app/layouts/partials/page-content';
+import { PageHeader } from '@/layouts/partials/page-header';
+import { PageContent } from '@/layouts/partials/page-content';
 import { NodeList, RemotesTableProps } from '@/modules/nodes/components/table/node-list';
 import { Button } from '@/components/ui/button';
 import { NodeFilters } from '@/modules/nodes/components/table/node-filters';

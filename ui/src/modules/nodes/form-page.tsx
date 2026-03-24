@@ -2,8 +2,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Container, Icon } from '@/components/foundations';
-import { PageHeader } from '@/app/layouts/partials/page-header';
-import { PageContent } from '@/app/layouts/partials/page-content';
+import { PageHeader } from '@/layouts/partials/page-header';
+import { PageContent } from '@/layouts/partials/page-content';
 import { NodeForm } from '@/modules/nodes/components/form/node-form';
 
 export default function FormPage() {

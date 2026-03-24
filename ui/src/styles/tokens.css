@@ -3,33 +3,35 @@
   --radius: 0.625rem;
 
   /* ====== Surfaces ====== */
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(0, 0%, 4%);
+  --background: #ffffff;
+  --foreground: #475467;
+  /* --foreground: #475467; # Suggested by Designer */ 
 
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(0, 0%, 4%);
+  --card: #ffffff;
+  --card-foreground: #475467;
 
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(0, 0%, 4%);
+  --popover: #ffffff;
+  --popover-foreground: #475467;
 
   /* ====== Brand / roles ====== */
-  --primary: hsl(221, 83%, 53%);
-  --primary-foreground: hsl(0, 0%, 100%);
+  --primary: #2463eb;
+  --primary-foreground: #ffffff;
 
-  --secondary: hsl(220, 19%, 94%);
-  --secondary-foreground: hsl(244, 81%, 4%);
+  --secondary: #eceef2;
+  --secondary-foreground: #030213;
 
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(244, 81%, 4%);
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
 
   /* ====== Neutral helpers ====== */
-  --muted: hsl(240, 12%, 93%);
-  --muted-foreground: hsl(240, 7%, 48%);
+  --muted: #ececf0;
+  --muted-foreground: #717182;
 
-  --border: hsla(0, 0%, 0%, 0.1);
-  --input: hsl(214 32% 91%);
-  --ring: hsl(221, 70%, 60%);
-  --link: hsl(221, 83%, 53%);
+  --border: rgba(0, 0, 0, 0.1);
+  --input: #e1e7ef;
+  --input-background: #f3f3f5;
+  --ring: #527fe0;
+  --link: #2463eb;
 
   /* ====== Semantic states ====== */
   --success: hsl(142, 76%, 36%);
@@ -44,31 +46,29 @@
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 98%);
 
-  /* ====== Data viz (si usas charts) ====== */
+  /* ====== Data viz ====== */
   --chart-1: hsl(18 100% 48%);
   --chart-2: hsl(175 100% 29%);
   --chart-3: hsl(196 72% 23%);
   --chart-4: hsl(44 100% 50%);
   --chart-5: hsl(36 100% 50%);
 
-  /* ====== Sidebar (si lo necesitas) ====== */
-  --sidebar: hsl(0, 0%, 98%);
-  --sidebar-foreground: hsl(0, 0%, 4%);
-  --sidebar-primary: hsl(244, 81%, 4%);
-  --sidebar-primary-foreground: hsl(0, 0%, 98%);
-  --sidebar-accent: hsl(0, 0%, 97%);
-  --sidebar-accent-foreground: hsl(0, 0%, 20%);
-  --sidebar-border: hsl(0, 0%, 92%);
-  --sidebar-ring: hsl(0, 0%, 71%);
-
-  /* ====== NEW tokens que te faltan para “customizar pro” ======
-   * (muy útiles para componentes reales)
-   */
+  /* ====== Sidebar ====== */
+  --sidebar: #fafafa;
+  --sidebar-foreground: #475467;
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #f7f7f7;
+  --sidebar-accent-foreground: #333333;
+  --sidebar-border: #ebebeb;
+  --sidebar-ring: #b5b5b5;
 
   /* Overlays & focus */
-  --overlay: hsl(229 85% 5% / 0.55); /* para Dialog overlay */
+  --overlay: hsl(229 85% 5% / 0.55);
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
+
+  --font-size: 16px;
 
   /* Typography */
   --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
@@ -81,7 +81,7 @@
   --font-weight-normal: 400;
   --font-weight-medium: 500;
 
-  /* Component sizing (muy útil para Buttons/Inputs) */
+  /* Component sizing */
   --control-height-sm: 2rem;   /* 32px */
   --control-height-md: 2.5rem; /* 40px */
   --control-height-lg: 3rem;   /* 48px */
@@ -99,52 +99,52 @@
 }
 
 .dark {
-  --background: hsl(0, 0%, 4%);
-  --foreground: hsl(0, 0%, 98%);
+  --background: #0a0a0a;
+  --foreground: #fafafa;
 
-  --card: hsl(0, 0%, 4%);
-  --card-foreground: hsl(0, 0%, 98%);
+  --card: #0a0a0a;
+  --card-foreground: #fafafa;
 
-  --popover: hsl(0, 0%, 4%);
-  --popover-foreground: hsl(0, 0%, 98%);
+  --popover: #0a0a0a;
+  --popover-foreground: #fafafa;
 
-  --primary: hsl(221, 83%, 53%);
-  --primary-foreground: hsl(0, 0%, 100%);
+  --primary: #2463eb;
+  --primary-foreground: #ffffff;
 
-  --secondary: hsl(0, 0%, 15%);
-  --secondary-foreground: hsl(0, 0%, 98%);
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
 
-  --muted: hsl(0, 0%, 15%);
-  --muted-foreground: hsl(0, 0%, 63%);
+  --muted: #262626;
+  --muted-foreground: #a1a1a1;
 
-  --accent: hsl(0, 0%, 15%);
-  --accent-foreground: hsl(0, 0%, 98%);
+  --accent: #262626;
+  --accent-foreground: #fafafa;
 
-  --border: hsl(0, 0%, 15%);
-  --input: hsl(223 30% 18%);
-  --ring: hsl(221, 70%, 60%);
-  --link: hsl(0, 0%, 98%);
+  --border: #262626;
+  --input: #20283c;
+  --ring: #527fe0;
+  --link: #fafafa;
 
-  --success: hsl(142 71% 45%);
-  --success-foreground: hsl(0 0% 98%);
+  --success: #21c45d;
+  --success-foreground: #fafafa;
 
-  --warning: hsl(45 93% 47%);
-  --warning-foreground: hsl(20 15% 10%);
+  --warning: #e7b008;
+  --warning-foreground: #1d1816;
 
-  --info: hsl(198 100% 50%);
-  --info-foreground: hsl(0 0% 98%);
+  --info: #00b3ff;
+  --info-foreground: #fafafa;
 
-  --destructive: hsl(0 62.8% 30.6%);
-  --destructive-foreground: hsl(0 0% 98%);
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fafafa;
 
-  --sidebar: hsl(0, 0%, 9%);
-  --sidebar-foreground: hsl(0, 0%, 98%);
-  --sidebar-primary: hsl(225, 84%, 49%);
-  --sidebar-primary-foreground: hsl(0, 0%, 98%);
-  --sidebar-accent: hsl(0, 0%, 15%);
-  --sidebar-accent-foreground: hsl(0, 0%, 98%);
-  --sidebar-border: hsl(0, 0%, 27%);
-  --sidebar-ring: hsl(0, 0%, 43%);
+  --sidebar: #171717;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #1448e6;
+  --sidebar-primary-foreground: #fafafa;
+  --sidebar-accent: #262626;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #454545;
+  --sidebar-ring: #6e6e6e;
 
   --overlay: hsl(0 0% 0% / 0.6);
 

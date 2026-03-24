@@ -5,11 +5,12 @@ import { FilterQueryDto, PagedData } from '../../schemas/shared-schemas';
 export abstract class RepositoryQueryFilter<T, R extends BaseRepository<T>> {
   protected filters: FilterQueryDto;
   protected builder: SelectQueryBuilder<T>;
+  protected alias: string | undefined = undefined;
 
   constructor(protected repository: R) {}
 
   private initBuilder(): void {
-    this.builder = this.repository.createQueryBuilder();
+    this.builder = this.repository.createQueryBuilder(this.alias);
   }
 
   public before(): void {

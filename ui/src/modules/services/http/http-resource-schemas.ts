@@ -1,5 +1,5 @@
-import { Schema } from 'joi';
-import Joi from '../utils/joi-validator';
+import Joi, { Schema } from 'joi';
+import { NodeInfo } from '../../nodes/node-schemas';
 
 /**
  * Filter schemas
@@ -12,16 +12,15 @@ export type HttpResourceFilterQueryParams = {
   orderDir?: 'asc' | 'desc';
 };
 
-export const httpResourceFilterValidator =
-  Joi.object<HttpResourceFilterQueryParams>({
-    q: Joi.string().allow('').optional(),
-    page: Joi.number().integer().min(1).optional(),
-    limit: Joi.number().integer().min(1).max(250).optional(),
-    orderBy: Joi.string().optional(),
-    orderDir: Joi.string().valid('asc', 'desc').optional(),
-  })
-    .unknown(false)
-    .prefs({ abortEarly: false });
+export const httpResourceFilterValidator = Joi.object<HttpResourceFilterQueryParams>({
+  q: Joi.string().allow('').optional(),
+  page: Joi.number().integer().min(1).optional(),
+  limit: Joi.number().integer().min(1).max(250).optional(),
+  orderBy: Joi.string().optional(),
+  orderDir: Joi.string().valid('asc', 'desc').optional(),
+})
+  .unknown(false)
+  .prefs({ abortEarly: false });
 
 /**
  * Types
@@ -54,12 +53,7 @@ export type HttpPredicateV1 =
       leaf: {
         op: 'eq' | 'neq' | 'in' | 'contains' | 'matches' | 'exists';
         left: { var: AccessVar };
-        right?:
-          | string
-          | number
-          | boolean
-          | Array<string | number | boolean>
-          | null;
+        right?: string | number | boolean | Array<string | number | boolean> | null;
       };
     };
 
@@ -86,21 +80,7 @@ export type EdgeAction =
   | {
       type: 'return';
       params: {
-        code:
-          | 301
-          | 302
-          | 307
-          | 308
-          | 401
-          | 403
-          | 404
-          | 410
-          | 418
-          | 429
-          | 444
-          | 451
-          | 500
-          | 503;
+        code: 301 | 302 | 307 | 308 | 401 | 403 | 404 | 410 | 418 | 429 | 444 | 451 | 500 | 503;
         body?: string;
       };
     };
@@ -121,16 +101,19 @@ export type AccessRuleSpec = {
   upstreamPathPattern?: string;
 };
 
-export type AccessRuleInfo = Omit<AccessRuleSpec, 'when' | 'upstreamPathPattern'> & {
+export type AccessRuleInfo = {
   id: number;
   httpResourceId: number;
+  enabled?: boolean;
+  order?: number;
   matchType: RuleMatchType;
   pattern: string;
   methods?: string[];
-  action: RuleAction;
+  action: RuleAction; // 'public' | 'require_auth' | 'deny'
+  predicate?: HttpPredicateV1 | null;
   created_at: Date;
   updated_at: Date;
-}
+};
 
 export type EdgeRuleSpec = {
   id?: number;
@@ -141,15 +124,18 @@ export type EdgeRuleSpec = {
   upstreamPathPattern?: string;
 };
 
-export type EdgeRuleInfo = Omit<EdgeRuleSpec, 'when' | 'upstreamPathPattern'> & {
+export type EdgeRuleInfo = {
   id: number;
   httpResourceId: number;
+  enabled?: boolean;
+  order?: number;
   matchType: RuleMatchType;
   pattern: string;
   methods?: string[];
+  action: EdgeAction;
   created_at: Date;
   updated_at: Date;
-}
+};
 
 export type ReconcileCounters = {
   created: number;
@@ -175,12 +161,7 @@ const httpMethodValidator = Joi.string()
   .valid('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS')
   .messages({ 'any.only': 'Invalid HTTP method' });
 
-export const methodsValidator = Joi.array()
-  .items(httpMethodValidator)
-  .min(1)
-  .unique()
-  .allow(null)
-  .optional();
+export const methodsValidator = Joi.array().items(httpMethodValidator).min(1).unique().allow(null).optional();
 
 const slashPathValidator = Joi.string().pattern(/^\//).messages({
   'string.pattern.base': 'path must start with `/`',
@@ -212,11 +193,7 @@ export const whenSchemaValidator = Joi.object<WhenSpec>({
   methods: methodsValidator,
 });
 
-const ruleActionValidator = Joi.string().valid(
-  'public',
-  'require_auth',
-  'deny',
-);
+const ruleActionValidator = Joi.string().valid('public', 'require_auth', 'deny');
 
 const AllowedVars = new Set([
   'user.email',
@@ -247,9 +224,7 @@ const varRefSchemaValidator = Joi.object({
 }).required();
 
 const leafOpSchemaValidator = Joi.object({
-  op: Joi.string()
-    .valid('eq', 'neq', 'in', 'contains', 'matches', 'exists')
-    .required(),
+  op: Joi.string().valid('eq', 'neq', 'in', 'contains', 'matches', 'exists').required(),
   left: varRefSchemaValidator,
   right: Joi.alternatives()
     .try(
@@ -257,9 +232,7 @@ const leafOpSchemaValidator = Joi.object({
       Joi.number(),
       Joi.boolean(),
       Joi.array()
-        .items(
-          Joi.alternatives().try(Joi.string(), Joi.number(), Joi.boolean()),
-        )
+        .items(Joi.alternatives().try(Joi.string(), Joi.number(), Joi.boolean()))
         .min(1),
       Joi.valid(null),
     )
@@ -358,16 +331,7 @@ const Rate = Joi.string()
   .messages({ 'string.pattern.base': 'rate must look like 10r/s' });
 
 export const edgeActionSchemaValidator = Joi.object({
-  type: Joi.string()
-    .valid(
-      'ip.allow',
-      'ip.deny',
-      'request.header.set',
-      'response.header.set',
-      'rate_limit.req',
-      'return',
-    )
-    .required(),
+  type: Joi.string().valid('ip.allow', 'ip.deny', 'request.header.set', 'response.header.set', 'rate_limit.req', 'return').required(),
   params: Joi.object().required(),
 })
   .custom((value, helpers) => {
@@ -375,8 +339,7 @@ export const edgeActionSchemaValidator = Joi.object({
     const p = value.params ?? {};
     const keys = Object.keys(p);
 
-    const unknownKeys = (allowed: string[]) =>
-      keys.filter((k) => !allowed.includes(k));
+    const unknownKeys = (allowed: string[]) => keys.filter((k) => !allowed.includes(k));
 
     if (t === 'ip.allow' || t === 'ip.deny') {
       const bad = unknownKeys(['cidrs']);
@@ -445,14 +408,7 @@ export const edgeActionSchemaValidator = Joi.object({
     }
 
     if (t === 'rate_limit.req') {
-      const bad = unknownKeys([
-        'zone',
-        'rate',
-        'burst',
-        'nodelay',
-        'key',
-        'status',
-      ]);
+      const bad = unknownKeys(['zone', 'rate', 'burst', 'nodelay', 'key', 'status']);
       if (bad.length)
         return helpers.error('any.custom', {
           message: `Unknown params for ${t}: ${bad.join(', ')}`,
@@ -486,24 +442,7 @@ export const edgeActionSchemaValidator = Joi.object({
         });
 
       const schema = Joi.object({
-        code: Joi.number()
-          .valid(
-            301,
-            302,
-            307,
-            308,
-            401,
-            403,
-            404,
-            410,
-            418,
-            429,
-            444,
-            451,
-            500,
-            503,
-          )
-          .required(),
+        code: Joi.number().valid(301, 302, 307, 308, 401, 403, 404, 410, 418, 429, 444, 451, 500, 503).required(),
         body: Joi.string().max(4096).optional(),
       });
 
@@ -551,9 +490,10 @@ export type HttpUpstreamSpec = {
 
 export type HttpUpstreamInfo = HttpUpstreamSpec & {
   id: number;
+  node?: NodeInfo;
   created_at: Date;
   updated_at: Date;
-}
+};
 
 export const regexPathValidator = Joi.string()
   .trim()
@@ -569,9 +509,7 @@ export const pathValidator = Joi.string()
     'string.pattern.base': 'pathPattern must start with /',
   });
 
-export const ruleMatchTypeValidator = Joi.string()
-  .valid('exact', 'prefix', 'regex')
-  .required();
+export const ruleMatchTypeValidator = Joi.string().valid('exact', 'prefix', 'regex').required();
 
 export const pathPatternValidator = Joi.alternatives()
   .conditional('type', {
@@ -584,10 +522,7 @@ export const pathPatternValidator = Joi.alternatives()
 export const pathRewriteValidator = Joi.object<HttpRewrite>({
   pattern: regexPathValidator.required(),
   replacement: Joi.string().trim().required(),
-  flag: Joi.string()
-    .allow('', null)
-    .valid('last', 'break', 'redirect', 'permanent')
-    .optional(),
+  flag: Joi.string().allow('', null).valid('last', 'break', 'redirect', 'permanent').optional(),
 })
   .allow(null)
   .optional();
@@ -623,8 +558,7 @@ export const httpUpstreamValidator = Joi.object<HttpUpstreamSpec>({
   .required()
   .custom((value, helpers) => {
     const hasNode = value.targetNodeId != null;
-    const hasHost =
-      value.targetHost != null && String(value.targetHost).trim() !== '';
+    const hasHost = value.targetHost != null && String(value.targetHost).trim() !== '';
 
     // Require exactly one target source (avoid ambiguous routing)
     if (!hasNode && !hasHost) {
@@ -636,8 +570,7 @@ export const httpUpstreamValidator = Joi.object<HttpUpstreamSpec>({
     // targetSslVerify semantics
     if (value.targetProtocol === 'http' && value.targetSslVerify === true) {
       return helpers.error('any.custom', {
-        message:
-          'targetSslVerify can only be true when targetProtocol is https',
+        message: 'targetSslVerify can only be true when targetProtocol is https',
       });
     }
 
@@ -695,8 +628,13 @@ export type HttpResourceType = {
   edgeRules?: EdgeRuleSpec[];
 };
 
-export type HttpResourceInfo = HttpResourceType & {
+export type HttpResourceInfo = {
   id: number;
+  name: string;
+  domain?: string;
+  enabled?: boolean;
+  expiresAt?: Date;
+  oidcProviderId?: number;
   httpUpstreams: HttpUpstreamInfo[];
   accessRules: AccessRuleInfo[];
   edgeRules: EdgeRuleInfo[];
