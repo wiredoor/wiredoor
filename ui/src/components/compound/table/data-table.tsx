@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LoaderOverlay } from '@/components/compound/loader/loader-overlay';
 import { Dropdown, DropdownVariant } from '@/components/ui/dropdown';
 import { Button } from '@/components/ui/button';
-import { cn } from '../../../lib/utils';
+import { cn } from '@/lib/utils';
 
 export type Id = string | number;
 
