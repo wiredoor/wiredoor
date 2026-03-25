@@ -85,7 +85,7 @@ const authAvailable = computed(() => {
             label="Public Domain"
             :options="domainOptions"
             placeholder="example.com"
-            description="Specify or select a public domain to access this service (e.g., service.domain.com). If left empty, the service will only be accessible by IP."
+            description="Specify or select a public domain to access this service (e.g., service.domain.com). The public domain + path combination must stay unique. If left empty, the service will only be accessible by IP."
             :errors="errors"
             :tabindex="1"
             allowCustomValue
@@ -98,7 +98,7 @@ const authAvailable = computed(() => {
             field="pathLocation"
             label="Public HTTP Path"
             placeholder="/"
-            description="Define the public path where the service will be available (e.g., /api). The combination of Public Domain + Public Path must be unique."
+            description="Define the public path where the service will be available (e.g., /api). The combination of Public Domain + Public Path must be unique, even when multiple services reuse the same backend."
             :errors="errors"
             :tabindex="2"
             :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
@@ -117,11 +117,11 @@ const authAvailable = computed(() => {
               <div class="text-sm">
                 <p>
                   Choose the protocol (http:// or https://) and specify the backend service
-                  hostname.
+                  hostname or IP.
                 </p>
                 <p>
-                  If the node is a gateway, specify the hostname or IP of the backend service (e.g.,
-                  192.168.1.100 or internal.service.com).
+                  Multiple HTTP services can point to the same backend target. This is useful when
+                  one internal reverse proxy, such as Traefik, routes many domains.
                 </p>
                 <p>
                   If the node is not a gateway, this field is disabled, and only local services on
@@ -165,7 +165,7 @@ const authAvailable = computed(() => {
             type="number"
             label="Backend Port"
             placeholder="80"
-            description="Specify the port where the service is running on the specified hostname or node (e.g., 8080)."
+            description="Specify the port where the backend service is running on the specified hostname or node (e.g., 8080). This backend may be shared by multiple HTTP services."
             :errors="errors"
             :tabindex="6"
             :disabled="node?.isLocal && formData.backendHost === '127.0.0.1'"
