@@ -52,7 +52,7 @@ export function useHttpServiceForm() {
       id,
       initialData,
       title: 'Expose HTTP Service on Node',
-      description: `This form allows you to expose an HTTP service from a node connected to Wiredoor. The configuration will be applied via Nginx, enabling access through a unique public domain and path combination.`,
+      description: `This form allows you to expose an HTTP service from a node connected to Wiredoor. Each service keeps one public domain and path, but many services may point to the same backend host and port.`,
       endpoint: `/api/services/${node.value.id}/http`,
       onSubmit: async (form) => {
         openServiceInfo(form)

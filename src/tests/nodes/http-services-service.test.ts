@@ -282,6 +282,60 @@ describe('HTTP Services Service', () => {
         ),
       );
     });
+
+    it('should allow multiple HTTP services to share the same backend target', async () => {
+      const sharedBackend = {
+        backendHost: '10.99.80.131',
+        backendPort: 443,
+        backendProto: 'https',
+      } as const;
+
+      const serviceData1 = {
+        ...makeHttpServiceData({
+          ...sharedBackend,
+          name: 'argocd',
+          domain: 'argocd.example.test',
+          pathLocation: '/',
+        }),
+        backendHost: sharedBackend.backendHost,
+      };
+      const serviceData2 = {
+        ...makeHttpServiceData({
+          ...sharedBackend,
+          name: 'headlamp',
+          domain: 'headlamp.example.test',
+          pathLocation: '/',
+        }),
+        backendHost: sharedBackend.backendHost,
+      };
+
+      mockNslookup.mockImplementation(
+        jest.fn(() => {
+          return true;
+        }),
+      );
+
+      const created1 = await service.createHttpService(node.id, serviceData1);
+      const created2 = await service.createHttpService(node.id, serviceData2);
+
+      expect(created1.backendHost).toEqual(sharedBackend.backendHost);
+      expect(created2.backendHost).toEqual(sharedBackend.backendHost);
+      expect(created1.backendPort).toEqual(sharedBackend.backendPort);
+      expect(created2.backendPort).toEqual(sharedBackend.backendPort);
+
+      expect(mockSaveToFile).toHaveBeenCalledWith(
+        `/etc/nginx/locations/${serviceData1.domain}/__main.conf`,
+        expect.stringContaining(
+          `${serviceData1.backendProto}://$node${node.id}service${created1.id}:${serviceData1.backendPort}`,
+        ),
+      );
+      expect(mockSaveToFile).toHaveBeenCalledWith(
+        `/etc/nginx/locations/${serviceData2.domain}/__main.conf`,
+        expect.stringContaining(
+          `${serviceData2.backendProto}://$node${node.id}service${created2.id}:${serviceData2.backendPort}`,
+        ),
+      );
+    });
   });
 
   describe('Update HTTP Service', () => {
