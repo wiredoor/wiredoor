@@ -38,13 +38,20 @@ export function useAppForm<TForm extends FieldValues, TData>(cfg: {
       } catch (err: any) {
         triggerShake();
         const message = cfg.getErrorMessage?.(err) ?? err?.response?.data?.message ?? err?.message ?? 'Unknown Server Error';
-        form.setError('root' as any, { message });
+        if (err.status === 422) {
+          err.response.data.errors?.body?.forEach((i: { field: string; message: string }) => {
+            if (i.field && i.message) {
+              form.setError(i.field as any, { type: 'server', message: i.message });
+            }
+          });
+        } else {
+          form.setError('root' as any, { message });
+        }
       }
     },
     onError: (err: any) => {
+      void err;
       triggerShake();
-      const message = cfg.getErrorMessage?.(err) ?? err?.response?.data?.message ?? 'Validation Error';
-      form.setError('root' as any, { message });
     },
   });
 

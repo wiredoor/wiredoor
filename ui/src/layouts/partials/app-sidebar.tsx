@@ -88,23 +88,21 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
   }
 
   const topLevelButtonClass = cn(
-    'relative h-10',
-    'hover:bg-primary/10',
-    'active:bg-primary/40 active:text-primary',
-    'data-[state=open]:hover:bg-primary/10 data-[state=open]:hover:text-primary',
-    'data-[active=true]:bg-primary/20 data-[active=true]:text-primary font-semibold transition-colors',
-    'data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:font-semibold',
-    'data-[active=true]:before:h-6 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary',
+    'relative h-10 gap-2 rounded-md text-sidebar-foreground',
+    'hover:bg-black/5 hover:text-foreground dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground',
+    'active:bg-black/8 active:text-foreground dark:active:bg-sidebar-accent dark:active:text-sidebar-accent-foreground',
+    'data-[state=open]:hover:bg-black/5 data-[state=open]:hover:text-foreground dark:data-[state=open]:hover:bg-sidebar-accent dark:data-[state=open]:hover:text-sidebar-accent-foreground',
+    'data-[active=true]:bg-primary/12 data-[active=true]:text-primary data-[active=true]:font-medium dark:data-[active=true]:bg-sidebar-accent dark:data-[active=true]:text-sidebar-accent-foreground',
+    'transition-colors',
   );
 
   const subButtonClass = cn(
-    'relative h-9',
-    'hover:bg-primary/10',
-    'active:bg-primary/40 active:text-primary',
-    'data-[state=open]:hover:bg-primary/10 data-[state=open]:hover:text-primary',
-    'data-[active=true]:bg-primary/20 data-[active=true]:text-primary font-semibold transition-colors',
-    'data-[active=true]:before:absolute data-[active=true]:before:left-0 data-[active=true]:before:top-1/2 data-[active=true]:before:-translate-y-1/2 data-[active=true]:font-semibold',
-    'data-[active=true]:before:h-6 data-[active=true]:before:w-[2px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-primary/80',
+    'h-8 gap-2 rounded-md px-2.5 text-sidebar-foreground',
+    'hover:bg-black/5 hover:text-foreground dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground',
+    'active:bg-black/8 active:text-foreground dark:active:bg-sidebar-accent dark:active:text-sidebar-accent-foreground',
+    'data-[state=open]:hover:bg-black/5 data-[state=open]:hover:text-foreground dark:data-[state=open]:hover:bg-sidebar-accent dark:data-[state=open]:hover:text-sidebar-accent-foreground',
+    'data-[active=true]:bg-primary/12 data-[active=true]:text-primary data-[active=true]:font-medium dark:data-[active=true]:bg-sidebar-accent dark:data-[active=true]:text-sidebar-accent-foreground',
+    'transition-colors',
   );
 
   return (
@@ -120,8 +118,12 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
         <SidebarMenu>
           {navItems.map((item) => {
             const hasChildren = !!item.children?.length;
+            const parentHasActiveChild = hasChildren && isChildActive(item, activePath, activeMatchMode);
 
-            const parentActive = isItemActive(item, activePath, activeMatchMode);
+            // For grouped items, avoid marking parent as active when a child is active.
+            // This keeps a single selected entry in the visual hierarchy.
+            const parentSelfActive = !!activePath && !!item.href ? isPathActive(item.href, activePath, activeMatchMode) : false;
+            const parentActive = hasChildren ? parentSelfActive : isItemActive(item, activePath, activeMatchMode);
 
             if (!hasChildren) {
               const selfActive = !!activePath && !!item.href ? isPathActive(item.href, activePath, activeMatchMode) : false;
@@ -157,11 +159,18 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                         tooltip={item.label}
                         disabled={item.disabled}
                         data-active={parentActive ? 'true' : 'false'}
-                        className={topLevelButtonClass}
+                        data-has-active-child={parentHasActiveChild ? 'true' : 'false'}
+                        className={cn(
+                          topLevelButtonClass,
+                          parentHasActiveChild && 'bg-primary/12 text-primary font-medium dark:bg-sidebar-accent dark:text-sidebar-accent-foreground',
+                        )}
                       >
-                        {item.icon ? <span className='mr-2 inline-flex'>{item.icon}</span> : null}
+                        {item.icon ? (
+                          <span className={cn('mr-2 inline-flex', parentHasActiveChild && 'text-primary dark:text-sidebar-accent-foreground')}>
+                            {item.icon}
+                          </span>
+                        ) : null}
                         <span className='truncate'>{item.label}</span>
-                        <ChevronRight className='ml-auto h-4 w-4 opacity-70' />
                       </SidebarMenuButton>
                     </DropdownMenuTrigger>
 
@@ -178,7 +187,11 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                               if (!child.href || child.disabled) return;
                               navigate(child.href);
                             }}
-                            className={cn(childActive && 'bg-sidebar text-foreground')}
+                            className={
+                              childActive
+                                ? 'bg-primary/12 text-primary font-medium dark:bg-sidebar-accent dark:text-sidebar-accent-foreground'
+                                : undefined
+                            }
                           >
                             {child.icon ? <span className='mr-2 inline-flex'>{child.icon}</span> : null}
                             <span className='truncate'>{child.label}</span>
@@ -199,8 +212,12 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                     <SidebarMenuButton
                       tooltip={item.label}
                       disabled={item.disabled}
-                      data-active={parentActive ? 'true' : 'false'} // ✅ parent active
-                      className={cn(topLevelButtonClass, 'gap-2')}
+                      data-active={parentActive ? 'true' : 'false'}
+                      data-has-active-child={parentHasActiveChild ? 'true' : 'false'}
+                      className={cn(
+                        topLevelButtonClass,
+                        parentHasActiveChild && 'bg-transparent text-foreground font-medium dark:text-sidebar-foreground',
+                      )}
                       onClick={(e) => {
                         if (item.disabled) return;
 
@@ -217,12 +234,15 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                         }
                       }}
                     >
-                      {item.icon ? <span className='mr-2 inline-flex'>{item.icon}</span> : null}
-                      <span className='truncate font-light'>{item.label}</span>
+                      {item.icon ? (
+                        <span className={cn('mr-2 inline-flex', parentHasActiveChild && 'text-primary dark:text-primary')}>{item.icon}</span>
+                      ) : null}
+                      <span className='truncate'>{item.label}</span>
 
                       <ChevronRight
                         className={cn(
-                          'ml-auto h-4 w-4 opacity-70 transition-transform duration-200',
+                          'ml-auto h-4 w-4 transition-transform duration-200 transition-colors',
+                          parentHasActiveChild ? 'text-primary opacity-90 dark:text-primary' : 'text-foreground/60 dark:text-sidebar-foreground/60',
                           'group-data-[state=open]/collapsible:rotate-90',
                         )}
                       />
@@ -230,7 +250,7 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                   </CollapsibleTrigger>
 
                   <CollapsibleContent>
-                    <SidebarMenuSub className='px-0 mx-2'>
+                    <SidebarMenuSub className='mx-1 my-1 border-sidebar-border/70 px-1.5'>
                       {item.children!.map((child) => {
                         const childActive = !!activePath && !!child.href ? isPathActive(child.href, activePath, activeMatchMode) : false;
 
@@ -238,8 +258,8 @@ export function AppSidebar({ brand, navItems, activeMatchMode = 'prefix', sideba
                           <SidebarMenuSubItem key={child.id}>
                             <SidebarMenuSubButton asChild data-active={childActive ? 'true' : 'false'} className={subButtonClass}>
                               <Link to={child.href ?? '#'} aria-disabled={child.disabled}>
-                                {child.icon ? <span className='inline-flex'>{child.icon}</span> : null}
-                                <span className='truncate font-light'>{child.label}</span>
+                                {child.icon ? <span className='mr-2 inline-flex'>{child.icon}</span> : null}
+                                <span className='truncate'>{child.label}</span>
                                 {child.badge ? <span className='ml-auto'>{child.badge}</span> : null}
                               </Link>
                             </SidebarMenuSubButton>

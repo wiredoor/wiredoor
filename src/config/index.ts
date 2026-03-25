@@ -52,10 +52,10 @@ function getKey(
 
     fs.writeFileSync(file, `${secret}\n`, { mode: 0o600 });
 
-    Logger.info(`Secret ${name} was generated and stored at ${file}`);
+    console.log(`Secret ${name} was generated and stored at ${file}`);
     return secret;
   } catch (error: any) {
-    Logger.error(
+    console.error(
       `Error loading or generating secret "${name}" (${file}):`,
       error,
     );
