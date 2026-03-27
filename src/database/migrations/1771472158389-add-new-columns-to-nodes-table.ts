@@ -29,9 +29,7 @@ export class AddNewColumnsToNodesTable1771472158389 implements MigrationInterfac
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `DROP INDEX IF EXISTS "UQ_http_resources_external_id"`,
-    );
+    await queryRunner.query(`DROP INDEX IF EXISTS "UQ_nodes_name"`);
     await queryRunner.query(`ALTER TABLE "nodes" DROP COLUMN "connectedAt";`);
     await queryRunner.query(
       `ALTER TABLE "nodes" DROP COLUMN "disconnectedAt";`,

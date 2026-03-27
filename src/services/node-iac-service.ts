@@ -124,8 +124,11 @@ export class NodeIacService {
     const names = (manifest.http ?? []).map((h) => h.name);
     if (names.length === 0) return errors;
 
-    const existing = await this.httpResourceRepository.findBy(
-      { name: In(names) },
+    const existing = await this.httpResourceRepository.find(
+      {
+        where: { name: In(names) },
+        relations: ['httpUpstreams'],
+      },
       manager,
     );
 
