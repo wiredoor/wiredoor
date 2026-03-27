@@ -14,9 +14,6 @@ import config from '../../config';
 import { getTtlFromExpiresAt } from '../../utils/ttl-utils';
 
 @Entity('http_services')
-@Index('UX_service_port_unique', ['backendPort', 'backendHost', 'nodeId'], {
-  unique: true,
-})
 @Index('UX_domain_path_unique', ['domain', 'pathLocation'], { unique: true })
 export class HttpService {
   @PrimaryGeneratedColumn()

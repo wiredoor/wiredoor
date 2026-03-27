@@ -23,7 +23,7 @@ const { isOpen, closeDialog, service } = useServiceInfo()
       </div>
 
       <div class="flex justify-between items-center mt-5">
-        <strong>Backend:</strong>
+        <strong>Backend Target:</strong>
         <span class="text-gray-700 dark:text-gray-500">{{ (service as HttpService).backendProto || (service as TcpService).proto }}://{{ service.backendHost || 'localhost' }}:{{ service.backendPort }}</span>
       </div>
 

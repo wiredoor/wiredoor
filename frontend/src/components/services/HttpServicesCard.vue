@@ -136,7 +136,7 @@ const editService = (service: HttpService) => {
               >
               <br />
               <span class="inline-block">
-                Proxy ->
+                Upstream ->
                 <span class="font-medium">
                   {{
                     row.backendHost
