@@ -63,7 +63,7 @@ jobs:
             .
 
       - name: Trivy scan prod image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: wiredoor:pr-prod
           format: table
