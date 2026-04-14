@@ -242,7 +242,7 @@ jobs:
           fi
 
       - name: Install Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.TAG }}
           format: table
