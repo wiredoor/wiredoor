@@ -40,7 +40,7 @@ export class CliTokenHandler implements ExpressMiddlewareInterface {
     if (data.type === 'client') {
       const pat = await this.patService.getPatById(data.id);
 
-      if (!pat || pat.revoked || pat.expireAt > new Date()) {
+      if (!pat || pat.revoked || pat.expireAt < new Date()) {
         throw new ForbiddenError();
       }
 
