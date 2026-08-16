@@ -89,7 +89,7 @@ RUN npm run build
 
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:22-alpine3.22 AS uibuild
+FROM node:24-alpine3.22 AS uibuild
 
 WORKDIR /app
 
