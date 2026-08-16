@@ -3,6 +3,11 @@
   "extends": [
     "config:recommended"
   ],
+  "ignorePaths": [
+    ".devcontainer/**",
+    "documentation/**",
+    "docker/docker-compose.yml"
+  ],
   "dependencyDashboard": true,
   "minimumReleaseAge": "7 days",
   "packageRules": [
@@ -21,9 +26,53 @@
       "groupName": "frontend dependencies"
     },
     {
+      "description": "Disable all major updates",
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "Require approval for GitHub Actions major updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Group Dockerfile updates",
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["docker/Dockerfile"],
+      "groupName": "dockerfile dependencies"
+    },
+    {
+      "description": "Require approval for Dockerfile major updates",
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["docker/Dockerfile"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Group tsconfig updates",
+      "matchManagers": ["regex"],
+      "matchFileNames": ["**/tsconfig*.json"],
+      "groupName": "tsconfig dependencies"
+    },
+    {
+      "description": "Require approval for tsconfig major updates",
+      "matchManagers": ["regex"],
+      "matchFileNames": ["**/tsconfig*.json"],
+      "matchUpdateTypes": ["major", "replacement"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Keep class-validator compatible with routing-controllers",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["class-validator"],
+      "allowedVersions": "<0.15.0"
     }
   ]
 }
