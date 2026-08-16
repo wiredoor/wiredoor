@@ -2,8 +2,8 @@ name: Renovate
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 6 * * 1"
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -30,4 +30,3 @@ jobs:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           RENOVATE_ONBOARDING: "false"
           RENOVATE_REQUIRE_CONFIG: required
-          RENOVATE_DRY_RUN: full
