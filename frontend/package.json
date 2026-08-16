@@ -30,9 +30,9 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.0",
+    "@tsconfig/node24": "^24.0.0",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^22.13.4",
+    "@types/node": "^24.0.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vue/eslint-config-prettier": "^10.2.0",
@@ -43,7 +43,7 @@
     "jiti": "^2.4.2",
     "npm-run-all2": "^7.0.2",
     "prettier": "^3.5.1",
-    "typescript": "~5.7.3",
+    "typescript": "~5.9.3",
     "vite": ">=6.3.6",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vue-tsc": "^2.2.2"
