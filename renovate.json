@@ -8,6 +8,9 @@
     "documentation/**",
     "docker/docker-compose.yml"
   ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
   "dependencyDashboard": true,
   "minimumReleaseAge": "7 days",
   "packageRules": [
@@ -16,6 +19,12 @@
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "matchFileNames": ["package.json"],
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+        "optionalDependencies"
+      ],
       "groupName": "root dependencies"
     },
     {
@@ -23,7 +32,20 @@
       "matchManagers": ["npm"],
       "matchUpdateTypes": ["minor", "patch"],
       "matchFileNames": ["frontend/package.json"],
+      "matchDepTypes": [
+        "dependencies",
+        "devDependencies",
+        "peerDependencies",
+        "optionalDependencies"
+      ],
       "groupName": "frontend dependencies"
+    },
+    {
+      "description": "Update npm overrides",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["overrides"],
+      "groupName": "npm overrides",
+      "rangeStrategy": "replace"
     },
     {
       "description": "Disable all major updates",
