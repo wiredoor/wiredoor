@@ -41,7 +41,9 @@ export class NginxTcpService extends NginxService {
     }
 
     serverConf
-      .setListen(`${service.port}${service.proto === 'udp' ? ' udp' : ''}`)
+      .setListen(
+        `${service.port}${service.proto === 'udp' ? ' udp' : service.ssl ? ' ssl' : ''}`,
+      )
       .setServerName(service.domain || '')
       .setAccessLog(
         ServerUtils.getLogFilePath(
