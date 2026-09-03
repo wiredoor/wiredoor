@@ -282,6 +282,13 @@ describe('TCP Services Service', () => {
         ],
       ]);
 
+      const streamConfig = mockSaveToFile.mock.calls[2][1] as string;
+
+      expect(streamConfig).toMatch(
+        new RegExp(`listen\\s+${result.port} ssl;`),
+      );
+      expect(streamConfig).toMatch(/include\s+partials\/stream_ssl\.conf;/);
+
       expect(mockCLIExec.mock.calls).toEqual([
         [
           expect.stringMatching(
