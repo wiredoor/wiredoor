@@ -89,6 +89,8 @@ export class TcpServicesService extends BaseServices {
       const port = await this.tcpServiceRepository.getAvailablePort();
 
       params.port = port;
+    } else {
+      await this.tcpServiceRepository.assertPortAvailable(params.port);
     }
 
     const expiresAt = calculateExpiresAtFromTTL(params.ttl);
@@ -116,6 +118,10 @@ export class TcpServicesService extends BaseServices {
     params: Partial<TcpServiceType>,
   ): Promise<TcpService> {
     const old = await this.getTcpService(id, ['node']);
+
+    if (params.port && params.port !== old.port) {
+      await this.tcpServiceRepository.assertPortAvailable(params.port, id);
+    }
 
     if (params.backendPort && params.backendHost && params.proto === 'tcp') {
       await this.checkNodePort(

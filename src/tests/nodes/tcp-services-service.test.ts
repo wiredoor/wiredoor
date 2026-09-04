@@ -15,6 +15,7 @@ import { makeTcpServiceData } from './stubs/tcp-service.stub';
 import {
   mockCheckPort,
   mockCLIExec,
+  mockGetAvailablePort,
   mockIsPath,
   mockNslookup,
   mockRemoveFile,
@@ -35,6 +36,8 @@ import { PagedData } from '../../repositories/filters/repository-query-filter';
 import { faker } from '@faker-js/faker';
 import { Server } from 'http';
 import ServerUtils from '../../utils/server';
+import config from '../../config';
+import { ValidationError } from '../../utils/errors/validation-error';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let app;
@@ -114,10 +117,53 @@ describe('TCP Services Service', () => {
     );
 
     jest.clearAllMocks();
+    (mockCheckPort as jest.Mock).mockImplementation(
+      (host: string) => host !== '127.0.0.1',
+    );
   });
 
   afterEach(async () => {
     jest.clearAllMocks();
+  });
+
+  describe('Available port', () => {
+    const portRange = config.server.port_range;
+    const additionalPorts = config.server.additional_ports;
+
+    afterEach(() => {
+      config.server.port_range = portRange;
+      config.server.additional_ports = additionalPorts;
+    });
+
+    it('should prefer an available port from the configured range', async () => {
+      config.server.port_range = '15000-15001';
+      config.server.additional_ports = '16001';
+      mockGetAvailablePort.mockReturnValueOnce(15001);
+
+      await expect(repository.getAvailablePort()).resolves.toBe(15001);
+    });
+
+    it('should use the first additional port available in the database and locally', async () => {
+      config.server.port_range = '15000-15000';
+      config.server.additional_ports = '16001,16002,16003';
+
+      const occupiedService = await repository.save({
+        ...makeTcpServiceData({ port: 16001 }),
+        port: 16001,
+        nodeId: node.id,
+      });
+
+      try {
+        mockGetAvailablePort.mockImplementationOnce(() => {
+          throw new Error('No ports available in range');
+        });
+        mockCheckPort.mockReturnValueOnce(true).mockReturnValueOnce(false);
+
+        await expect(repository.getAvailablePort()).resolves.toBe(16003);
+      } finally {
+        await repository.delete(occupiedService.id);
+      }
+    });
   });
 
   describe('Initialization', () => {
@@ -244,6 +290,33 @@ describe('TCP Services Service', () => {
   });
 
   describe('Create TCP Service', () => {
+    it('should reject an explicit port occupied locally', async () => {
+      const serviceData = makeTcpServiceData({ proto: 'udp', port: 15500 });
+      mockCheckPort.mockReturnValue(true);
+
+      await expect(
+        service.createTcpService(node.id, serviceData),
+      ).rejects.toBeInstanceOf(ValidationError);
+    });
+
+    it('should reject an explicit port assigned to another service', async () => {
+      const port = 15501;
+      await repository.save({
+        ...makeTcpServiceData({ port }),
+        port,
+        nodeId: node.id,
+      });
+      const serviceData = makeTcpServiceData({
+        proto: 'udp',
+        port,
+        backendPort: 9000,
+      });
+
+      await expect(
+        service.createTcpService(node.id, serviceData),
+      ).rejects.toBeInstanceOf(ValidationError);
+    });
+
     it('should create TCP Service and save server configuration file', async () => {
       const serviceData = makeTcpServiceData({ ssl: true });
 
@@ -284,9 +357,7 @@ describe('TCP Services Service', () => {
 
       const streamConfig = mockSaveToFile.mock.calls[2][1] as string;
 
-      expect(streamConfig).toMatch(
-        new RegExp(`listen\\s+${result.port} ssl;`),
-      );
+      expect(streamConfig).toMatch(new RegExp(`listen\\s+${result.port} ssl;`));
       expect(streamConfig).toMatch(/include\s+partials\/stream_ssl\.conf;/);
 
       expect(mockCLIExec.mock.calls).toEqual([
@@ -361,6 +432,22 @@ describe('TCP Services Service', () => {
   });
 
   describe('Update TCP Service', () => {
+    it('should reject changing to a port occupied locally', async () => {
+      const created = await repository.save({
+        ...makeTcpServiceData({ port: 15502 }),
+        port: 15502,
+        nodeId: node.id,
+      });
+      mockCheckPort.mockReturnValue(true);
+
+      await expect(
+        service.updateTcpService(created.id, {
+          ...makeTcpServiceData({ proto: 'udp', port: 15503 }),
+          port: 15503,
+        }),
+      ).rejects.toBeInstanceOf(ValidationError);
+    });
+
     it('should update TCP Service and save server configuration file', async () => {
       const serviceData = makeTcpServiceData();
 

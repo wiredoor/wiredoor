@@ -11,44 +11,85 @@ export class TcpServiceRepository extends Repository<TcpService> {
     super(TcpService, dataSource.createEntityManager());
   }
 
+  async assertPortAvailable(port: number, serviceId?: number): Promise<void> {
+    const query = this.createQueryBuilder('tcpService').where(
+      'tcpService.port = :port',
+      { port },
+    );
+
+    if (serviceId) {
+      query.andWhere('tcpService.id != :serviceId', { serviceId });
+    }
+
+    const isUsed =
+      (await query.getCount()) > 0 ||
+      (await Net.checkPort('127.0.0.1', port, null, null, 500));
+
+    if (isUsed) {
+      throw new ValidationError({
+        body: [{ field: 'port', message: `Port ${port} is already in use.` }],
+      });
+    }
+  }
+
   async getAvailablePort(): Promise<number> {
-    if (!config.server.port_range) {
+    if (!config.server.port_range && !config.server.additional_ports) {
       throw new ValidationError({
         body: [
           {
             field: 'port',
             message:
-              'Your servers needs TCP_SERVICES_PORT_RANGE env variable defined.',
+              'Your servers needs TCP_SERVICES_PORT_RANGE or ADDITIONAL_TCP_SERVICES_PORTS env variable defined.',
           },
         ],
       });
     }
-
-    const min = +config.server.port_range.split('-')[0];
-    const max =
-      +config.server.port_range.split('-').length == 2
-        ? +config.server.port_range.split('-')[1]
-        : min;
 
     const servicePorts = await this.createQueryBuilder('tcpService')
-      .select('tcpService.port')
+      .select('tcpService.port', 'port')
       .getRawMany();
+    const usedPorts = servicePorts.map((service) => +service.port);
+    const additionalPorts = config.server.additional_ports
+      ? config.server.additional_ports.split(',').map((p) => +p)
+      : [];
 
-    try {
-      return Net.getAvailableLocalPort(
-        servicePorts.map((s) => s.port),
-        min,
-        max,
-      );
-    } catch (e: any) {
-      throw new ValidationError({
-        body: [
-          {
-            field: 'port',
-            message: e.message,
-          },
-        ],
-      });
+    if (config.server.port_range) {
+      const [min, configuredMax] = config.server.port_range
+        .split('-')
+        .map((p) => +p);
+      const max = configuredMax || min;
+
+      try {
+        const port = await Net.getAvailableLocalPort(usedPorts, min, max);
+        if (port) return port;
+      } catch (error) {
+        if (!additionalPorts.length) {
+          throw new ValidationError({
+            body: [
+              {
+                field: 'port',
+                message: error instanceof Error ? error.message : String(error),
+              },
+            ],
+          });
+        }
+      }
     }
+
+    for (const port of additionalPorts) {
+      if (usedPorts.includes(port)) continue;
+
+      const isUsed = await Net.checkPort('127.0.0.1', port, null, null, 500);
+      if (!isUsed) return port;
+    }
+
+    throw new ValidationError({
+      body: [
+        {
+          field: 'port',
+          message: 'No ports available to expose your service.',
+        },
+      ],
+    });
   }
 }

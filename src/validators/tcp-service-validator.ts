@@ -27,6 +27,28 @@ export interface TcpServiceFilterQueryParams extends FilterQueryDto {
   domain?: string;
 }
 
+const tcpServicePortValidator = Joi.number()
+  .integer()
+  .min(1)
+  .max(65535)
+  .custom((port, helpers) => {
+    const [min, configuredMax] = config.server.port_range
+      ? config.server.port_range.split('-').map(Number)
+      : [];
+    const max = configuredMax || min;
+    const additionalPorts = config.server.additional_ports
+      ? config.server.additional_ports.split(',').map(Number)
+      : [];
+
+    if ((min && port >= min && port <= max) || additionalPorts.includes(port)) {
+      return port;
+    }
+
+    return helpers.message({
+      custom: `Port ${port} is not within the allowed range`,
+    });
+  });
+
 export const tcpServiceFilterValidator: ObjectSchema<TcpServiceFilterQueryParams> =
   Joi.object({
     limit: Joi.number().optional(),
@@ -51,16 +73,7 @@ export const tcpServiceValidator: ObjectSchema<TcpServiceType> = Joi.object({
     .invalid('localhost', '127.0.0.1')
     .optional(),
   backendPort: Joi.number().port().required(),
-  port: Joi.number()
-    .min(config.server.port_range ? +config.server.port_range.split('-')[0] : 0)
-    .max(
-      config.server.port_range
-        ? +config.server.port_range.split('-')[1]
-          ? +config.server.port_range.split('-')[1]
-          : +config.server.port_range.split('-')[0]
-        : 0,
-    )
-    .optional(),
+  port: tcpServicePortValidator.optional(),
   ssl: Joi.boolean().optional(),
   allowedIps: Joi.array()
     .items(Joi.string().ip({ cidr: 'optional' }).optional())
