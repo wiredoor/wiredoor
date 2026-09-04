@@ -5,6 +5,7 @@ import BaseRepository from './base-repository';
 import Net from '../utils/net';
 import { ValidationError } from '../utils/errors/validation-error';
 import { Logger } from '../logger';
+import { OAUTH2_PROXY_PORT_MAX, OAUTH2_PROXY_PORT_MIN } from '../config';
 
 @Service()
 export class DomainRepository extends BaseRepository<Domain> {
@@ -17,8 +18,8 @@ export class DomainRepository extends BaseRepository<Domain> {
   }
 
   async getAvailablePort(): Promise<number> {
-    const min = 4180;
-    const max = 5180;
+    const min = OAUTH2_PROXY_PORT_MIN;
+    const max = OAUTH2_PROXY_PORT_MAX;
 
     const servicePorts = await this.createQueryBuilder('domain')
       .select('domain.oauth2ServicePort')

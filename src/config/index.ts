@@ -9,7 +9,27 @@ dotenv.config();
 const defaultAdminEmail = 'admin@example.com';
 const defaultAdminPassword = 'ChangeMe1st!';
 
+const APP_PORT = parseInt(process.env.APP_PORT || '') || 3000;
 const VPN_PORT = process.env.VPN_PORT || '51820';
+const ADDITIONAL_TCP_SERVICES_PORTS = process.env.ADDITIONAL_TCP_SERVICES_PORTS;
+export const OAUTH2_PROXY_PORT_MIN = 4180;
+export const OAUTH2_PROXY_PORT_MAX = 4279;
+
+const reservedPorts = new Set([80, 443, APP_PORT, +VPN_PORT]);
+const reservedAdditionalPort = ADDITIONAL_TCP_SERVICES_PORTS?.split(',')
+  .map(Number)
+  .find(
+    (port) =>
+      reservedPorts.has(port) ||
+      (port >= OAUTH2_PROXY_PORT_MIN && port <= OAUTH2_PROXY_PORT_MAX),
+  );
+
+if (reservedAdditionalPort) {
+  throw new Error(
+    `ADDITIONAL_TCP_SERVICES_PORTS cannot include reserved port ${reservedAdditionalPort}.`,
+  );
+}
+
 const subnet = process.env.VPN_SUBNET || '10.0.0.0/24';
 const defaultPreUpScript = ``;
 const defaultPostUpScript = `
@@ -74,7 +94,7 @@ function requireAdminPasswordEnv(): string {
 export default {
   app: {
     name: process.env.APP_NAME || 'Wiredoor',
-    port: parseInt(process.env.APP_PORT || '') || 3000,
+    port: APP_PORT,
   },
   log: {
     level: process.env.LOG_LEVEL || 'info',
@@ -98,6 +118,7 @@ export default {
   },
   server: {
     port_range: process.env.TCP_SERVICES_PORT_RANGE,
+    additional_ports: ADDITIONAL_TCP_SERVICES_PORTS,
   },
   dns: {
     provider: process.env.DNS_PROVIDER || null,

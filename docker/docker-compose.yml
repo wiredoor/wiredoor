@@ -16,5 +16,7 @@ services:
       - 443:443/tcp
       - 51820:51820/udp                        # Must match with VPN_PORT in .env
     #      - 32760-32767                       # Must match with TCP_SERVICES_PORT_RANGE in .env
+    #      - 1883:1883/tcp                     # Must match a port in ADDITIONAL_TCP_SERVICES_PORTS
+    #      - 5683:5683/udp                     # Must match a port in ADDITIONAL_TCP_SERVICES_PORTS
     sysctls:
       - net.ipv4.ip_forward=1

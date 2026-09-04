@@ -66,7 +66,7 @@ This guide will help you get Wiredoor running and expose your first private serv
 - Linux VPS (recommended)
 - Docker Engine or Docker Desktop
 - Open ports: `80`, `443`, and a UDP port for the VPN (default `51820`)
-- Optional: Port range for exposing TCP services (e.g. `32760-32767`)
+- Optional: Port range and/or additional ports for exposing TCP services (e.g. `32760-32767` and `1883,8883,5432,5683,5684`)
 
 ## Deploy Wiredoor Server to your remote server
 
@@ -84,8 +84,8 @@ cp .env.example .env
 nano .env
 ```
 
-Set your admin email, password, VPN public hostname or IP, and optionally, the TCP port range.
-If you modify the TCP port range, make sure to update the `ports:` section in `docker-compose.yml`.
+Set your admin email, password, VPN public hostname or IP, and optionally, `TCP_SERVICES_PORT_RANGE`, `ADDITIONAL_TCP_SERVICES_PORTS`, or both.
+Make sure every configured TCP service port is also published in the `ports:` section of `docker-compose.yml`.
 
 ### Start Wiredoor Server
 
