@@ -134,7 +134,7 @@ or
 wiredoor tcp my-ssh --port 22 
 ```
 
-Wiredoor assign unused port automatically in the range defined by `TCP_SERVICES_PORT_RANGE`
+Wiredoor first assigns an available port from `TCP_SERVICES_PORT_RANGE`. If the range is exhausted or not configured, it uses the first available port from `ADDITIONAL_TCP_SERVICES_PORTS` in the configured order.
 
 ---
 

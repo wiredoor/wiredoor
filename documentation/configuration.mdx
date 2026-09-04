@@ -50,6 +50,8 @@ To enable GoDaddy DNS integration, set the following environment variables:
 |----------|-------------|----------|---------|
 | `PRIVATE_KEY` | Private key to issue tokens, auto-generated for each environment by default |  ❌ Optional | `htcVZnbD7yp8+z1R3vb6ww...gNrKNc/C7fkbHwBbw6uzIX61wLzlYg==` |
 | `SERVER_LOGS_DIR` | Custom directory to store nginx logs inside the container | ❌ Optional | `/var/log/nginx` |
+| `TCP_SERVICES_PORT_RANGE` | Port or port range available for exposing TCP/UDP services | ❌ Optional | `32760-32767` |
+| `ADDITIONAL_TCP_SERVICES_PORTS` | Comma-separated list of additional ports available for exposing TCP/UDP services | ❌ Optional | `32768,32770` |
 ---
 
 ## Volumes
@@ -70,8 +72,13 @@ To enable GoDaddy DNS integration, set the following environment variables:
 | `443` | TCP | HTTPS traffic |
 | `51820` (default) | UDP | WireGuard VPN connection |
 | `32760-32767` (optional) | TCP | Port range for exposing TCP services (controlled via `TCP_SERVICES_PORT_RANGE`) |
+| `32768,32770` (optional) | TCP | Additional ports for exposing TCP services (controlled via `ADDITIONAL_TCP_SERVICES_PORTS`) |
 
-You can change the VPN port or the TCP service range, but make sure those ports are **open and accessible** from the internet or from the client network.
+You can configure `TCP_SERVICES_PORT_RANGE`, `ADDITIONAL_TCP_SERVICES_PORTS`, or both. Wiredoor selects an available port from the range first. If the range is exhausted or not configured, it uses the first available additional port in the configured order.
+
+An explicitly selected public port must belong to the range or the additional list and must not already be assigned or in use locally. Additional ports cannot include `80`, `443`, the application port, the WireGuard VPN port, or the OAuth2 proxy range (`4180-4279`).
+
+Make sure every configured port is **open and accessible** from the internet or from the client network and published by your container runtime using the required TCP or UDP protocol.
 
 ---
 
