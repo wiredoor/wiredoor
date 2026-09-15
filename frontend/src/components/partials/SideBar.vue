@@ -34,7 +34,7 @@
         </button>
         <!-- Logo -->
         <router-link class="flex items-center" to="/">
-          <SvgIcon name="wiredoor" height="32" widht="32" class="pl-2 mr-4" />
+          <SvgIcon name="wiredoor" height="32" width="32" class="pl-2 mr-4" />
           <h1 class="text-2xl font-semibold text-blue-900">Wiredoor</h1>
         </router-link>
       </div>
