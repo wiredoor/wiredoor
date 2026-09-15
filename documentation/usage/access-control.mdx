@@ -1,0 +1,123 @@
+---
+title: 'Configure OAuth2 and IP Restrictions in Wiredoor'
+description: 'Configure Wiredoor OAuth2, allowed identities, authentication bypass paths, and IP restrictions for domains and exposed services.'
+keywords:
+  [
+    'configure Wiredoor OAuth2',
+    'Wiredoor IP restrictions',
+    'OAuth2 Proxy for Wiredoor',
+    'Wiredoor authentication bypass',
+    'Wiredoor allowed IPs',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Configure Wiredoor Access Control
+
+Wiredoor can protect HTTP services with OAuth2, IP allow lists, or both. TCP and UDP services support IP restrictions but not browser-based OAuth2 authentication.
+
+## Choose an Access Control
+
+| Control             | HTTP | TCP | UDP | Best fit                                                 |
+| ------------------- | ---- | --- | --- | -------------------------------------------------------- |
+| OAuth2              | Yes  | No  | No  | Users authenticate through an identity provider          |
+| Allowed IPs         | Yes  | Yes | Yes | Only known addresses or networks should connect          |
+| Blocked IPs         | No   | Yes | Yes | Specific TCP or UDP addresses or networks must be denied |
+| Backend application | Yes  | Yes | Yes | The private service provides its own authentication      |
+
+OAuth2 and IP restrictions protect the public Wiredoor route. They do not change authorization rules inside the backend application.
+
+## Configure OAuth2 Proxy
+
+Define the required provider settings in the Wiredoor Server environment:
+
+```env filename=".env"
+OAUTH2_PROXY_PROVIDER=google
+OAUTH2_PROXY_CLIENT_ID=replace-with-client-id
+OAUTH2_PROXY_CLIENT_SECRET=replace-with-client-secret
+```
+
+Restart Wiredoor Server after changing its environment. Provider-specific restrictions such as allowed groups or email domains are documented in the [OAuth2 configuration reference](/documentation/operations/configuration#oauth2-proxy-settings).
+
+Register this redirect URI with the identity provider, replacing `DOMAIN` with the real protected domain:
+
+```text
+https://DOMAIN/oauth2/callback
+```
+
+Wiredoor cannot enable domain authentication unless the provider, client ID, and client secret are all configured.
+
+## Enable OAuth2 for a Service
+
+OAuth2 protection has two required levels:
+
+1. Enable authentication on the domain.
+2. Enable `Require Authentication` on each HTTP service that must be protected.
+
+Enabling OAuth2 on a domain starts the OAuth2 Proxy process and callback routes for that domain. It does not protect every service automatically. Wiredoor adds the authentication check only to services where `Require Authentication` is enabled.
+
+You can also assign allowed email addresses to the domain. When the list is present, OAuth2 Proxy uses it as the authenticated email allow list.
+
+<Callout type="warning">
+  Test every protected service in a signed-out browser. A configured OAuth2
+  domain does not protect a service unless `Require Authentication` is also
+  enabled for that service.
+</Callout>
+
+## Bypass Authentication for Selected Paths
+
+An authenticated HTTP service can expose selected paths without OAuth2. Enter one path or regular expression per line.
+
+```text
+/api/healthz
+/api/webhook
+^/api/public/.*
+```
+
+- A value beginning with `/` creates an exact path match.
+- A value beginning with `^` creates a regular-expression match.
+- Blank lines are ignored.
+- Method prefixes and unsafe NGINX characters are rejected.
+
+Every bypass path is public unless another access control blocks it. Keep expressions narrow and test each path separately. Do not use a broad expression when an exact path is sufficient.
+
+## Restrict Access by IP
+
+Enter individual IP addresses or CIDR networks in the service access settings.
+
+- An allowed IP list permits matching clients and denies all other clients.
+- TCP and UDP blocked IP entries deny matching clients.
+- HTTP services currently enforce the allowed IP list; use an allow list instead of relying on HTTP blocked entries.
+
+NGINX applies these rules to the client address visible at Wiredoor Server. A load balancer, proxy, or NAT device can replace the original address with its own. Inspect the service access log before creating a restrictive rule.
+
+Private CIDR values are useful only when NGINX actually sees a private client address. Internet clients normally appear with a public address.
+
+## Apply and Recover from a Restrictive Rule
+
+Use this order to avoid locking out the intended users:
+
+1. Keep the current administrator session open.
+2. Apply the rule to a non-administrative service first.
+3. Test from an allowed browser or network.
+4. Test from a browser or network that should be denied.
+5. Confirm the observed client address in the access log.
+
+If the rule blocks an intended user, use the open administrator session or an allowed network to remove the rule and save the service again. If neither is available, disable the affected public route from a trusted administrative path before attempting broader recovery.
+
+Disabling OAuth2 on a domain removes `Require Authentication` from services on that domain. Review every service before re-enabling domain authentication.
+
+## Verify Access Control
+
+For OAuth2:
+
+1. Open the service in a signed-out browser.
+2. Confirm the redirect to the expected identity provider.
+3. Sign in with an allowed identity and confirm access.
+4. Test an identity that should be denied.
+5. Confirm that bypass paths remain public and protected paths do not.
+
+For IP restrictions, test from both an allowed and denied address. Do not treat one successful request as complete verification.
+
+See [Wiredoor service behavior](/documentation/usage/services), [deployment security](/documentation/operations/security), and [access logs and monitoring](/documentation/operations/monitoring) for related controls.

@@ -1,0 +1,150 @@
+---
+title: 'Wiredoor Security: WireGuard Tunnels, Access Control, and Hardening'
+description: 'Secure Wiredoor nodes and exposed services with WireGuard, TLS, OAuth2, IP restrictions, NetworkPolicy, token protection, and host firewall controls.'
+keywords:
+  [
+    'Wiredoor security',
+    'WireGuard tunnel security',
+    'IP allow list',
+    'OAuth2 access control',
+    'Kubernetes NetworkPolicy',
+    'CrowdSec',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Wiredoor Security
+
+Wiredoor reduces direct exposure of private networks by having nodes establish outbound WireGuard tunnels to a Wiredoor Server. The server receives public traffic, applies the configured NGINX and access controls, and forwards allowed traffic through the tunnel.
+
+Wiredoor provides security controls, but it does not make every published service safe by default. Protect administrative applications with authentication or a restrictive IP allow list, limit gateway reach, and keep the server and node credentials secure.
+
+## Security Boundaries
+
+- WireGuard encrypts traffic between a remote node or gateway and Wiredoor Server.
+- TLS protects public HTTP traffic between a client and Wiredoor Server when a trusted certificate is configured.
+- The backend connection uses the protocol selected for the service. Choose HTTPS when the backend must also use TLS.
+- Client Nodes expose services on one machine. Gateway Nodes can reach an assigned subnet and therefore require tighter network controls.
+- The Wiredoor Server remains an internet-facing entry point and must be patched, monitored, and protected by a host or cloud firewall.
+
+## Protect Node Tokens
+
+Each Client Node and Gateway Node uses an access token to authenticate to Wiredoor Server.
+
+- Store CLI tokens in files readable only by the service account.
+- Store Kubernetes tokens in a Kubernetes Secret, preferably managed by your secret-management system.
+- Do not place tokens in Compose files, Helm values committed to source control, screenshots, or issue reports.
+- Revoke or replace a token immediately if it may have been exposed.
+- Use a different token for each node so one credential can be revoked without affecting other nodes.
+
+## TLS Certificate Modes
+
+| Mode          | Intended use                                                               | Client behavior                                                  |
+| ------------- | -------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Let's Encrypt | Public domain that resolves to Wiredoor Server and can complete validation | Trusted by standard clients when issuance succeeds               |
+| Self-signed   | Internal domain, IP address, or environment without public validation      | Clients warn until the issuing certificate is explicitly trusted |
+
+TLS certificates authenticate the Wiredoor endpoint. They do not replace application authentication or IP-based access control.
+
+## Restrict Access by Client IP
+
+Wiredoor translates service allow and block lists into NGINX access rules. An allow list permits the listed addresses and denies all remaining addresses. TCP and UDP services can also apply explicit block entries.
+
+For an HTTP service, an allow-list example is:
+
+```bash
+wiredoor http dashboard --domain dashboard.example.com --port 3000 --allow 203.0.113.0/24
+```
+
+Private CIDR ranges can be valid when the clients that reach Wiredoor are on a private network. Public ranges are normally required for clients arriving directly from the internet.
+
+<Callout type="warning">
+  Access decisions use the source IP visible to NGINX. After a reverse proxy,
+  load balancer, or NAT device, that address may be the intermediary address
+  instead of the original client. Verify the observed client IP in Wiredoor
+  access logs before relying on an allow or block rule.
+</Callout>
+
+Test an IP policy from both an allowed source and a source that should be denied. A successful request from the wrong source means the policy or the visible client IP is not what you expected.
+
+## Protect HTTP Services with OAuth2
+
+Use OAuth2 for browser-based administrative services such as Grafana, dashboards, and internal control panels.
+
+1. Configure the OAuth2 provider variables on Wiredoor Server.
+2. Enable OAuth2 on the domain.
+3. Enable `Require Authentication` on each protected service.
+4. Keep bypass paths limited to endpoints that must be public.
+5. Verify that a signed-out browser is redirected to the identity provider before sharing the URL.
+
+An IP allow list can be combined with OAuth2 for services that should be reachable only from approved networks.
+
+## Secure Gateway Nodes
+
+A Gateway Node forwards traffic beyond its own host by applying Linux `iptables` rules for forwarding and NAT. Run it through the Wiredoor CLI on Linux, Docker, or Kubernetes. Windows and macOS installations support Client Node mode only.
+
+Limit the gateway scope to the smallest subnet that contains the intended targets and confirm that the subnet does not overlap the Wiredoor VPN.
+
+- Permit only required destinations with host firewall rules or Kubernetes NetworkPolicy.
+- Do not attach a gateway container to networks it does not need.
+- Keep databases and management interfaces on separate networks unless Wiredoor must reach them.
+- Review every exposed service after changing a gateway subnet.
+
+## Kubernetes Gateway Permissions
+
+The current Wiredoor Gateway chart deploys a regular Kubernetes Deployment without `privileged: true` or `hostNetwork: true`. Its container does require the Linux capability `NET_ADMIN` to create and manage the WireGuard interface and routes. Treat that capability as elevated network access and enforce the remaining restrictions around it.
+
+The chart can create an egress NetworkPolicy when `networkPolicy.enabled` is true. Your cluster must use a network plugin that enforces NetworkPolicy.
+
+```yaml filename="values.yaml"
+wiredoor:
+  existingSecret: wiredoor-gateway
+  ip: 203.0.113.10
+
+networkPolicy:
+  enabled: true
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: production
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: my-app
+      ports:
+        - protocol: TCP
+          port: 8080
+```
+
+The `wiredoor.ip` value limits the policy's server egress rule to one Wiredoor Server IP. Add only the application destinations and ports the gateway needs. Review the rendered policy before installation:
+
+```bash
+helm template my-wiredoor-gateway wiredoor/wiredoor-gateway \
+  --namespace wiredoor \
+  --values values.yaml
+```
+
+## Detect Abuse with CrowdSec
+
+The official Docker setup can run CrowdSec against Wiredoor NGINX logs and use a host firewall bouncer to block decisions. CrowdSec complements authentication and allow lists; it does not replace them.
+
+See [Block malicious IP addresses with CrowdSec](/guides/how-to-block-malicious-ip-in-wiredoor-using-crowdsec-firewall-bouncer) for the integration procedure.
+
+## Production Checklist
+
+- Replace all sample credentials before startup.
+- Persist and back up `/data` and `/etc/letsencrypt` securely.
+- Publish only required TCP and UDP ports.
+- Require OAuth2 or a restrictive allow list for administrative services.
+- Validate the client IP seen by NGINX before enforcing source-based policy.
+- Scope Gateway Nodes to the smallest practical network.
+- Monitor access logs and investigate repeated authentication or routing failures.
+
+## Related Documentation
+
+- [Configure OAuth2 and IP restrictions](/documentation/usage/access-control)
+- [Understand Wiredoor Nodes and Tunnels](/documentation/usage/nodes)
+- [Configure Wiredoor Server](/documentation/operations/configuration)
+- [Deploy the Kubernetes Gateway](/documentation/gateways/kubernetes)
+- [Monitor Wiredoor securely](/documentation/operations/monitoring)

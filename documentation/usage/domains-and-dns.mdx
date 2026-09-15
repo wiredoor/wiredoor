@@ -1,0 +1,161 @@
+---
+title: 'Configure Wiredoor Domains, DNS, and Certificates'
+description: 'Configure public or local Wiredoor domains, use Wiredoor without public DNS, manage DNS records, and understand certificate behavior.'
+keywords:
+  [
+    'configure Wiredoor domains',
+    'Wiredoor DNS',
+    'Cloudflare DNS for Wiredoor',
+    'GoDaddy DNS for Wiredoor',
+    'Wiredoor certificates',
+    'Wiredoor self-signed certificate',
+    'use Wiredoor without public DNS',
+    'Wiredoor local domain',
+  ]
+---
+
+import { Callout, Tabs } from 'nextra/components';
+
+# Configure Domains and DNS for Wiredoor
+
+Domains give HTTP services a public hostname and provide a name for optional TCP TLS certificates. Wiredoor can validate records that you manage manually or create A records through a configured Cloudflare or GoDaddy account.
+
+## Choose a Public or Internal Domain
+
+| Domain type | DNS requirement                                  | Certificate                 | Typical use                         |
+| ----------- | ------------------------------------------------ | --------------------------- | ----------------------------------- |
+| Public      | Public DNS resolves to Wiredoor Server           | Let's Encrypt               | Internet-facing services            |
+| Internal    | Internal DNS or a hosts file resolves the domain | Self-signed                 | Private or controlled client access |
+| IP address  | No domain record                                 | Initial self-signed default | First login or local administration |
+
+Use a public domain when users need normal browser trust. Use an internal domain only when you control name resolution and certificate trust on every client.
+
+## Use Wiredoor Without Public DNS
+
+You do not need to own a public domain to use Wiredoor. You can create a local domain such as `app.wiredoor.internal` and resolve it from each client with an internal DNS server or a hosts file.
+
+To configure a local domain:
+
+1. Add `app.wiredoor.internal` as a domain in the Wiredoor dashboard.
+2. Enable `Skip Domain Validation`.
+3. Confirm that `SSL Certificate Type` changes to `Self Signed`.
+4. Create the HTTP service with the local domain.
+5. Point the local domain to the IP address of Wiredoor Server on every computer that must access it.
+
+If you do not use an internal DNS server, add the entries to the hosts file for each client operating system:
+
+<Tabs items={['Linux and macOS', 'Windows']}>
+  <Tabs.Tab>
+    Open `/etc/hosts` with administrator permissions and add:
+
+    ```text filename="/etc/hosts"
+    203.0.113.10 app.wiredoor.internal
+    ```
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Open `C:\Windows\System32\drivers\etc\hosts` with administrator permissions
+    and add:
+
+    ```text filename="hosts"
+    203.0.113.10 app.wiredoor.internal
+    ```
+
+  </Tabs.Tab>
+</Tabs>
+
+Replace `203.0.113.10` with the IP address used to reach Wiredoor Server. No public DNS record is required, but the hosts entry must exist on every client that opens the domain.
+
+<Callout type="warning">
+  Local domains use a self-signed certificate. Browsers and other clients will
+  display a certificate warning until the certificate is trusted on that device.
+  Use this option only on clients and networks that you control.
+</Callout>
+
+## Configure DNS Records
+
+Choose one DNS management method. The automatic options require credentials in the Wiredoor Server environment and a server restart.
+
+<Tabs items={['Manual DNS', 'Cloudflare', 'GoDaddy']}>
+  <Tabs.Tab>
+    Create an A record that points the service domain to the public IP address
+    of Wiredoor Server. A CNAME can also be used when it ultimately resolves to
+    the same server.
+
+    Leave `DNS_PROVIDER` unset. Wiredoor validates the domain before using it
+    but does not modify records in your DNS account.
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Configure these Wiredoor Server variables:
+
+    ```env filename=".env"
+    DNS_PROVIDER=cloudflare
+    CLOUDFLARE_API_TOKEN=replace-with-a-restricted-token
+    ```
+
+    Limit the token to DNS editing for the zones that Wiredoor manages.
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Configure these Wiredoor Server variables:
+
+    ```env filename=".env"
+    DNS_PROVIDER=godaddy
+    GODADDY_API_KEY=replace-with-api-key
+    GODADDY_API_SECRET=replace-with-api-secret
+    ```
+
+    Protect both credentials and limit their use to the required account.
+
+  </Tabs.Tab>
+</Tabs>
+
+See the [DNS provider settings reference](/documentation/operations/configuration#dns-provider-settings) for variable requirements and secret-handling guidance.
+
+## Understand Automatic DNS
+
+When a service uses a domain that does not already resolve to Wiredoor Server, Wiredoor checks whether the configured provider can manage it. If it can, Wiredoor:
+
+1. Discovers the public IP address of Wiredoor Server.
+2. Creates an unproxied A record with a one-hour TTL.
+3. Waits briefly for public DNS to return the new address.
+4. Requests the certificate after validation succeeds.
+
+If the provider cannot manage the domain, Wiredoor does not create the record. Create it manually and try again.
+
+<Callout type="warning">
+  Do not use broad DNS account credentials. A credential that can edit unrelated
+  zones increases the impact of a server or token compromise.
+</Callout>
+
+## Understand Certificate Behavior
+
+Wiredoor supports two certificate modes:
+
+- Let's Encrypt certificates for public domains that pass DNS or HTTP validation.
+- Self-signed certificates for internal domains, IP-based access, or deployments that intentionally skip public validation.
+
+TCP services can use a domain certificate when TLS termination is enabled. UDP services do not use TLS termination.
+
+Self-signed certificates produce a browser or client warning until the issuing certificate is explicitly trusted. Do not disable certificate validation permanently as a workaround.
+
+## Change or Remove a Domain
+
+A stored domain name cannot be renamed. Create the replacement domain, move or recreate the affected service routes, verify the new address, and then delete the old domain.
+
+Deleting a domain removes its generated NGINX server configuration, certificate material managed by Wiredoor, OAuth2 process for that domain, and domain log directory. Review services that still reference the domain before deletion.
+
+Changing certificate mode causes Wiredoor to load or request the certificate required by the new mode.
+
+## Verify DNS and HTTPS
+
+After adding or changing a domain:
+
+1. Confirm that public or internal DNS returns the intended Wiredoor Server address.
+2. Open the HTTPS domain from an intended client.
+3. Confirm that the certificate name matches the domain.
+4. Confirm that the expected Wiredoor service responds.
+5. Recheck the DNS record if certificate issuance fails.
+
+See [Wiredoor troubleshooting](/documentation/support/troubleshooting) for DNS and TLS failures, and [Wiredoor services](/documentation/usage/services) for routing behavior.

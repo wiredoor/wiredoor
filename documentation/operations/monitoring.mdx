@@ -1,0 +1,176 @@
+---
+title: 'Wiredoor Monitoring with Prometheus and Grafana'
+description: 'Optionally monitor Wiredoor NGINX traffic and WireGuard peers with Prometheus and Grafana without making them required for Wiredoor.'
+keywords:
+  [
+    'Wiredoor monitoring',
+    'Grafana dashboard',
+    'Prometheus metrics',
+    'NGINX metrics',
+    'WireGuard monitoring',
+    'secure Grafana access',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Wiredoor Monitoring with Prometheus and Grafana
+
+Prometheus and Grafana are optional monitoring integrations. Wiredoor does not depend on either service. You can deploy Wiredoor by itself and use its nodes, tunnels, domains, certificates, access controls, and HTTP, TCP, or UDP service exposure normally.
+
+Enable Prometheus and Grafana only when you want to collect metrics over time and review NGINX and WireGuard activity through dashboards. Wiredoor 1.3.0 and later can expose these metrics, and the official Docker setup includes the `prometheus` and `grafana` services used by this guide.
+
+<Callout type="info">
+  Removing or omitting Prometheus and Grafana does not disable Wiredoor routing
+  or access features. Only the optional metrics collection and Grafana
+  dashboards described on this page are unavailable.
+</Callout>
+
+## Before You Enable Optional Monitoring
+
+The following requirements apply only when you choose to deploy Prometheus and Grafana:
+
+- A running Wiredoor Server deployed from the official [docker-setup repository](https://github.com/wiredoor/docker-setup).
+- Persistent storage for Wiredoor, Prometheus, and Grafana.
+- A strong Grafana administrator password.
+- OAuth2 or a tested IP allow list before Grafana is exposed outside a trusted network.
+
+<Callout type="warning">
+  Do not publish Grafana as an unrestricted HTTP service. It contains
+  operational data and an administrative interface.
+</Callout>
+
+## Enable the Optional Monitoring Services
+
+For a new monitoring deployment, follow the repository setup instructions and start the stack:
+
+```bash
+docker compose up -d
+```
+
+For an existing deployment, back up persistent data and review your local Compose changes before updating images or recreating containers. Then start the current configuration:
+
+```bash
+docker compose pull
+docker compose up -d --force-recreate
+```
+
+Verify that all three services are running:
+
+```bash
+docker compose ps wiredoor prometheus grafana
+```
+
+Expected result: each service reports a running state. Prometheus and Grafana health checks may need a short initialization period.
+
+## Configure Grafana Credentials
+
+The official Compose stack reads the Grafana administrator values from environment variables. Set a dedicated password instead of relying on another application credential:
+
+```env filename=".env"
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=replace-with-a-long-random-password
+```
+
+Restart Grafana after changing these values:
+
+```bash
+docker compose up -d --force-recreate grafana
+```
+
+## Access Grafana Locally
+
+The official Compose file does not publish Grafana port `3000` by default. Wiredoor Server can reach `http://grafana:3000` because both services share the `wiredoor` Docker network.
+
+For temporary host-only access, use a loopback port mapping in your local Compose override:
+
+```yaml filename="docker-compose.override.yml"
+services:
+  grafana:
+    ports:
+      - 127.0.0.1:3000:3000
+```
+
+Open `http://127.0.0.1:3000` on the host and sign in with the configured Grafana credentials.
+
+## Expose Grafana Through Wiredoor
+
+Use the Local Node because Grafana and Wiredoor Server share the same Docker network.
+
+1. Configure OAuth2 on the Grafana domain, or prepare an IP allow list that you have verified against the client IP visible in Wiredoor logs.
+2. Open the Wiredoor dashboard and select the `Wiredoor_Local` node.
+3. Create an HTTP service with these values:
+
+| Field                  | Value                     |
+| ---------------------- | ------------------------- |
+| Service name           | `grafana`                 |
+| Public domain          | `grafana.example.com`     |
+| Backend host           | `grafana`                 |
+| Backend port           | `3000`                    |
+| Backend protocol       | `http`                    |
+| Require Authentication | Enabled when using OAuth2 |
+
+4. If you use an IP allow list, add only the administrator networks that should reach Grafana.
+5. Save the service.
+
+### Verify Remote Access Controls
+
+Run these checks before sharing the domain:
+
+1. Open `https://grafana.example.com` in a signed-out browser. With OAuth2 enabled, Wiredoor must redirect you to the configured identity provider.
+2. If an IP allow list is used, request the URL from a network outside the allow list. Wiredoor must deny the request.
+3. Request the URL from an allowed network, authenticate, and confirm that Grafana loads.
+4. Open a Wiredoor dashboard and confirm that current metrics are visible.
+
+If an unauthorized client can reach the Grafana sign-in page, treat the public access control as incomplete and disable the service until it is corrected.
+
+## Review Logs and Dashboards
+
+### Service Access Logs
+
+Use `Logs Monitor` from a domain or service in the Wiredoor dashboard to inspect current requests. Depending on the service, entries can include the timestamp, visible client IP, path, method, and response status.
+
+If the NGINX log directory is mounted on the Docker host, inspect a domain log directly:
+
+```bash
+tail -f wiredoor-logs/app.example.com/access.log
+```
+
+Logs can contain client addresses, requested paths, and authentication metadata. Limit access to the log files and define an appropriate retention policy.
+
+### Included Grafana Dashboards
+
+The official Docker setup provisions two Wiredoor dashboards:
+
+### WireGuard Monitoring
+
+Use this dashboard to review peer connectivity, handshakes, and VPN traffic.
+
+### NGINX Monitoring
+
+Use this dashboard to review HTTP request volume, response status, and public traffic handled by NGINX.
+
+The dashboard definitions are stored in:
+
+```text
+extras/grafana/provisioning/wiredoor/
+|-- nginx.json
+`-- wiredoor.json
+```
+
+Only dashboards tagged with `Wiredoor` are maintained as part of the official setup. Additional Grafana dashboards have their own data-source and maintenance requirements.
+
+## Troubleshoot Missing Metrics
+
+1. Check service health with `docker compose ps`.
+2. Review Prometheus logs with `docker compose logs prometheus`.
+3. Confirm that the provisioning directory is mounted in the Grafana container.
+4. Confirm that the Wiredoor log and metrics sources referenced by the stack are available.
+5. Restart only the affected service after correcting its configuration.
+
+## Related Documentation
+
+- [Configure OAuth2 and IP restrictions](/documentation/usage/access-control)
+- [Secure Wiredoor and exposed services](/documentation/operations/security)
+- [Configure logs and persistent volumes](/documentation/operations/configuration)
+- [Troubleshoot Wiredoor](/documentation/support/troubleshooting)

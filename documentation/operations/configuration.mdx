@@ -1,0 +1,175 @@
+---
+title: 'Wiredoor Configuration: Environment Variables, Ports, and Volumes'
+description: 'Configure Wiredoor Server environment variables, database, WireGuard VPN, DNS providers, OAuth2, NGINX, ports, and persistent Docker volumes.'
+keywords:
+  [
+    'Wiredoor configuration',
+    'environment variables',
+    'WireGuard VPN',
+    'DNS provider',
+    'OAuth2 proxy',
+    'Docker volumes',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Wiredoor Configuration
+
+Wiredoor Server reads its runtime configuration from environment variables. In the Docker Compose deployment, define them in the `.env` file referenced by `docker-compose.yml`.
+
+This reference covers the variables supported by the server configuration and the provided Docker environment template. A variable marked conditional is required only when you enable the related feature.
+
+## Minimum Docker Configuration
+
+Create a `.env` file with at least these deployment values:
+
+```env filename=".env"
+ADMIN_EMAIL=admin@example.net
+ADMIN_PASSWORD=replace-with-a-long-random-password
+VPN_HOST=wiredoor.example.net
+```
+
+`ADMIN_EMAIL` and `ADMIN_PASSWORD` are required by the application. `VPN_HOST` has a runtime fallback of `127.0.0.1`, but a reachable public hostname or IP address is required for remote nodes to connect.
+
+## Admin and Application Settings
+
+| Variable         | Requirement | Sensitive | Default           | Description                                                                                |
+| ---------------- | ----------- | --------- | ----------------- | ------------------------------------------------------------------------------------------ |
+| `ADMIN_EMAIL`    | Required    | Yes       | None              | Initial administrator email. The sample value produces a warning and should be replaced.   |
+| `ADMIN_PASSWORD` | Required    | Yes       | None              | Initial administrator password. The application rejects the sample value `ChangeMe1st!`.   |
+| `APP_NAME`       | Optional    | No        | `Wiredoor`        | Application name displayed by the server.                                                  |
+| `APP_PORT`       | Optional    | No        | `3000`            | Internal application port. Do not add it to the public TCP service pool.                   |
+| `LOG_LEVEL`      | Optional    | No        | `info`            | Log level: `fatal`, `error`, `warn`, `info`, `debug`, or `trace`.                          |
+| `LOG_FORMAT`     | Optional    | No        | `console`         | Use `console` for human-readable logs. Other values use structured output.                 |
+| `TZ`             | Optional    | No        | Container default | Time zone used by the Docker deployment and related services. Example: `America/New_York`. |
+
+## Database Settings
+
+SQLite is the default and requires no external database. Set `DB_CONNECTION=mysql` to use MySQL, then provide the connection values required by your database.
+
+| Variable        | Requirement | Sensitive | Default           | Description                                                           |
+| --------------- | ----------- | --------- | ----------------- | --------------------------------------------------------------------- |
+| `DB_CONNECTION` | Optional    | No        | `sqlite`          | Database driver. Supported values are `sqlite` and `mysql`.           |
+| `DB_DATABASE`   | Optional    | No        | `/data/db.sqlite` | SQLite file path or MySQL database name. Set it explicitly for MySQL. |
+| `DB_HOST`       | Conditional | No        | None              | MySQL host.                                                           |
+| `DB_PORT`       | Conditional | No        | None              | MySQL port.                                                           |
+| `DB_USERNAME`   | Conditional | Yes       | None              | MySQL user.                                                           |
+| `DB_PASSWORD`   | Conditional | Yes       | None              | MySQL password.                                                       |
+
+Persist `/data` when using SQLite. It contains the database and the generated JWT key.
+
+## JWT Settings
+
+| Variable        | Requirement | Sensitive | Default                              | Description                                                                                                                        |
+| --------------- | ----------- | --------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `PRIVATE_KEY`   | Optional    | Yes       | Generated and stored at `/data/.key` | Secret used to sign tokens. If omitted, Wiredoor creates a random key with file mode `0600` and reuses it from persistent storage. |
+| `JWT_ALGORITHM` | Optional    | No        | `HS256`                              | JWT signing algorithm passed to the authentication layer.                                                                          |
+
+<Callout type="warning">
+  Keep `/data` persistent or set a stable `PRIVATE_KEY`. Losing the signing key
+  invalidates existing tokens.
+</Callout>
+
+## WireGuard VPN Settings
+
+| Variable              | Requirement                | Sensitive               | Default                   | Description                                                                                                |
+| --------------------- | -------------------------- | ----------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `VPN_HOST`            | Required for remote access | No                      | `127.0.0.1`               | Public hostname or IP address used by nodes as the WireGuard endpoint.                                     |
+| `VPN_PORT`            | Optional                   | No                      | `51820`                   | WireGuard UDP port. The published Docker port must match it.                                               |
+| `VPN_SUBNET`          | Optional                   | No                      | `10.0.0.0/24`             | CIDR allocated to Wiredoor VPN peers. Avoid overlap with host, Docker, and private site networks.          |
+| `VPN_DEFAULT_MTU`     | Optional                   | No                      | Automatic                 | MTU assigned to generated WireGuard configurations. Set only when path MTU problems require it.            |
+| `WG_PRE_UP_SCRIPT`    | Optional                   | Operationally sensitive | Empty                     | Commands executed before the WireGuard interface starts.                                                   |
+| `WG_POST_UP_SCRIPT`   | Optional                   | Operationally sensitive | Built-in iptables rules   | Commands executed after the interface starts. The default enables VPN NAT and forwarding rules.            |
+| `WG_PRE_DOWN_SCRIPT`  | Optional                   | Operationally sensitive | Empty                     | Commands executed before the WireGuard interface stops.                                                    |
+| `WG_POST_DOWN_SCRIPT` | Optional                   | Operationally sensitive | Built-in iptables cleanup | Commands executed after the interface stops. The default removes the rules created by `WG_POST_UP_SCRIPT`. |
+
+Custom WireGuard scripts run with networking privileges inside the container. Review them carefully and keep the up and down actions symmetric.
+
+## TCP and UDP Port Allocation
+
+| Variable                        | Requirement | Sensitive | Default | Description                                                                           |
+| ------------------------------- | ----------- | --------- | ------- | ------------------------------------------------------------------------------------- |
+| `TCP_SERVICES_PORT_RANGE`       | Optional    | No        | None    | Inclusive public port or range used for TCP and UDP services. Example: `32760-32767`. |
+| `ADDITIONAL_TCP_SERVICES_PORTS` | Optional    | No        | None    | Comma-separated fallback ports. Example: `1883,5683`.                                 |
+
+Wiredoor selects an available port from `TCP_SERVICES_PORT_RANGE` first, then checks `ADDITIONAL_TCP_SERVICES_PORTS` in the configured order. Publish every configured port through Docker with the protocol required by the service.
+
+Additional ports cannot use `80`, `443`, `APP_PORT`, `VPN_PORT`, or the OAuth2 proxy range `4180-4279`. A selected public port must also be unassigned in Wiredoor and free on the host.
+
+```yaml filename="docker-compose.yml"
+ports:
+  - 32760-32767:32760-32767/tcp
+  - 32760-32767:32760-32767/udp
+  - 1883:1883/tcp
+```
+
+## DNS Provider Settings
+
+Wiredoor supports automatic DNS management through Cloudflare or GoDaddy. If `DNS_PROVIDER` is unset, manage DNS records manually.
+
+| Variable               | Requirement | Sensitive | Default | Description                                                                                             |
+| ---------------------- | ----------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `DNS_PROVIDER`         | Optional    | No        | None    | Set to `cloudflare` or `godaddy`. Other values do not enable a provider.                                |
+| `CLOUDFLARE_API_TOKEN` | Conditional | Yes       | None    | Required when `DNS_PROVIDER=cloudflare`. Use a token limited to DNS edit access for the intended zones. |
+| `GODADDY_API_KEY`      | Conditional | Yes       | None    | Required when `DNS_PROVIDER=godaddy`.                                                                   |
+| `GODADDY_API_SECRET`   | Conditional | Yes       | None    | Required when `DNS_PROVIDER=godaddy`.                                                                   |
+
+Do not use real credentials in examples, screenshots, issue reports, or version-controlled files.
+
+## NGINX Settings
+
+| Variable                     | Requirement | Sensitive | Default          | Description                                                                                |
+| ---------------------------- | ----------- | --------- | ---------------- | ------------------------------------------------------------------------------------------ |
+| `NGINX_CLIENT_MAX_BODY_SIZE` | Optional    | No        | `100m`           | Maximum request body size applied to generated NGINX configuration.                        |
+| `SERVER_LOGS_DIR`            | Optional    | No        | `/var/log/nginx` | Directory used for NGINX access and error logs inside the container.                       |
+| `NGINX_HTTP3_DOMAIN`         | Optional    | No        | Empty            | Enables HTTP/3 listeners for the matching domain. Publish UDP port `443` when this is set. |
+
+## OAuth2 Proxy Settings
+
+Set these values before enabling OAuth2 for a domain in the dashboard.
+
+| Variable                      | Requirement | Sensitive | Default          | Description                                                                       |
+| ----------------------------- | ----------- | --------- | ---------------- | --------------------------------------------------------------------------------- |
+| `OAUTH2_PROXY_PROVIDER`       | Conditional | No        | None             | OAuth2 Proxy provider identifier, such as `google`.                               |
+| `OAUTH2_PROXY_CLIENT_ID`      | Conditional | Yes       | None             | OAuth client ID.                                                                  |
+| `OAUTH2_PROXY_CLIENT_SECRET`  | Conditional | Yes       | None             | OAuth client secret.                                                              |
+| `OAUTH2_PROXY_ALLOWED_GROUPS` | Optional    | No        | None             | Group restriction passed to OAuth2 Proxy when supported by the selected provider. |
+| `OAUTH2_PROXY_EMAIL_DOMAINS`  | Optional    | No        | Provider default | Email domain restriction passed to OAuth2 Proxy.                                  |
+
+The three provider, client ID, and client secret values are required as a set for Wiredoor to enable OAuth2. Provider-specific group and email-domain behavior is controlled by OAuth2 Proxy.
+
+## Persistent Volumes
+
+| Container path     | Required                        | Purpose                                         | Example mapping                       |
+| ------------------ | ------------------------------- | ----------------------------------------------- | ------------------------------------- |
+| `/data`            | Yes                             | Database, JWT key, and runtime state            | `./wiredoor-data:/data`               |
+| `/etc/letsencrypt` | Yes for persistent certificates | ACME account data and certificates              | `./wiredoor-certbot:/etc/letsencrypt` |
+| `/var/log/nginx`   | Optional                        | Persistent NGINX logs for monitoring and audits | `./wiredoor-logs:/var/log/nginx`      |
+
+## Published Network Ports
+
+| Port                    | Protocol   | Purpose                               |
+| ----------------------- | ---------- | ------------------------------------- |
+| `80`                    | TCP        | HTTP traffic and ACME HTTP validation |
+| `443`                   | TCP        | HTTPS traffic                         |
+| `443`                   | UDP        | HTTP/3 when configured                |
+| `51820` by default      | UDP        | WireGuard connections                 |
+| Configured service pool | TCP or UDP | Public TCP and UDP services           |
+
+Open only the ports you use. The host firewall, cloud firewall, Docker mapping, and Wiredoor configuration must agree on both port number and protocol.
+
+## Protect Configuration Secrets
+
+- Keep `.env` outside version control and restrict its file permissions.
+- Prefer a secret manager for production deployments.
+- Rotate any credential that appears in logs, shell history, screenshots, or public repositories.
+- Back up `/data` and `/etc/letsencrypt` with access controls appropriate for secrets.
+
+## Related Documentation
+
+- [Install Wiredoor with Docker Compose](/documentation/quickstart)
+- [Configure Wiredoor Domains and DNS](/documentation/usage/domains-and-dns)
+- [Configure OAuth2 and IP Restrictions](/documentation/usage/access-control)
+- [Secure exposed services](/documentation/operations/security)
+- [Monitor Wiredoor with Prometheus and Grafana](/documentation/operations/monitoring)

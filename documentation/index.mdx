@@ -1,112 +1,92 @@
 ---
-title: "Wiredoor Documentation: Secure Ingress for Private Networks with WireGuard"
-description: 
-  Self-hosted and open-source Ingress-as-a-Service platform powered by WireGuard. Expose Docker, Kubernetes, IoT, or on-prem services securely without opening firewall ports. Learn how to deploy and manage private-to-public ingress with Wiredoor.
-keywords: ["wireguard", "reverse proxy", "self-hosted ingress", "vpn tunnel", "docker", "kubernetes"]
+title: 'Wiredoor: Self-Hosted Ingress for Private Services'
+description: 'Learn how Wiredoor provides self-hosted ingress for private HTTP, TCP, and UDP services through WireGuard tunnels, NGINX, Docker, and Kubernetes.'
+keywords:
+  [
+    'Wiredoor',
+    'self-hosted ingress',
+    'expose private service',
+    'WireGuard tunnel',
+    'NGINX reverse proxy',
+    'private network access',
+  ]
 ---
 
-# Wiredoor Documentation
+# Wiredoor: Self-Hosted Ingress for Private Services
 
-Welcome to the official documentation for **Wiredoor** — a self-hosted, open-source Ingress-as-a-Service platform that lets you expose local services from any private network 
-— Docker containers, on-prem servers, even IoT devices — to the public internet, **without opening firewall ports or setting up reverse proxies manually**. Everything 
-runs over a secure, encrypted reverse VPN tunnel powered by [WireGuard](https://www.wireguard.com).
+Wiredoor is an open-source, self-hosted ingress platform for exposing HTTP, TCP, and UDP services from private networks. Remote nodes initiate WireGuard tunnels to a Wiredoor Server, so private services can remain behind NAT or a firewall without accepting direct inbound connections.
 
-Wiredoor acts as your own ingress controller, giving you full control and visibility over how external traffic 
-reaches your services—whether they're running in Docker, Kubernetes, on-prem servers, industrial devices, or IoT setups.
+## Who Wiredoor Is For
 
----
+Wiredoor is designed for developers and infrastructure operators who need to publish or remotely access services running in:
 
-## What is Wiredoor?
+- Home labs and private LANs.
+- On-premises servers and restricted networks.
+- Docker Compose environments.
+- Private Kubernetes clusters.
+- IoT and industrial networks.
 
-**Wiredoor** is a self-hosted ingress-as-a-service platform that enables you to securely expose internal services, devices, 
-or infrastructure located in **private networks**, **LANs**, or **isolated environments** without needing to open firewall ports, 
-configure public cloud load balancers, or deploy reverse proxies manually.
+It is a practical fit when you want to own the public entry point, tunnel, routing configuration, and operational data instead of depending on a hosted tunneling service.
 
-At its core, Wiredoor creates a **reverse VPN tunnel** using [WireGuard](https://www.wireguard.com), allowing your internal services 
-to establish outbound, encrypted connections to the Wiredoor Server, which acts as a public ingress point. Once connected, 
-traffic from the internet can be securely routed into your network via domain-based rules, without requiring any inbound access to your local environment.
+## Architecture at a Glance
 
-New in v1.1.0: Wiredoor now supports OAuth2-based authentication per domain with [OAuth2-Proxy](https://oauth2-proxy.github.io/oauth2-proxy/). 
-You can restrict access to services using Google, GitHub, or any compatible OpenID provider — directly from the dashboard, with per-service granularity.
+Wiredoor has three main layers:
 
-### Core components
-
-| Component      | Role                                                                 |
-|----------------|----------------------------------------------------------------------|
-| WireGuard VPN  | Establishes encrypted tunnel between nodes and server                |
-| NGINX Proxy    | Routes incoming internet traffic to internal services                |
-| Admin Panel    | UI + API to manage domains, nodes, and certificates                  |
-| Wiredoor CLI   | Tool to register, connect, and expose services from your devices     |
-
-### How is it different from traditional ingress or tunnels?
-
-Most existing ingress solutions require:
-
-- A cloud provider (e.g. AWS ELB, Cloudflare Tunnel, Azure VPN)
-- Port forwarding on routers or firewalls
-- Manual reverse proxy configuration
-- Exposure of your private environment to the internet
-
-**Wiredoor flips this model:**
-
-Your services stay hidden in private networks. Only outbound WireGuard connections are needed. All ingress is managed from the outside, through a secure, 
-authenticated VPN tunnel that you fully control.
-
----
-
-## How it works?
+| Layer                  | Responsibility                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------- |
+| Wiredoor Server        | Receives public traffic, manages domains and certificates, and routes requests through NGINX.           |
+| Client or Gateway Node | Initiates a WireGuard tunnel and provides access to one host or an approved subnet.                     |
+| Private service        | Receives forwarded HTTP, TCP, or UDP traffic without being published directly from its private network. |
 
 ```mermaid
-graph TD
-    subgraph Private Network
-      A[Node / Gateway] <--> B[Internal Service]
-    end
-    A <-->|WireGuard Tunnel| W[Wiredoor Server]
-    W <--> N[NGINX Reverse Proxy]
-    N <--> I[Public Internet]
+flowchart LR
+  client[Public client]
+  server[Wiredoor Server]
+  node[Client or Gateway Node]
+  service[Private service]
+
+  client --> server
+  server <== WireGuard tunnel ==> node
+  node --> service
 ```
 
-1. Wiredoor runs on a public-facing server (with Docker or bare metal).
-2. Nodes (clients or gateways) connect to Wiredoor over WireGuard.
-3. Services running in private networks are securely exposed to the internet via domain/port routing.
-4. SSL certificates are handled automatically (Let's Encrypt or self-signed).
+WireGuard encrypts the connection between remote nodes and Wiredoor Server. NGINX handles public routing and TLS termination for HTTP services. OAuth2 and IP restrictions can be added when a service should not be publicly available to everyone.
 
----
+Read [how Wiredoor works](/documentation/usage/how-wiredoor-works) for the complete component and request flow.
 
-## Key Features
+## Deployment Options
 
-- Secure and lightweight VPN via WireGuard
-- Built-in NGINX reverse proxy
-- OAuth2-based Authentication support per domain and service (Google, GitHub, etc.) with [OAuth2-proxy](https://github.com/oauth2-proxy/oauth2-proxy)
-- Automatic SSL certificate provisioning (Let's Encrypt support)
-- Expose HTTP, TCP, or UDP services
-- Websocket Support
-- Works with Docker, Kubernetes, legacy servers, IoT, and more
-- Supports both single-node and gateway (site-to-site) modes
-- CLI tools for automation and scripting
-- No need to expose internal firewalls or use cloud services
-- 100% Open Source and Self-Hosted
+| Component       | Recommended deployment                       | Use when                                                       |
+| --------------- | -------------------------------------------- | -------------------------------------------------------------- |
+| Wiredoor Server | Docker Compose on a reachable Linux server   | You need the public ingress endpoint and management dashboard. |
+| Client Node     | Wiredoor CLI on Linux, Windows, or macOS     | The backend runs on the same machine as the CLI.               |
+| Gateway Node    | Wiredoor CLI on Linux, Docker, or Kubernetes | Services are reachable through an approved private subnet.     |
 
----
+Gateway Node routing depends on Linux `iptables` rules for forwarding and NAT. Native Windows and macOS installations support Client Node mode, but not Gateway Node mode. To operate a local Gateway Node on either system, [run Wiredoor Docker Gateway through Docker Desktop](/documentation/gateways/docker).
 
-## Use Cases
+## What Wiredoor Provides
 
-- Expose websites and other services publicly
-- Expose dashboards and dev environments remotely
-- Access private services without opening firewall ports
-- Connect remote Kubernetes clusters for development
-- Provide secure ingress to industrial systems and IoT devices
-- Act as a site-to-site VPN for full subnetwork routing
+- Self-hosted ingress for HTTP, TCP, and UDP services.
+- Outbound WireGuard connections from private nodes and gateways.
+- NGINX routing for domains, paths, and public ports.
+- Let's Encrypt certificates for eligible public domains and self-signed certificates for internal use.
+- OAuth2 protection and IP-based access controls.
+- A dashboard and CLI for managing nodes and services.
+- Optional Prometheus and Grafana integration through the official Docker setup.
 
----
+## Operational Boundaries
 
-## Get Started
+Wiredoor reduces direct exposure of private services, but it does not remove the need to secure the public server and each published application.
 
-→ Ready to deploy? Continue to the [Installation Guide](/documentation/quickstart)
+- Wiredoor Server must be reachable from the clients and nodes that use it.
+- Public DNS, host firewalls, cloud firewalls, and Docker port mappings remain your responsibility.
+- Administrative services should require OAuth2 or a restrictive, tested IP allow list.
+- Gateway Nodes can reach more than one host and should use the narrowest practical subnet and network policy.
+- Self-signed certificates require explicit client trust and are not a substitute for publicly trusted certificates.
+- Availability, backups, upgrades, and monitoring remain part of operating a self-hosted deployment.
 
----
+## Start with One Verified Service
 
-## Community & Support
+The quickstart deploys Wiredoor Server with Docker Compose, registers one Client Node, exposes one private HTTP service, and verifies the public HTTPS endpoint.
 
-If you have questions, suggestions, or want to contribute, 
-feel free to open an [issue](https://github.com/wiredoor/wiredoor) or contact us via support@wiredoor.net.
+[Install Wiredoor and expose your first private service](/documentation/quickstart)

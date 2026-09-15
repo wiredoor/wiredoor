@@ -1,0 +1,226 @@
+---
+title: 'Wiredoor Kubernetes Gateway: Expose Private Cluster Services'
+description: 'Deploy Wiredoor Kubernetes Gateway with Helm to expose private cluster services through WireGuard, configure the Service CIDR, and restrict egress with NetworkPolicy.'
+keywords:
+  [
+    'Wiredoor Kubernetes Gateway',
+    'expose Kubernetes service',
+    'private Kubernetes ingress',
+    'Helm chart',
+    'Service CIDR',
+    'NetworkPolicy',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Wiredoor Kubernetes Gateway
+
+Wiredoor Kubernetes Gateway connects a private Kubernetes cluster to Wiredoor Server through an outbound WireGuard tunnel. Wiredoor Server can then proxy approved HTTP, TCP, or UDP traffic to Services that the gateway can reach.
+
+Use this deployment when a cluster is behind NAT or a firewall and you want a self-hosted public entry point without opening inbound ports on the cluster network.
+
+## How the Gateway Works
+
+```mermaid
+flowchart LR
+  client[Public client]
+  server[Wiredoor Server]
+  gateway[Wiredoor Gateway Pod]
+  service[Kubernetes Service]
+  pods[Application Pods]
+
+  client --> server
+  server <== WireGuard tunnel ==> gateway
+  gateway --> service
+  service --> pods
+```
+
+The gateway initiates the tunnel. The subnet assigned to the Gateway Node controls which cluster addresses Wiredoor may route through that node. Kubernetes NetworkPolicy can further restrict the destinations that the gateway pod may contact.
+
+## Requirements
+
+- A reachable Wiredoor Server.
+- A Gateway Node created in the Wiredoor dashboard.
+- The Gateway Node token stored as a Kubernetes Secret.
+- `kubectl` access to the target cluster.
+- Helm 3.
+- The configured Kubernetes Service CIDR.
+- A cluster network plugin that enforces NetworkPolicy if you enable that feature.
+
+## Identify the Kubernetes Service CIDR
+
+Do not derive the Service CIDR from the `kube-dns` ClusterIP. One address does not reveal the configured prefix length and can produce an incorrect route.
+
+### Clusters with the ServiceCIDR API
+
+First check whether the cluster exposes the `ServiceCIDR` resource:
+
+```bash
+kubectl api-resources --api-group=networking.k8s.io | grep -w ServiceCIDR
+```
+
+If it is available, read the configured ranges:
+
+```bash
+kubectl get servicecidrs -o yaml
+```
+
+Use the CIDR listed in `spec.cidrs`. A dual-stack cluster can report both IPv4 and IPv6 ranges; configure only ranges supported by the current Wiredoor gateway path.
+
+### Self-Managed Control Planes
+
+For a self-managed cluster, inspect the API server configuration and find the exact `--service-cluster-ip-range` value:
+
+```bash
+kubectl -n kube-system get pods -l component=kube-apiserver -o yaml
+```
+
+If your permissions do not expose the API server pod specification, inspect the control-plane manifest or cluster bootstrap configuration on a control-plane node.
+
+### Managed Kubernetes Services
+
+Read the cluster networking settings in the provider console, CLI, or infrastructure configuration. If the platform does not expose the value to your account, ask the cluster administrator.
+
+`10.96.0.0/12` is a common example, not a universal default. Confirm the real value before creating the Gateway Node.
+
+## Create the Gateway Node
+
+1. Sign in to the Wiredoor dashboard.
+2. Create a node and enable `Is Gateway`.
+3. Enter the verified Service CIDR as the gateway subnet.
+4. Copy the generated token once and store it in your secret-management system.
+
+The gateway subnet should contain only the addresses that Wiredoor must route. Review overlap with the Wiredoor VPN subnet and other connected networks.
+
+## Store the Connection Values in a Secret
+
+The chart supports an existing Secret with the keys `WIREDOOR_URL` and `TOKEN`. Create it through your normal Kubernetes secret workflow. The resulting object should have this shape:
+
+```yaml filename="wiredoor-gateway-secret.yaml"
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wiredoor-gateway
+  namespace: wiredoor
+type: Opaque
+stringData:
+  WIREDOOR_URL: https://wiredoor.example.com
+  TOKEN: replace-with-the-gateway-node-token
+```
+
+Do not commit the populated Secret manifest. Apply it through a secret manager or a secure administrative workflow.
+
+## Install the Helm Chart
+
+```bash
+helm repo add wiredoor https://charts.wiredoor.net
+helm repo update wiredoor
+
+helm upgrade --install my-wiredoor-gateway wiredoor/wiredoor-gateway \
+  --namespace wiredoor \
+  --create-namespace \
+  --set wiredoor.existingSecret=wiredoor-gateway
+```
+
+The current chart deploys one gateway pod by default. It does not enable privileged mode or host networking. It does add the Linux capability `NET_ADMIN`, which is required to create and manage the WireGuard interface and routes.
+
+<Callout type="warning">
+  Admission policies that reject added Linux capabilities must explicitly allow
+  `NET_ADMIN` for this workload. Do not describe the gateway as requiring no
+  elevated permissions.
+</Callout>
+
+## Verify the Gateway Connection
+
+Check the Kubernetes workload:
+
+```bash
+kubectl get deployments,pods --namespace wiredoor
+kubectl logs --namespace wiredoor deployment/my-wiredoor-gateway
+```
+
+Then open the Wiredoor dashboard and confirm that the Gateway Node reports a connected state.
+
+## Expose a Kubernetes Service
+
+Use the fully qualified Service name as the backend host:
+
+```text
+SERVICE.NAMESPACE.svc.cluster.local
+```
+
+For example:
+
+```text
+argocd-server.argocd.svc.cluster.local
+```
+
+In the Wiredoor dashboard:
+
+1. Select the Kubernetes Gateway Node.
+2. Create an HTTP, TCP, or UDP service.
+3. Set the backend host to the fully qualified Service name.
+4. Set the backend port to the Service port, not an arbitrary pod port.
+5. For HTTP, select a domain that resolves to Wiredoor Server.
+6. Require OAuth2 or an IP allow list for administrative applications.
+
+Verify that the Service has ready endpoints before testing the public route:
+
+```bash
+kubectl get service,endpoints --namespace argocd argocd-server
+```
+
+## Restrict Gateway Egress with NetworkPolicy
+
+The chart can render one egress NetworkPolicy for the gateway pod. It includes DNS access, Wiredoor Server access, and any additional entries supplied in `networkPolicy.egress`.
+
+This example permits the gateway to contact only Argo CD pods on TCP port `8080` in addition to the chart's required egress rules:
+
+```yaml filename="values.yaml"
+wiredoor:
+  existingSecret: wiredoor-gateway
+  ip: 203.0.113.10
+
+networkPolicy:
+  enabled: true
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: argocd
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: argocd-server
+      ports:
+        - protocol: TCP
+          port: 8080
+```
+
+`wiredoor.ip` must be the IP address the pod uses to reach Wiredoor Server. If it is omitted, the current chart permits general public IPv4 egress while excluding configured private ranges. Set it when you need a narrower policy or when Wiredoor Server uses a private address.
+
+Render and review the policy before applying it:
+
+```bash
+helm template my-wiredoor-gateway wiredoor/wiredoor-gateway \
+  --namespace wiredoor \
+  --values values.yaml
+```
+
+After installation, verify both the intended service and a destination that should be denied. NetworkPolicy has no effect unless the cluster network plugin enforces it.
+
+## Operational Notes
+
+- Use fully qualified Service names so resolution does not depend on the gateway pod namespace.
+- Keep the Gateway Node subnet aligned with the real Service CIDR.
+- Store connection values in a Secret and rotate the token if it is exposed.
+- Limit `NET_ADMIN` to the gateway container and keep other container privileges at their defaults.
+- Recheck connectivity after changing the Service CIDR, network plugin, NetworkPolicy, or Wiredoor VPN subnet.
+
+## Related Documentation
+
+- [Understand Wiredoor Nodes and Tunnels](/documentation/usage/nodes)
+- [Configure Wiredoor Services](/documentation/usage/services)
+- [Secure Wiredoor gateways](/documentation/operations/security)
+- [Troubleshoot gateway connectivity](/documentation/support/troubleshooting)
+- [Configure Wiredoor Server](/documentation/operations/configuration)

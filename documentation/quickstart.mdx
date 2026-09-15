@@ -1,113 +1,234 @@
 ---
-title: "Wiredoor Quickstart Guide: Deploy and Expose Your First Private Service Quickly"
-description: 
-  Deploy Wiredoor Server on a public VPS and expose private services over secure WireGuard tunnels in minutes. Follow this quickstart to install, configure, and connect with the CLI. Supports Docker, HTTPS, custom domains, and secure tunneling.
-keywords: ["setup guide", "docker", "vpn server", "service exposure", "wireguard", "installation"]
+title: 'Install Wiredoor with Docker Compose and Expose a Private Service'
+description: 'Follow this Wiredoor quickstart to install Wiredoor Server with Docker Compose, connect a Client Node, and expose an existing private HTTP service.'
+keywords:
+  [
+    'install Wiredoor',
+    'Wiredoor Docker Compose',
+    'Wiredoor quickstart',
+    'expose private HTTP service',
+    'Wiredoor Client Node',
+    'WireGuard setup',
+  ]
 ---
 
-import { Callout } from 'nextra/components'
+import { Callout, Tabs } from 'nextra/components';
 
-# Quickstart Guide
+# Install Wiredoor and Expose Your First Private Service
 
-**Wiredoor Server is the entry point for all external traffic.**  
-This means that the server's public IP address or domain **must be accessible from the internet**,  
-or at least from the network where you want to access the exposed services.
+This quickstart shows you how to install Wiredoor Server, connect a computer from a private network, and make an existing web service available through an HTTPS address.
 
-Wiredoor is designed to run on a publicly reachable host so it can securely receive inbound traffic and forward it to your internal services over a private VPN tunnel.
+You do not need to create an example application. Before starting, make sure the private service you want to expose already works on the Client Node and note its port. This guide uses port `3000` as an example.
 
-This guide will help you get Wiredoor running and expose your first private service to the internet in just a few steps.
+## Before You Start
 
-## Requirements
+You need:
 
-- ✅ A Linux VPS or server (bare metal or cloud-based)
-- ✅ Public IP address or domain name pointing to the server
-- ✅ Open ports:
-  - TCP: `80`, `443` — for HTTP and HTTPS traffic
-  - UDP: `51820` — for WireGuard VPN (configurable)
-  - Optional: a port range and/or a list of additional ports for exposing TCP services
-- ✅ Installed:
-  - [Docker Engine](https://docs.docker.com/engine/install/)
-  - (Optionally) [Docker Compose](https://docs.docker.com/compose/)
+- A Linux server with a public IP address, Docker Engine, Docker Compose, and Git.
+- TCP ports `80` and `443` open on the public server.
+- UDP port `51820` open on the public server.
+- An existing HTTP service running on a Linux, Windows, or macOS computer.
+- A public domain with access to its DNS settings, or control of local name resolution through internal DNS or a hosts file.
 
----
+<Callout type="info">
+  This guide creates a regular Client Node. Client Nodes support Linux, Windows,
+  and macOS. Gateway Nodes require Linux networking and must run through the
+  Wiredoor CLI on Linux, Docker, or Kubernetes. On Windows and macOS, use
+  [Wiredoor Docker Gateway through Docker
+  Desktop](/documentation/gateways/docker).
+</Callout>
 
-## Deploy Wiredoor Server to your remote server
+<Callout type="info">
+  A public domain is not required. You can use a local domain resolved through
+  `/etc/hosts`, the Windows hosts file, or an internal DNS server. See [local
+  domains without public
+  DNS](/documentation/usage/domains-and-dns#use-wiredoor-without-public-dns).
+  The main quickstart continues with a public domain because it provides a
+  trusted Let's Encrypt certificate.
+</Callout>
 
-### Clone Wiredoor Docker Setup 
+## 1. Prepare DNS
+
+Create the DNS records that you want to use and point them to the public IP address of your Wiredoor Server.
+
+| Example domain         | Required | Purpose                            |
+| ---------------------- | -------- | ---------------------------------- |
+| `app.example.com`      | Yes      | Public address of your service     |
+| `wiredoor.example.com` | No       | Friendly address for the dashboard |
+
+Replace these examples with your real domains. DNS changes may need some time to become available.
+
+If you do not create a dashboard domain, you can use the public server IP address instead.
+
+## 2. Install Wiredoor Server
+
+Connect to the public Linux server and download the official Docker setup:
 
 ```bash
 git clone https://github.com/wiredoor/docker-setup.git
 cd docker-setup
-```
-
-### Configure environment variables
-
-```bash
 cp .env.example .env
-nano .env
 ```
 
-Set your admin email, password, VPN public hostname or IP, and optionally, `TCP_SERVICES_PORT_RANGE`, `ADDITIONAL_TCP_SERVICES_PORTS`, or both.
-Make sure every configured TCP service port is also published in the `ports:` section of `docker-compose.yml`.
+Open `.env` with a text editor and configure these values:
 
-### Start Wiredoor Server
+```env filename=".env"
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-a-secure-password
+VPN_HOST=wiredoor.example.com
+VPN_PORT=51820
+VPN_SUBNET=10.0.0.0/24
+```
+
+- Use your own email address and a secure password.
+- Set `VPN_HOST` to the public domain or IP address used to reach the server. Do not include `https://`.
+- Keep the default VPN port and subnet unless they conflict with your network.
+
+Start Wiredoor:
 
 ```bash
 docker compose up -d
 ```
 
-### Log in to the Wiredoor web UI
-
-In your browser, Navigate to `https://your_wiredoor_domain_or_ip`. Use the admin credentials from your `.env` file to access the dashboard. 
-
-For more information on using the web UI, visit the [Usage Guide](./usage.mdx)
-
----
-
-## Configure Wiredoor CLI on your private node
-
-### Install Wiredoor CLI
-
-You can use the auto-installer:
+Wiredoor is ready when the `wiredoor` container is running:
 
 ```bash
-curl -s https://www.wiredoor.net/install-wiredoor-cli.sh | sh
+docker compose ps wiredoor
 ```
 
-Or download a package from [GitHub Releases](https://github.com/wiredoor/wiredoor-cli/releases).
+## 3. Sign In
 
-### Login and register node using `wiredoor-cli`
+Open the following address in your browser, replacing `PUBLIC_SERVER_IP` with the public IP address of your server:
 
-Run the following on the device you want to connect:
+```text
+https://PUBLIC_SERVER_IP
+```
+
+The browser may display a certificate warning during the first visit because Wiredoor starts with a self-signed certificate. Continue only when the address belongs to the server you installed.
+
+Sign in with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` values from `.env`.
+
+The dashboard should open and display the Local Node named `Wiredoor_Local`.
+
+## 4. Configure a Dashboard Domain (Optional)
+
+If you created `wiredoor.example.com` or another dashboard domain in step 1:
+
+1. Open the `Wiredoor_Local` node.
+2. Edit the `Wiredoor_APP` HTTP service.
+3. Set its public domain to your dashboard domain.
+4. Save the service.
+5. Open the new address in your browser.
+
+```text
+https://wiredoor.example.com
+```
+
+Wiredoor requests a trusted Let's Encrypt certificate when the public DNS record points to the server. If you skip this optional step, continue using the public server IP address.
+
+## 5. Create and Connect the Client Node
+
+The Client Node is the Linux, Windows, or macOS computer where your private HTTP service is running.
+
+### Install the Wiredoor CLI
+
+<Tabs items={['Linux', 'macOS', 'Windows']}>
+  <Tabs.Tab>
+    You can use the auto-installer:
+    
+    ```bash
+    curl -s https://www.wiredoor.net/install-wiredoor-cli.sh | sh
+    ```
+
+    Or download a package from [GitHub Releases](https://github.com/wiredoor/wiredoor-cli/releases).
+
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Install Wiredoor CLI on macOS using [Homebrew](https://brew.sh/):
+    
+    ```bash
+    brew tap wiredoor/cli
+    brew install wiredoor
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Install Wiredoor CLI on Windows using the installation script in **PowerShell**:
+    
+    ```bash
+    iwr -useb https://www.wiredoor.net/install-wiredoor-cli.ps1 | iex
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### Create the Client Node
+
+Use the dashboard domain if you configured one. Otherwise, use the public server IP address:
 
 ```bash
-wiredoor login --url=https://your_deployed_wiredoor_domain_or_ip
+wiredoor login --url https://wiredoor.example.com
 ```
 
-This will:
+The CLI asks for your administrator email and password. It also asks a few questions about the new node:
 
-- Promp for admin credentials (email and password)
-- Ask for a name for the node (default: current hostname)
-- Register the node in the server
-- Connect it automatically via WireGuard
+1. Enter a name that helps you recognize the computer.
+2. Choose `No` when asked whether the node is a gateway.
+3. Choose `No` when asked whether all internet traffic should use the VPN.
 
----
-
-## Expose your first 
-
-If you have a service running locally (e.g. on port 3000), you can expose it:
+The CLI creates the Client Node and connects it to Wiredoor. Confirm the connection with:
 
 ```bash
-wiredoor http myapp --domain app.your.domain.com --port 3000
+wiredoor status
 ```
 
-<Callout type="warning" emoji="⚠️">
-  The domain `app.your.domain.com` must point to the public Wiredoor server's IP address. 
-</Callout>
+You can also confirm that the new node appears as connected in the dashboard.
 
----
+## 6. Expose the Private Service
 
-## Learn more
+Run this command on the Client Node:
 
-- [Usage](./usage.mdx)
-- [CLI Reference](./cli.mdx)
+```bash
+wiredoor http first-app --domain app.example.com --port 3000
+```
+
+Replace:
+
+- `first-app` with a short name for your service.
+- `app.example.com` with the public domain prepared in step 1.
+- `3000` with the port used by your existing service.
+
+Wiredoor creates the public route and requests a trusted HTTPS certificate for the domain.
+
+## 7. Open the Service in Your Browser
+
+Open your service domain:
+
+```text
+https://app.example.com
+```
+
+You should see the same application that is running privately on the Client Node. Certificate issuance may take a short time after creating the service.
+
+You have now installed Wiredoor, connected a Client Node, and exposed a private HTTP service through a public HTTPS domain.
+
+## If the Service Does Not Open
+
+Check these items in order:
+
+1. The Wiredoor container is running on the public server.
+2. The Client Node appears as connected in the dashboard.
+3. The private service opens directly on the Client Node.
+4. The service port in the Wiredoor command is correct.
+5. The public DNS record or local hosts entry points to the Wiredoor Server IP address.
+
+See [Wiredoor troubleshooting](/documentation/support/troubleshooting) for detailed checks.
+
+## Next Steps
+
+- [Configure Wiredoor Server](/documentation/operations/configuration)
+- [Understand Wiredoor Nodes and Tunnels](/documentation/usage/nodes)
+- [Configure Wiredoor Services](/documentation/usage/services)
+- [Configure Wiredoor Domains and DNS](/documentation/usage/domains-and-dns)
+- [Configure OAuth2 and IP Restrictions](/documentation/usage/access-control)
+- [Secure exposed services](/documentation/operations/security)
+- [Deploy a Docker Gateway](/documentation/gateways/docker)
+- [Deploy a Kubernetes Gateway](/documentation/gateways/kubernetes)

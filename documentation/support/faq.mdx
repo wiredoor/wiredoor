@@ -1,0 +1,174 @@
+---
+title: 'Wiredoor FAQ: Setup, Nodes, Security, and Exposed Services'
+description: 'Find answers to common Wiredoor questions about public IPs, private services, node connections, domains, certificates, access control, monitoring, and backups.'
+keywords:
+  [
+    'Wiredoor FAQ',
+    'public IP',
+    'private service exposure',
+    'Wiredoor nodes',
+    'self-signed certificate',
+    'Wiredoor backup',
+  ]
+---
+
+# Wiredoor Frequently Asked Questions
+
+This page answers common questions about deploying Wiredoor, connecting nodes, and exposing private services.
+
+## General
+
+### Does Wiredoor Server Need a Public IP Address?
+
+Wiredoor Server must be reachable from every client that will use an exposed service and from every node that will connect. A public IP address or publicly reachable domain is typical for internet exposure. An internal address is sufficient when all clients and nodes stay on the same private network.
+
+### Do Backend Services Need Public IP Addresses?
+
+No. Client Nodes reach services on their own hosts, and Gateway Nodes can reach services in an assigned private subnet. Public traffic terminates at Wiredoor Server and is forwarded through the WireGuard tunnel when a remote node is involved.
+
+### Is Wiredoor Open Source?
+
+Yes. Wiredoor Server and the Wiredoor CLI are open source and can be self-hosted.
+
+### Can Wiredoor Run on a VPS?
+
+Yes. A Linux VPS with a reachable address is a common deployment target for Wiredoor Server.
+
+### Can Wiredoor Work in an Isolated Network?
+
+Yes, when nodes and clients can reach Wiredoor Server inside that network. Features that depend on external services, such as public Let's Encrypt validation or third-party OAuth2 providers, require the corresponding network access.
+
+### Is There a Fixed Service Limit?
+
+Wiredoor does not define one fixed service count for every deployment. Capacity depends on server resources, the number of configured domains, and the public TCP or UDP port pool.
+
+## Domains and Certificates
+
+### Can I Use Wiredoor Without a Public Domain?
+
+Yes. Internal domains and IP-based access can use self-signed certificates. Clients will report a trust warning until the certificate is explicitly trusted. Public Let's Encrypt certificates require a valid public domain and successful validation.
+
+### Can Multiple Services Use the Same Domain?
+
+Multiple HTTP services can use one domain when they use distinct paths, such as `/app1` and `/app2`. Separate subdomains are often easier to operate when services have different authentication, ownership, or lifecycle requirements.
+
+### Why Was a Let's Encrypt Certificate Not Issued?
+
+Confirm that the domain resolves to Wiredoor Server and that TCP port `80` is reachable for HTTP validation. Then inspect Wiredoor logs for DNS, validation, or rate-limit errors.
+
+See [Troubleshoot Wiredoor TLS and connectivity](/documentation/support/troubleshooting) for a structured checklist.
+
+## Nodes and Connections
+
+### How Do I Register a Client Node?
+
+Run the interactive login command on the private machine:
+
+```bash
+wiredoor login --url https://wiredoor.example.com
+```
+
+The CLI asks for administrator credentials, creates the node, stores its configuration, and connects it.
+
+### How Do I Connect an Existing Node?
+
+Create the node in the Wiredoor dashboard, copy its token, and connect with:
+
+```bash
+wiredoor connect --url https://wiredoor.example.com --token NODE_TOKEN
+```
+
+Treat the token as a secret. Avoid leaving it in shared shell history.
+
+### What Is the Difference Between Login and Connect?
+
+`wiredoor login` authenticates with administrator credentials and registers a node interactively. `wiredoor connect` uses an existing node token to connect a node that was already created.
+
+### Where Is the CLI Configuration Stored?
+
+The default location on Linux is:
+
+```text
+/etc/wiredoor/config.ini
+```
+
+Restrict access to this file because it contains connection information.
+
+### What Happens After a Restart?
+
+Wiredoor Server accepts connections again after its containers start. A node reconnects automatically when the Wiredoor system service is installed, enabled, and running.
+
+On a systemd-based node:
+
+```bash
+sudo systemctl enable --now wiredoor
+sudo systemctl status wiredoor
+```
+
+## Exposed Services and Access Control
+
+### How Do I Expose a Local HTTP Service?
+
+```bash
+wiredoor http my-service --domain app.example.com --port 3000
+```
+
+Confirm that the backend is reachable locally and that the public domain resolves to Wiredoor Server.
+
+### How Do I Expose a TCP Service?
+
+```bash
+wiredoor tcp ssh-access --port 22
+```
+
+Wiredoor first selects an available port from `TCP_SERVICES_PORT_RANGE`, then checks `ADDITIONAL_TCP_SERVICES_PORTS` in configured order.
+
+### Can One Node Expose Multiple Services?
+
+Yes. A node can expose multiple HTTP, TCP, or UDP services, subject to available ports and server capacity.
+
+### Can I Restrict Access by IP Address?
+
+Yes. Use an allow list or block list supported by the service type. When an allow list is present, all addresses not listed are denied.
+
+```bash
+wiredoor tcp ssh-access --port 22 --allow 203.0.113.0/24
+```
+
+The policy evaluates the client address visible to NGINX. A reverse proxy, load balancer, or NAT device can change that address. Verify the observed source in access logs and test from both allowed and denied networks.
+
+### Should I Expose an Administrative Dashboard Publicly?
+
+Only with explicit protection. Require OAuth2 or a restrictive, tested IP allow list. Keep the application's own authentication enabled as another layer.
+
+See [Secure Wiredoor and exposed services](/documentation/operations/security).
+
+## Status and Monitoring
+
+### How Do I Check Node Status?
+
+```bash
+wiredoor status
+```
+
+You can also review node and service state in the Wiredoor dashboard.
+
+### How Do I Monitor NGINX and WireGuard?
+
+Prometheus and Grafana are optional. Wiredoor works without them, including nodes, tunnels, domains, access controls, and service exposure. Enable the monitoring services only when you want metrics collection and Grafana dashboards. Protect Grafana before exposing it outside a trusted network.
+
+See [Monitor Wiredoor with Prometheus and Grafana](/documentation/operations/monitoring).
+
+## Backup and Recovery
+
+### What Should I Back Up?
+
+Back up the persistent storage mounted at `/data` and `/etc/letsencrypt`. If you persist NGINX logs or monitoring data, include those volumes according to your retention requirements.
+
+The `/data` volume contains the default SQLite database and generated signing key. Protect backups as secrets and test restoration in a non-production environment.
+
+## Related Documentation
+
+- [Install Wiredoor with Docker Compose](/documentation/quickstart)
+- [Configure Wiredoor Server](/documentation/operations/configuration)
+- [Wiredoor CLI command reference](/documentation/cli)

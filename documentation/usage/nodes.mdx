@@ -1,0 +1,104 @@
+---
+title: 'Wiredoor Nodes and Tunnels'
+description: 'Understand Local, Client, and Gateway Nodes, WireGuard tunnel connectivity, background reconnection, and Wiredoor node token lifecycle.'
+keywords:
+  [
+    'Wiredoor node types',
+    'register Wiredoor node',
+    'Wiredoor tunnel',
+    'Wiredoor Client Node',
+    'Wiredoor Gateway Node',
+    'Wiredoor node token',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Understand Wiredoor Nodes and Tunnels
+
+Nodes define where Wiredoor can reach private services. The node type determines whether Wiredoor can reach services on one machine, inside a private subnet, or directly from Wiredoor Server.
+
+## Choose a Wiredoor Node Type
+
+| Node type    | Network reach                           | Typical use                                                     |
+| ------------ | --------------------------------------- | --------------------------------------------------------------- |
+| Local Node   | Services reachable from Wiredoor Server | Dashboard, monitoring, or containers on the server network      |
+| Client Node  | Services on one remote machine          | A private application, workstation, server, or device           |
+| Gateway Node | Services within assigned subnets        | Docker networks, Kubernetes Services, or a private site network |
+
+### Local Node
+
+Wiredoor creates the Local Node automatically during server initialization. It does not establish a remote WireGuard tunnel. Use it for backends that Wiredoor Server can reach directly.
+
+The built-in `Wiredoor_APP` service belongs to this node and cannot be deleted. The Local Node also cannot be deleted, regenerated, or edited like a remote node.
+
+### Client Node
+
+A Client Node establishes an outbound WireGuard tunnel and exposes services running on the same machine as the Wiredoor CLI. Client Node mode supports Linux, Windows, and macOS.
+
+### Gateway Node
+
+A Gateway Node establishes the same outbound tunnel but routes Wiredoor traffic to one or more configured private subnets. Use the narrowest subnet that contains the required backends.
+
+<Callout type="warning">
+  Gateway routing depends on Linux `iptables` rules. Run Gateway Nodes through
+  the Wiredoor CLI on Linux, Docker, or Kubernetes. Windows and macOS support
+  Client Node mode only.
+</Callout>
+
+## Register and Connect a Client Node
+
+The recommended onboarding command authenticates an administrator, creates the node and its default token, stores the local configuration, and starts the connection:
+
+```bash
+wiredoor login --url https://wiredoor.example.com
+```
+
+Choose `No` when the CLI asks whether a regular Client Node is a gateway. Use [the Wiredoor quickstart](/documentation/quickstart) for the complete first installation journey.
+
+If a node and token already exist, `wiredoor config` stores their connection values without connecting. `wiredoor connect` starts a connection using the saved values. See the [Wiredoor CLI command reference](/documentation/cli) for complete syntax.
+
+## Understand Tunnel and Node Status
+
+Remote nodes receive an address inside the Wiredoor VPN subnet. Wiredoor Server uses that address to forward traffic and reports runtime information such as tunnel handshake, transferred bytes, and node state.
+
+Check the local connection with:
+
+```bash
+wiredoor status
+```
+
+The dashboard also reports whether a node is connected and whether its services are enabled. An active WireGuard tunnel does not prove that the private backend is listening on the configured port, so verify the backend separately when a service fails.
+
+## Keep a Node Connected
+
+The official Linux packages include a background service for supported `systemd` or OpenRC systems. The Windows installer configures a Windows service. These services monitor the connection and reconnect when required.
+
+Use the operating system service manager to confirm that the Wiredoor service starts after a reboot. A manually started CLI process does not automatically gain the same startup behavior.
+
+`wiredoor disconnect` stops the active tunnel and temporarily disables the node services without deleting the saved node configuration. Run `wiredoor connect` to reconnect.
+
+## Protect and Rotate Node Tokens
+
+Each remote node authenticates API requests with a personal access token. Store the token and local CLI configuration so that only the service account or administrator can read them.
+
+- Revoke a token that is no longer required.
+- Use token expiration when access should end automatically.
+- Rotate credentials after suspected exposure.
+- Do not place tokens in screenshots, logs, shell history, or version-controlled files.
+
+Regenerating a node replaces its WireGuard keys, deletes all existing tokens for that node, and creates a new default token. The old configuration can no longer authenticate and must be replaced on the node.
+
+## Remove or Troubleshoot a Node
+
+Deleting a remote node removes it from the WireGuard server configuration and removes its services from active routing. The Local Node cannot be deleted.
+
+If a node does not connect:
+
+1. Confirm that the server address in the CLI configuration is correct.
+2. Confirm that the WireGuard UDP port is open on the server.
+3. Run `wiredoor status` on the node.
+4. Check the background service on the node operating system.
+5. Confirm that the node token is not expired or revoked.
+
+See [Wiredoor troubleshooting](/documentation/support/troubleshooting) for detailed diagnostics and [deployment security](/documentation/operations/security) for token and gateway hardening.

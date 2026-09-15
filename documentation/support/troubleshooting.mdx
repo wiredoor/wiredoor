@@ -1,0 +1,192 @@
+---
+title: 'Wiredoor Troubleshooting: Connectivity, VPN, DNS, and TLS'
+description: 'Troubleshoot Wiredoor Server, node connectivity, exposed services, DNS, TLS certificates, Docker logs, and Gateway Node routing safely.'
+keywords:
+  [
+    'Wiredoor troubleshooting',
+    'WireGuard connection error',
+    'invalid token',
+    'DNS resolution',
+    'TLS certificate',
+    'gateway routing',
+  ]
+---
+
+# Wiredoor Troubleshooting
+
+Start at the failing layer and verify one dependency at a time: Wiredoor Server, node tunnel, backend service, public DNS, and public endpoint. Record the original firewall and security state before changing it.
+
+## The CLI Reports Unauthorized or Invalid Token
+
+1. Confirm that the server URL identifies the intended Wiredoor Server.
+2. Confirm that the token belongs to the selected node and has not been revoked.
+3. If you use `wiredoor login`, verify the administrator email and password.
+4. Replace the node token if it may have been exposed, then reconnect the node.
+
+Do not paste tokens into issue reports or shared terminal transcripts.
+
+## A Node Does Not Connect
+
+Check the node first:
+
+```bash
+wiredoor status
+```
+
+Then verify:
+
+- The Wiredoor Server hostname resolves from the node.
+- TCP ports `80` and `443` reach the server when required by your deployment.
+- The configured `VPN_PORT` reaches the server over UDP.
+- The server container is running.
+- Host and cloud firewalls permit the same port and protocol configured in Wiredoor.
+
+On the server:
+
+```bash
+docker compose ps wiredoor
+docker compose logs --tail 100 wiredoor
+```
+
+## An Exposed Service Is Not Reachable
+
+Verify the request path in this order:
+
+1. `wiredoor status` reports the node as connected.
+2. The backend process listens on the configured port.
+3. The backend is reachable from the Client Node or Gateway Node.
+4. The service is enabled in the Wiredoor dashboard.
+5. The public domain resolves to Wiredoor Server.
+6. IP restrictions or OAuth2 are not rejecting the intended client.
+7. Kubernetes NetworkPolicy or host firewall rules permit the backend connection.
+
+For a local HTTP backend, test it on the node before testing the public endpoint:
+
+```bash
+curl --fail --show-error http://127.0.0.1:3000/
+```
+
+Replace the address and port with the actual backend values.
+
+## Kubernetes Service Names Do Not Resolve
+
+- Use a fully qualified service name such as `my-service.default.svc.cluster.local`.
+- Confirm that the Service exists and has ready endpoints.
+- Confirm that the gateway can reach cluster DNS.
+- If NetworkPolicy is enabled, keep the DNS egress rule rendered by the Wiredoor chart.
+
+```bash
+kubectl get service my-service --namespace default
+kubectl get endpoints my-service --namespace default
+```
+
+## A Let's Encrypt Certificate Is Not Issued
+
+Verify:
+
+- The public domain resolves to Wiredoor Server.
+- TCP port `80` is reachable for HTTP validation.
+- TCP port `443` is reachable for HTTPS traffic.
+- The certificate volume is writable and persistent.
+- The server logs contain no DNS, rate-limit, or validation error.
+
+Internal domains and IP addresses normally use a self-signed certificate instead of Let's Encrypt.
+
+## A Browser Reports a Certificate Warning
+
+The service is probably using a self-signed certificate or a domain that does not match the certificate.
+
+- For public access, use a public domain that resolves to Wiredoor Server and allow certificate issuance to complete.
+- For internal access, distribute and trust the intended internal certificate through your normal device-management process.
+- Do not train users to bypass certificate warnings for production services.
+
+## A Gateway Node Cannot Reach an Internal Address
+
+Check routing before changing firewall policy.
+
+If the local computer runs Windows or macOS, use Wiredoor Docker Gateway through Docker Desktop. Native Gateway Node mode requires Linux `iptables`, while the Docker image provides the required Linux environment. The target subnet must be reachable from inside the gateway container, not only from the host.
+
+See [route to a private subnet with Wiredoor Docker Gateway](/documentation/gateways/docker#route-to-a-private-subnet) for the configuration and Docker Desktop checks.
+
+### 1. Confirm IP Forwarding
+
+Read the current value:
+
+```bash
+sysctl net.ipv4.ip_forward
+```
+
+Expected result: `net.ipv4.ip_forward = 1`.
+
+If it is disabled, enable forwarding through the operating system's persistent sysctl configuration, reload that configuration, and confirm the value again. Keep a record of the previous setting so it can be restored if the host is not intended to route traffic.
+
+### 2. Confirm Routes and Reachability
+
+```bash
+ip route
+ping -c 3 192.0.2.10
+```
+
+Replace `192.0.2.10` with the real backend address. If ICMP is blocked, test the actual application port instead.
+
+### 3. Inspect firewalld Without Changing It
+
+```bash
+firewall-cmd --get-active-zones
+firewall-cmd --zone=public --query-masquerade
+firewall-cmd --zone=public --list-all
+```
+
+Replace `public` with the zone attached to the outbound interface. If masquerading is required, add it only to the correct zone, verify gateway traffic, and document the rollback command:
+
+```bash
+sudo firewall-cmd --permanent --zone=public --add-masquerade
+sudo firewall-cmd --reload
+sudo firewall-cmd --zone=public --query-masquerade
+```
+
+Rollback:
+
+```bash
+sudo firewall-cmd --permanent --zone=public --remove-masquerade
+sudo firewall-cmd --reload
+```
+
+### 4. Diagnose SELinux Denials
+
+Do not leave SELinux disabled or permissive as a fix. First check its state and inspect recent denials:
+
+```bash
+getenforce
+sudo ausearch -m AVC,USER_AVC -ts recent
+sudo journalctl --since "15 minutes ago" | grep -i selinux
+```
+
+Reproduce one failed connection while collecting audit events. Use `audit2why` to understand the denial, then have an administrator review a narrowly scoped local policy for the specific Wiredoor process, interface, and action. Do not install an automatically generated policy without reviewing its rules.
+
+If an administrator temporarily changes enforcement only to confirm the diagnosis, record the original mode and restore it immediately after the test. For a host that was enforcing, restore it with:
+
+```bash
+sudo setenforce 1
+getenforce
+```
+
+Expected result: `Enforcing`.
+
+## Collect Information for Support
+
+Include:
+
+- Wiredoor Server and CLI versions.
+- Deployment type: Docker, Docker Gateway, or Kubernetes Gateway.
+- Sanitized status and recent error logs.
+- The affected protocol, ports, and network path.
+- DNS results and the exact verification command that failed.
+
+Remove tokens, passwords, private keys, cookies, and private hostnames before sharing output.
+
+## Related Documentation
+
+- [Configure Wiredoor Server](/documentation/operations/configuration)
+- [Secure exposed services](/documentation/operations/security)
+- [Deploy the Kubernetes Gateway](/documentation/gateways/kubernetes)

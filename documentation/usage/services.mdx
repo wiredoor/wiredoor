@@ -1,0 +1,115 @@
+---
+title: 'Configure HTTP, TCP, and UDP Services in Wiredoor'
+description: 'Configure Wiredoor HTTP, TCP, and UDP services, understand backend routing, public ports, access controls, TTL, and service lifecycle.'
+keywords:
+  [
+    'configure Wiredoor services',
+    'Wiredoor HTTP service',
+    'Wiredoor TCP service',
+    'Wiredoor UDP service',
+    'expose private service',
+    'Wiredoor service TTL',
+  ]
+---
+
+import { Callout } from 'nextra/components';
+
+# Configure Wiredoor Services
+
+A Wiredoor service connects a public address to a backend that the selected node can reach. Choose HTTP for web applications and APIs, TCP for connection-oriented protocols, or UDP for datagram-based services.
+
+## Understand Service Routing
+
+Every service belongs to a Local, Client, or Gateway Node. The node determines which backend addresses Wiredoor can use.
+
+| Node type    | Default backend reach                                        |
+| ------------ | ------------------------------------------------------------ |
+| Local Node   | Services reachable directly from Wiredoor Server             |
+| Client Node  | A service running on the same machine as the Wiredoor CLI    |
+| Gateway Node | An address or service name inside an approved private subnet |
+
+Wiredoor validates backend reachability before creating supported service routes. A connected node does not guarantee that the backend process is listening on the selected port.
+
+## Configure HTTP Services
+
+An HTTP service is selected by domain and path. NGINX terminates public HTTPS and forwards the request to an HTTP or HTTPS backend.
+
+| Setting          | Purpose                                                       |
+| ---------------- | ------------------------------------------------------------- |
+| Name             | Identifies the service in Wiredoor                            |
+| Domain           | Selects the public hostname                                   |
+| Path             | Selects a route such as `/`, `/api`, or `/dashboard`          |
+| Backend protocol | Uses `http` or `https` when connecting to the private service |
+| Backend host     | Selects a target for Local or Gateway Nodes                   |
+| Backend port     | Selects the port where the private HTTP service listens       |
+| Authentication   | Requires OAuth2 when enabled on both the domain and service   |
+| Allowed IPs      | Limits access to the listed IP addresses or CIDR networks     |
+
+Each domain and path combination must be unique. Use the root path `/` when the application should handle the entire domain.
+
+For a Client Node, Wiredoor sends traffic to that node and the selected port. For a Gateway Node, provide a backend host or service name that the gateway can resolve and reach. Use backend protocol `https` only when the private backend itself expects HTTPS.
+
+<Callout type="warning">
+  Public HTTPS termination does not automatically secure the connection from the
+  node to the backend. Select an HTTPS backend when that private connection also
+  requires TLS.
+</Callout>
+
+## Configure TCP and UDP Services
+
+TCP and UDP services are selected by public port instead of an HTTP path.
+
+| Setting      | Purpose                                               |
+| ------------ | ----------------------------------------------------- |
+| Protocol     | Selects `tcp` or `udp`                                |
+| Backend host | Selects a target for Local or Gateway Nodes           |
+| Backend port | Selects the private service port                      |
+| Public port  | Uses an available configured range or additional port |
+| TLS          | Optionally terminates TLS for a TCP service           |
+| Allowed IPs  | Permits only the listed IP addresses or CIDR networks |
+| Blocked IPs  | Denies the listed IP addresses or CIDR networks       |
+
+The Wiredoor Server must publish the assigned public port with the same protocol. The host or cloud firewall must also permit that port. Configure the available range and additional ports in the [Wiredoor server configuration](/documentation/operations/configuration#tcp-and-udp-port-allocation).
+
+UDP services do not perform the same backend connection check as TCP services. Verify UDP traffic with a client that understands the real application protocol.
+
+## Control Service Availability
+
+Services can be enabled, disabled, assigned a TTL, or deleted.
+
+- Disabling a service removes its active NGINX route but keeps the service definition.
+- Enabling a service rebuilds the route.
+- A TTL automatically disables the service after a duration such as `30m`, `2h`, or `1d`.
+- Deleting a service removes its generated route and stored definition.
+- Deleting a remote node also deletes the services that belong to it.
+
+The built-in `Wiredoor_APP` HTTP service on the Local Node cannot be deleted.
+
+Use the [Wiredoor CLI command reference](/documentation/cli) for complete enable, disable, and exposure command syntax.
+
+## Choose Access Controls
+
+Use the control that matches the service and audience:
+
+| Control          | HTTP | TCP | UDP | Use when                                               |
+| ---------------- | ---- | --- | --- | ------------------------------------------------------ |
+| OAuth2           | Yes  | No  | No  | Users should authenticate through an identity provider |
+| Allowed IPs      | Yes  | Yes | Yes | Only known client addresses or networks should connect |
+| Blocked IPs      | No   | Yes | Yes | Specific TCP or UDP sources must be denied             |
+| Application auth | Yes  | Yes | Yes | The backend protocol provides its own authentication   |
+
+IP rules use the client address visible to NGINX. A proxy or NAT device can replace the original address, so confirm the observed value in access logs before relying on an allow list.
+
+See [Wiredoor OAuth2 and IP restrictions](/documentation/usage/access-control) for configuration and safe verification.
+
+## Verify a Service
+
+After creating or changing a service:
+
+1. Confirm that the selected node is connected.
+2. Confirm that the backend is reachable from that node.
+3. Confirm that the required domain or public port reaches Wiredoor Server.
+4. Test from an intended client.
+5. Test from a client that should be denied when access controls are enabled.
+
+Use [the Wiredoor quickstart](/documentation/quickstart) for a complete HTTP example. See [Wiredoor troubleshooting](/documentation/support/troubleshooting) when the public route exists but the backend does not respond.
