@@ -1,5 +1,7 @@
+import 'reflect-metadata';
 import Container from 'typedi';
 import db from '../providers/db';
+import dns from '../providers/dns';
 import { HttpServiceRepository } from '../repositories/http-service-repository';
 import { TcpServiceRepository } from '../repositories/tcp-service-repository';
 import { HttpServicesService } from '../services/http-services-service';
@@ -11,6 +13,7 @@ import { Logger } from '../logger';
 
 (async (): Promise<void> => {
   await db();
+  await dns();
 
   const httpServiceRepository = Container.get(HttpServiceRepository);
   const tcpServiceRepository = Container.get(TcpServiceRepository);
