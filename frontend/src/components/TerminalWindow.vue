@@ -106,7 +106,7 @@ const copyCommand = async (key: number) => {
       setTimeout(() => (copied.value = false), 2000)
     } catch (err) {
       copied.value = false
-      console.error('Error al copiar el texto: ', err)
+      console.error('Error copying text: ', err)
     }
   }
 }

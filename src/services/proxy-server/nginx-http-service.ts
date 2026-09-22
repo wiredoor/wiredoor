@@ -49,7 +49,7 @@ export class NginxHttpService extends NginxService {
     await this.removeFile(confFile);
 
     Logger.info(
-      `HTTP location ${service.publicAccess} config ${confFile} removed `,
+      `Removed HTTP location ${service.publicAccess} config ${confFile}`,
     );
 
     this.resetTCPConnections(service);

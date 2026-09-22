@@ -20,7 +20,7 @@ for dir in /data /var/log/nginx /etc/letsencrypt; do
       if [ "$FAIL" = "0" ]; then
         echo "------------------------------------------------------------------------------"
         echo "[WARN] Some directories are not owned by UID:GID 1000:1000"
-        echo "[WARN] Wiredoor v1.5.0 runs as non-root (1000:1000)."
+        echo "[WARN] Wiredoor v1.5.0 runs as a non-root user (1000:1000)."
         echo "[WARN] Please run the following commands before upgrading:"
         echo
       fi

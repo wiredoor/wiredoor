@@ -69,7 +69,7 @@ export class ExpressLogger extends CoreLogger {
               : 'info';
 
         if (level === 'error') {
-          req.logger[level]('request completed with error', null, {
+          req.logger[level]('request completed with an error', null, {
             duration,
             status_code: res.statusCode,
             status_message: res.statusMessage,

@@ -47,9 +47,9 @@ axios.interceptors.response.use(
       const auth = useAuthStore()
 
       if (auth.token) {
-        console.log('Logging out by API response')
+        console.log('Logging out due to API response')
         await auth.logout()
-        console.log('Logged out by API response')
+        console.log('Logged out due to API response')
       }
     }
 

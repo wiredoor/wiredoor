@@ -17,7 +17,7 @@ const copyToken = async () => {
       setTimeout(() => (copyIcon.value = 'copy'), 2000)
     } catch (err) {
       copyIcon.value = 'copy'
-      console.error('Error al copiar el texto: ', err)
+      console.error('Error copying text: ', err)
     }
   }
 }

@@ -149,7 +149,7 @@ export default class CLiController extends BaseController {
       return updated;
     } else {
       req.logger.audit(
-        `Attempted to update gateway network for non-gateway node ${cli.nodeName} failed`,
+        `Attempt to update gateway network for non-gateway node ${cli.nodeName} failed`,
         {
           nodeName: cli.nodeName,
           patName: cli.tokenName,

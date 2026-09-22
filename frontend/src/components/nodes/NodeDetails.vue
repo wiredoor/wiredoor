@@ -45,7 +45,7 @@ const dataMonitor = () => {
     }
 
     eventSource.onerror = (error) => {
-      console.error('Error en SSE:', error)
+      console.error('SSE error:', error)
       eventSource?.close()
     }
   }

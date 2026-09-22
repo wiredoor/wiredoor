@@ -62,7 +62,7 @@ async function disableExpiringServices(
         try {
           await callback(service.id);
           Logger.info(
-            `Service ${service.name} with expiresAt ${service.expiresAt} ID: ${service.id} disabled at ${new Date()}`,
+            `Service ${service.name} with expiration time ${service.expiresAt} and ID ${service.id} disabled at ${new Date()}`,
           );
         } catch (e: Error | any) {
           Logger.error('Error disabling service:', e);

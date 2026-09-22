@@ -106,7 +106,7 @@ export default class FileManager {
       if (this.isPath(dir)) {
         await fsPromises.rm(dir, { recursive: true, force: true });
       } else {
-        logger.error(`Directory ${dir} does not exists`);
+        logger.error(`Directory ${dir} does not exist`);
       }
     } catch (error) {
       logger.error(`Failed to delete directory: ${dir}`);
@@ -119,7 +119,7 @@ export default class FileManager {
       if (this.isPath(filepath)) {
         await fsPromises.unlink(filepath);
       } else {
-        logger.error(`File ${filepath} does not exists`);
+        logger.error(`File ${filepath} does not exist`);
       }
     } catch (error) {
       logger.error(`Failed to delete file: ${filepath}`);
