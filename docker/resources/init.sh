@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+run_quietly() {
+  local error
+  error=$("$@" 2>&1 > /dev/null) || {
+    local status=$?
+    printf '%s\n' "$error" >&2
+    return "$status"
+  }
+}
+
 FAIL=0
 
 # --- Permission preflight for upgrades to v1.5.0 ---
@@ -40,9 +49,9 @@ fi
 
 chmod 600 /data/quic/quic_host.key
 
-openssl genpkey -algorithm RSA -out /data/ssl/privkey.key >> /dev/null 2>&1
-openssl req -new -key /data/ssl/privkey.key -out /data/ssl/default.csr -config /etc/openssl/openssl.cnf >> /dev/null 2>&1
-openssl x509 -req -days 3650 -in /data/ssl/default.csr -signkey /data/ssl/privkey.key -out /data/ssl/cert.crt >> /dev/null 2>&1
+run_quietly openssl genpkey -algorithm RSA -out /data/ssl/privkey.key
+run_quietly openssl req -new -key /data/ssl/privkey.key -out /data/ssl/default.csr -config /etc/openssl/openssl.cnf
+run_quietly openssl x509 -req -days 3650 -in /data/ssl/default.csr -signkey /data/ssl/privkey.key -out /data/ssl/cert.crt
 
 ln -sfn /data/ssl/privkey.key /etc/nginx/ssl/privkey.key
 ln -sfn /data/ssl/cert.crt /etc/nginx/ssl/cert.crt
