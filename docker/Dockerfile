@@ -1,4 +1,4 @@
-FROM node:24-alpine3.22 AS base
+FROM node:26-alpine3.24 AS base
 
 WORKDIR /app
 
@@ -59,10 +59,10 @@ RUN npm i
 
 COPY --chown=node:node . .
 
-FROM python:3.12-alpine3.22 AS python-base
+FROM python:3.12-alpine3.24 AS python-base
 
 ARG TARGETARCH
-ARG OAUTH2PROXY_VERSION="7.15.3"
+ARG OAUTH2PROXY_VERSION="7.15.6"
 
 RUN apk add --no-cache py3-pip build-base curl \
   && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
@@ -89,7 +89,7 @@ RUN npm run build
 
 RUN npm ci --omit=dev && npm cache clean --force
 
-FROM node:24-alpine3.22 AS uibuild
+FROM node:26-alpine3.24 AS uibuild
 
 WORKDIR /app
 
