@@ -1,3 +1,17 @@
+FROM python:3.14-alpine3.24 AS python-base
+
+ARG TARGETARCH
+ARG OAUTH2PROXY_VERSION="7.15.6"
+
+RUN apk add --no-cache py3-pip build-base curl \
+  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
+  && tar -xzf /tmp/oauth2-proxy.tar.gz \
+  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}/oauth2-proxy /usr/bin/oauth2-proxy \
+  && pip install --upgrade pip setuptools wheel \
+  && python3 -m venv /opt/certbot/ \
+  && /opt/certbot/bin/pip install --upgrade pip \
+  && /opt/certbot/bin/pip install certbot
+
 FROM node:26-alpine3.24 AS base
 
 WORKDIR /app
@@ -5,15 +19,17 @@ WORKDIR /app
 ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
-ENV PYTHONWARNINGS="ignore:::pkg_resources"
+# ENV PYTHONWARNINGS="ignore:::pkg_resources"
 
 RUN apk add --no-cache \
   iptables tzdata supercronic \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 openssl libcap sudo \
+  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 supervisor openssl libcap sudo \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
   && ln -s /usr/bin/python3.12 /usr/local/bin/python3
 
+COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
+COPY --from=python-base /opt/certbot /opt/certbot
 COPY docker/resources/crontabs /etc/crontabs/
 COPY --chown=node:node docker/resources/nginx /etc/nginx/
 COPY docker/resources/openssl /etc/openssl/
@@ -38,11 +54,12 @@ RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && chown -R node:node /etc/wireguard \
   && touch /etc/environment \
   && chown node:node /etc/environment \
+  && ln -s /opt/certbot/bin/certbot /usr/bin/certbot \
   && setcap cap_net_bind_service=+ep /usr/sbin/nginx
 
 FROM base AS dev-container
 
-RUN apk add --update git rsync nano curl bash sqlite supervisor certbot \
+RUN apk add --update git rsync nano curl bash sqlite \
   && rm -f /etc/supervisor/conf.d/app.conf
 
 COPY --chown=node:node docker/resources/init.sh /init.sh
@@ -58,24 +75,6 @@ COPY --chown=node:node package*.json .
 RUN npm i
 
 COPY --chown=node:node . .
-
-FROM python:3.12-alpine3.24 AS python-base
-
-ARG TARGETARCH
-ARG OAUTH2PROXY_VERSION="7.15.6"
-
-RUN apk add --no-cache py3-pip build-base curl \
-  && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
-  && tar -xzf /tmp/oauth2-proxy.tar.gz \
-  && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}/oauth2-proxy /usr/bin/oauth2-proxy \
-  && pip install --upgrade pip setuptools wheel \
-  && pip install --no-cache-dir supervisor \
-  && python3 -m venv /opt/certbot/ \
-  && /opt/certbot/bin/pip install --upgrade pip \
-  && /opt/certbot/bin/pip install certbot \
-  && mkdir -p /install/site-packages \
-  && cp -r /usr/local/lib/python3.12/site-packages/supervisor /install/site-packages/ \
-  && cp -r /usr/local/lib/python3.12/site-packages/supervisor-*.dist-info /install/site-packages/
 
 FROM base AS build
 
@@ -113,17 +112,12 @@ LABEL org.opencontainers.image.licenses=Apache-2.0 \
       org.opencontainers.image.title=wiredoor \
       org.opencontainers.image.version=${VERSION}
 
-COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
-COPY --from=python-base /install/site-packages/ /usr/lib/python3.12/site-packages/
-COPY --from=python-base /usr/local/bin/supervisord /usr/local/bin/supervisorctl /usr/bin/
-COPY --from=python-base /opt/certbot /opt/certbot
 COPY --chown=node:node --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node --from=build /app/dist /app/dist
 COPY --chown=node:node --from=uibuild /app/dist /app/dist/public
 COPY --chown=node:node docker/resources/init.sh /init.sh
 
-RUN chmod +x /init.sh \
-  && ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+RUN chmod +x /init.sh
 
 USER node
 
