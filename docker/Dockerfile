@@ -1,16 +1,15 @@
-FROM python:3.14-alpine3.24 AS python-base
+FROM node:26-alpine3.24 AS python-base
 
 ARG TARGETARCH
 ARG OAUTH2PROXY_VERSION="7.15.6"
 
-RUN apk add --no-cache py3-pip build-base curl \
+RUN apk add --no-cache python3 py3-pip build-base curl \
   && curl -sL https://github.com/oauth2-proxy/oauth2-proxy/releases/download/v${OAUTH2PROXY_VERSION}/oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}.tar.gz -o /tmp/oauth2-proxy.tar.gz \
   && tar -xzf /tmp/oauth2-proxy.tar.gz \
   && mv ./oauth2-proxy-v${OAUTH2PROXY_VERSION}.linux-${TARGETARCH}/oauth2-proxy /usr/bin/oauth2-proxy \
-  && pip install --upgrade pip setuptools wheel \
-  && python3 -m venv /opt/certbot/ \
-  && /opt/certbot/bin/pip install --upgrade pip \
-  && /opt/certbot/bin/pip install certbot
+  && /usr/bin/python3 -m venv /opt/certbot/ \
+  && /opt/certbot/bin/python -m pip install --no-cache-dir --upgrade pip \
+  && /opt/certbot/bin/python -m pip install --no-cache-dir certbot
 
 FROM node:26-alpine3.24 AS base
 
@@ -24,9 +23,7 @@ ENV TZ=America/New_York
 RUN apk add --no-cache \
   iptables tzdata supercronic \
   wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 supervisor openssl libcap sudo \
-  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3.12 \
-  && ln -s /usr/bin/python3.12 /usr/local/bin/python3
+  && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
 COPY --from=python-base /opt/certbot /opt/certbot
@@ -55,6 +52,7 @@ RUN mkdir -p /var/run/supervisor /var/log/supervisor \
   && touch /etc/environment \
   && chown node:node /etc/environment \
   && ln -s /opt/certbot/bin/certbot /usr/bin/certbot \
+  && /usr/bin/certbot --version \
   && setcap cap_net_bind_service=+ep /usr/sbin/nginx
 
 FROM base AS dev-container
