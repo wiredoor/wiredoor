@@ -18,11 +18,10 @@ WORKDIR /app
 ARG VERSION=1.0.0
 
 ENV TZ=America/New_York
-# ENV PYTHONWARNINGS="ignore:::pkg_resources"
 
 RUN apk add --no-cache \
   iptables tzdata supercronic \
-  wireguard-tools conntrack-tools tcpdump nginx nginx-mod-stream python3 supervisor openssl libcap sudo \
+  wireguard-tools conntrack-tools tcpdump "nginx>=1.30.7" nginx-mod-stream python3 supervisor openssl libcap sudo \
   && apk add --no-cache fluent-bit --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 COPY --from=python-base /usr/bin/oauth2-proxy /usr/bin/oauth2-proxy
