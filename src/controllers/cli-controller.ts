@@ -380,6 +380,6 @@ export default class CLiController extends BaseController {
       nodeId: cli.nodeId,
       patId: cli.id,
     });
-    return this.nodesService.regenerateNodeKeys(cli.nodeId);
+    return this.nodesService.regenerateNodeKeys(cli.nodeId, cli.id);
   }
 }

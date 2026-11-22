@@ -4,7 +4,7 @@ import { FilterQueryDto } from '../repositories/filters/repository-query-filter'
 
 export interface CreatePATType {
   name: string;
-  exapireAt?: string;
+  expireAt?: string | Date;
   revoked?: boolean;
 }
 

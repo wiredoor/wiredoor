@@ -12,7 +12,11 @@ import WireguardService, {
 import { HttpServicesService } from './http-services-service';
 import { TcpServicesService } from './tcp-services-service';
 import { PatService } from './pat-service';
-import { BadRequestError, NotFoundError } from 'routing-controllers';
+import {
+  BadRequestError,
+  ForbiddenError,
+  NotFoundError,
+} from 'routing-controllers';
 import { NodeQueryFilter } from '../repositories/filters/node-query-filter';
 import Net from '../utils/net';
 import { PagedData } from '../repositories/filters/repository-query-filter';
@@ -88,7 +92,21 @@ export class NodesService {
     };
   }
 
-  public async regenerateNodeKeys(id: number): Promise<NodeWithToken> {
+  public async regenerateNodeKeys(
+    id: number,
+    patId: number,
+  ): Promise<NodeWithToken> {
+    const currentPat = await this.patService.getPatById(patId);
+
+    if (
+      !currentPat ||
+      currentPat.nodeId !== id ||
+      currentPat.revoked ||
+      (currentPat.expireAt && currentPat.expireAt < new Date())
+    ) {
+      throw new ForbiddenError();
+    }
+
     const node = await this.nodeRepository.findOne({
       where: { id },
     });
@@ -109,16 +127,17 @@ export class NodesService {
       node.wgInterface,
     );
 
-    await Promise.all([
-      this.nodeRepository.update({ id: id }, regeneratedData),
-      this.patService.deleteAllTokens(node.id),
-    ]);
+    await this.nodeRepository.update({ id }, regeneratedData);
 
     await this.wireguardService.loadConfig();
 
     const pat = await this.patService.createNodePAT(node.id, {
-      name: 'default',
+      name: currentPat.name,
+      expireAt: currentPat.expireAt,
+      revoked: currentPat.revoked,
     });
+
+    await this.patService.deletePat(currentPat.id);
 
     return {
       ...node,

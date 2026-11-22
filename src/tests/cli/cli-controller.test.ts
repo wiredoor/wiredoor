@@ -2,10 +2,10 @@ import supertest from 'supertest';
 import { loadApp } from '../../main';
 import { mockAuthenticatedToken } from '../.jest/global-mocks';
 import { Node } from '../../database/models/node';
-import { makeHttpServiceData } from '../nodes/stubs/http-service.stub';
 import { faker } from '@faker-js/faker';
-import { makeTcpServiceData } from '../nodes/stubs/tcp-service.stub';
-import config from '../../config';
+import Container from 'typedi';
+import { PatService } from '../../services/pat-service';
+import { getDataFromToken } from '../../middlewares/auth-token-handler';
 
 let app;
 let request;
@@ -37,6 +37,39 @@ beforeAll(async () => {
 afterAll(async () => {});
 
 describe('Wiredoor CLI API', () => {
+  describe('PATCH /api/cli/regenerate', () => {
+    it.each([new Date('2099-01-01T00:00:00.000Z'), null])(
+      'should preserve PAT parameters and other credentials (expireAt: %s)',
+      async (expireAt) => {
+        const patService = Container.get(PatService);
+        const current = await patService.createNodePAT(node.id, {
+          name: 'temporary-cli',
+          expireAt,
+        });
+
+        const res = await request
+          .patch('/api/cli/regenerate')
+          .set('Authorization', `Bearer ${current.token}`);
+
+        expect(res.status).toBe(200);
+        const data = await getDataFromToken(res.body.token);
+        const regenerated = await patService.getPatById(data.id);
+        expect(regenerated).toMatchObject({
+          name: 'temporary-cli',
+          expireAt,
+          revoked: false,
+          nodeId: node.id,
+        });
+        expect(data.id).not.toBe(current.id);
+        expect(await patService.getPatById(current.id)).toBeNull();
+        const other = await request
+          .get('/api/cli/node')
+          .set('Authorization', `Bearer ${nodeToken}`);
+        expect(other.status).toBe(200);
+      },
+    );
+  });
+
   describe('GET /api/cli/node', () => {
     const endpoint = '/api/cli/node';
     it('should reject unauthenticated if no token provided', async () => {

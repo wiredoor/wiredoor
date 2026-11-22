@@ -19,7 +19,7 @@ import {
   mockSaveToFile,
   mockSyncConf,
 } from '../.jest/global-mocks';
-import { NotFoundError } from 'routing-controllers';
+import { ForbiddenError, NotFoundError } from 'routing-controllers';
 import { HttpServiceQueryFilter } from '../../repositories/filters/http-service-query-filter';
 import { PatService } from '../../services/pat-service';
 import { PersonalAccessTokenRepository } from '../../repositories/personal-access-token-repository';
@@ -275,6 +275,29 @@ describe('Nodes Service', () => {
   // });
 
   describe('Regenerate Node Keys', () => {
+    it.each([
+      { name: 'expired', expireAt: new Date('2000-01-01') },
+      { name: 'revoked', revoked: true },
+    ])('should reject a $name credential', async (params) => {
+      const node = await service.createNode(makeNodeData());
+      const pat = await patService.createNodePAT(node.id, params);
+
+      await expect(service.regenerateNodeKeys(node.id, pat.id)).rejects.toThrow(
+        ForbiddenError,
+      );
+      expect(await patService.getPatById(pat.id)).not.toBeNull();
+    });
+
+    it('should reject a credential belonging to another node', async () => {
+      const node = await service.createNode(makeNodeData());
+      const other = await service.createNode(makeNodeData());
+      const pat = await patService.createNodePAT(other.id, { name: 'other' });
+
+      await expect(service.regenerateNodeKeys(node.id, pat.id)).rejects.toThrow(
+        ForbiddenError,
+      );
+    });
+
     it('should regenerate node keys and update wireguard config', async () => {
       const data = makeNodeData();
 
@@ -282,7 +305,10 @@ describe('Nodes Service', () => {
 
       jest.clearAllMocks();
 
-      const result = await service.regenerateNodeKeys(created.id);
+      const pat = await patService.createNodePAT(created.id, {
+        name: 'cli',
+      });
+      const result = await service.regenerateNodeKeys(created.id, pat.id);
 
       expect(mockGenPublicKey).toHaveBeenCalledTimes(1);
       expect(mockGenPrivateKey).toHaveBeenCalledTimes(1);
